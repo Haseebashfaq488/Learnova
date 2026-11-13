@@ -1533,6 +1533,7 @@ export default function App() {
   };
 
   const handleSaveTopic = async (t: Topic) => {
+    let savedTopic = { ...t };
     try {
       if (authApi.getAccessToken() && isUuid(t.courseId)) {
         const existing = topics.find((item) => item.id === t.id);
@@ -1541,21 +1542,23 @@ export default function App() {
             title: t.title,
             description: t.description,
             order: t.order,
+            mastery_threshold: t.masteryThreshold,
           });
           if (t.prerequisiteTopicIds && t.prerequisiteTopicIds.every(isUuid)) {
             await teacherApi.updateTopicPrerequisites(t.id, t.prerequisiteTopicIds);
           }
-        } else if (!existing && isUuid(t.courseId)) {
+        } else if (isUuid(t.courseId)) {
           const created = await teacherApi.createTopic(t.courseId, {
             title: t.title,
             description: t.description,
             order: t.order,
+            mastery_threshold: t.masteryThreshold,
           });
           if (created && created.id) {
-            t.id = created.id;
+            savedTopic.id = created.id;
           }
           if (t.prerequisiteTopicIds && t.prerequisiteTopicIds.length > 0 && t.prerequisiteTopicIds.every(isUuid)) {
-            await teacherApi.updateTopicPrerequisites(t.id, t.prerequisiteTopicIds);
+            await teacherApi.updateTopicPrerequisites(savedTopic.id, t.prerequisiteTopicIds);
           }
         }
       }
@@ -1563,8 +1566,16 @@ export default function App() {
       console.warn('Backend topic save notice:', err);
       notify('error', err.message || 'Failed to sync topic with server');
     }
-    storage.saveTopic(t);
-    setTopics(storage.getTopics());
+    setTopics((prev) => {
+      const idx = prev.findIndex((item) => item.id === savedTopic.id || item.id === t.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedTopic;
+        return next;
+      }
+      return [...prev, savedTopic];
+    });
+    await refreshTeacherCourseData();
   };
 
   const handleDeleteTopic = async (id: string) => {
@@ -1575,11 +1586,13 @@ export default function App() {
     } catch (err: any) {
       console.warn('Backend topic delete notice:', err);
     }
-    storage.deleteTopic(id);
-    setTopics(storage.getTopics());
+    setTopics((prev) => prev.filter((t) => t.id !== id));
+    setLessons((prev) => prev.filter((l) => l.topicId !== id));
+    await refreshTeacherCourseData();
   };
 
   const handleSaveLesson = async (l: Lesson) => {
+    let savedLesson = { ...l };
     try {
       if (authApi.getAccessToken() && isUuid(l.topicId)) {
         const existing = lessons.find((item) => item.id === l.id);
@@ -1589,22 +1602,30 @@ export default function App() {
             description: l.description,
             order: l.order,
           });
-        } else if (!existing && isUuid(l.topicId)) {
+        } else if (isUuid(l.topicId)) {
           const created = await teacherApi.createLesson(l.topicId, {
             title: l.title,
             description: l.description,
             order: l.order,
           });
           if (created && created.id) {
-            l.id = created.id;
+            savedLesson.id = created.id;
           }
         }
       }
     } catch (err: any) {
       console.warn('Backend lesson save notice:', err);
     }
-    storage.saveLesson(l);
-    setLessons(storage.getLessons());
+    setLessons((prev) => {
+      const idx = prev.findIndex((item) => item.id === savedLesson.id || item.id === l.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedLesson;
+        return next;
+      }
+      return [...prev, savedLesson];
+    });
+    await refreshTeacherCourseData();
   };
 
   const handleDeleteLesson = async (id: string) => {
@@ -1615,8 +1636,9 @@ export default function App() {
     } catch (err: any) {
       console.warn('Backend lesson delete notice:', err);
     }
-    storage.deleteLesson(id);
-    setLessons(storage.getLessons());
+    setLessons((prev) => prev.filter((l) => l.id !== id));
+    setResources((prev) => prev.filter((r) => r.lessonId !== id));
+    await refreshTeacherCourseData();
   };
 
   const handleSaveResource = async (r: LearningResource) => {
@@ -1889,6 +1911,7 @@ export default function App() {
           topics={topics.filter((t) => t.courseId === activeCourse.id)}
           lessons={lessons.filter((l) => l.courseId === activeCourse.id)}
           resources={resources.filter((r) => r.courseId === activeCourse.id)}
+          assessments={assessments.filter((a) => a.courseId === activeCourse.id)}
           onNavigate={handleTeacherNavigate}
           onSaveTopic={handleSaveTopic}
           onDeleteTopic={handleDeleteTopic}

@@ -15,18 +15,21 @@ import {
   CheckCircle2,
   AlertCircle,
   HelpCircle,
+  CheckSquare,
+  ClipboardList,
 } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { Course, Topic, Lesson, LearningResource } from '../../types';
+import { Course, Topic, Lesson, LearningResource, Assessment } from '../../types';
 
 interface CurriculumEditorPageProps {
   course: Course;
   topics: Topic[];
   lessons: Lesson[];
   resources: LearningResource[];
+  assessments?: Assessment[];
   onNavigate: (page: string, params?: Record<string, string>) => void;
   onSaveTopic: (topic: Topic) => void;
   onDeleteTopic: (id: string) => void;
@@ -40,6 +43,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
   topics,
   lessons,
   resources,
+  assessments = [],
   onNavigate,
   onSaveTopic,
   onDeleteTopic,
@@ -235,6 +239,17 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
     }
   };
 
+  const handleHeaderSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (selectedType === 'topic') {
+      handleSaveTopicChanges(e || ({ preventDefault: () => {} } as any));
+    } else if (selectedType === 'lesson') {
+      handleSaveLessonChanges(e || ({ preventDefault: () => {} } as any));
+    } else {
+      onNotify('info', 'All curriculum changes are saved.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -249,18 +264,23 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
         primaryAction={
           <div className="flex items-center gap-2">
             {hasUnsavedChanges ? (
-              <span className="flex items-center gap-1.5 text-xs text-[#946200] font-semibold bg-[#FFF5D6] px-2.5 py-1 rounded border border-[#946200]/30 animate-pulse">
-                <AlertCircle className="w-3.5 h-3.5" />
-                Unsaved changes
-              </span>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Save className="w-4 h-4" />}
+                onClick={handleHeaderSave}
+                className="bg-[#2646B8] hover:bg-[#1D358F] text-white shadow-xs font-semibold animate-pulse"
+              >
+                Save changes
+              </Button>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs text-[#18794E] font-medium bg-[#EAF7F0] px-2.5 py-1 rounded border border-[#18794E]/20">
+              <span className="flex items-center gap-1.5 text-xs text-[#18794E] font-medium bg-[#EAF7F0] px-2.5 py-1.5 rounded-lg border border-[#18794E]/20">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 All changes saved
               </span>
             )}
             <Button
-              variant="primary"
+              variant="outline"
               size="sm"
               leftIcon={<Plus className="w-4 h-4" />}
               onClick={handleAddTopic}
@@ -306,6 +326,8 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                 const topicLessons = lessons
                   .filter((l) => l.topicId === t.id)
                   .sort((a, b) => a.order - b.order);
+                const topicAssessments = assessments
+                  .filter((a) => a.topicId === t.id);
                 const isSelected = selectedType === 'topic' && selectedId === t.id;
                 const isExpanded = !!expandedTopics[t.id];
 
@@ -372,45 +394,116 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                       </div>
                     </div>
 
-                    {/* Lessons list under this topic */}
+                    {/* Lessons & Assessments list under this topic */}
                     {isExpanded && (
-                      <div className="bg-[#F5F7FA] border-t border-[#D9DEE7] divide-y divide-gray-100 pl-6 pr-2 py-1">
-                        {topicLessons.length === 0 ? (
-                          <div className="py-2 text-[11px] text-[#737D8C] flex items-center justify-between">
-                            <span>No lessons yet</span>
+                      <div className="bg-[#F5F7FA] border-t border-[#D9DEE7] p-2 space-y-2">
+                        {/* Lessons Section */}
+                        <div>
+                          <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 pb-1">
+                            <span>Lessons ({topicLessons.length})</span>
                             <button
                               onClick={() => handleAddLesson(t.id)}
-                              className="text-[#3156D3] font-semibold hover:underline cursor-pointer"
+                              className="text-[#3156D3] font-semibold hover:underline flex items-center gap-0.5 cursor-pointer lowercase"
                             >
-                              + Add lesson
+                              <Plus className="w-3 h-3" /> add lesson
                             </button>
                           </div>
-                        ) : (
-                          topicLessons.map((l) => {
-                            const isLessonSelected = selectedType === 'lesson' && selectedId === l.id;
-                            const resCount = resources.filter((r) => r.lessonId === l.id).length;
+                          {topicLessons.length === 0 ? (
+                            <div className="py-1.5 px-2 text-[11px] text-[#737D8C] bg-white/60 rounded border border-dashed border-gray-200">
+                              No lessons yet
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              {topicLessons.map((l) => {
+                                const isLessonSelected = selectedType === 'lesson' && selectedId === l.id;
+                                const resCount = resources.filter((r) => r.lessonId === l.id).length;
 
-                            return (
-                              <div
-                                key={l.id}
-                                onClick={() => selectLessonNode(l)}
-                                className={`py-1.5 px-2.5 my-0.5 rounded flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                                  isLessonSelected
-                                    ? 'bg-[#E8EEFF] text-[#2646B8] font-semibold'
-                                    : 'hover:bg-white text-[#5B6472]'
-                                }`}
+                                return (
+                                  <div
+                                    key={l.id}
+                                    onClick={() => selectLessonNode(l)}
+                                    className={`py-1.5 px-2.5 rounded flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                                      isLessonSelected
+                                        ? 'bg-[#E8EEFF] text-[#2646B8] font-semibold border-l-2 border-l-[#2646B8]'
+                                        : 'hover:bg-white text-[#5B6472]'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 truncate">
+                                      <FileText className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+                                      <span className="truncate">{l.title}</span>
+                                    </div>
+                                    <span className="text-[10px] text-[#737D8C] shrink-0 bg-white px-1.5 py-0.5 rounded border border-gray-200">
+                                      {resCount} res
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Assessments Section */}
+                        <div className="pt-1.5 border-t border-gray-200/80">
+                          <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 pb-1">
+                            <span>Assessments ({topicAssessments.length})</span>
+                            <button
+                              onClick={() =>
+                                onNavigate('assessment_editor', {
+                                  courseId: course.id,
+                                  topicId: t.id,
+                                })
+                              }
+                              className="text-indigo-600 font-semibold hover:underline flex items-center gap-0.5 cursor-pointer lowercase"
+                            >
+                              <Plus className="w-3 h-3" /> add assessment
+                            </button>
+                          </div>
+                          {topicAssessments.length === 0 ? (
+                            <div className="py-1.5 px-2 text-[11px] text-[#737D8C] bg-white/60 rounded border border-dashed border-gray-200 flex items-center justify-between">
+                              <span>No assessments yet</span>
+                              <button
+                                onClick={() =>
+                                  onNavigate('assessment_editor', {
+                                    courseId: course.id,
+                                    topicId: t.id,
+                                  })
+                                }
+                                className="text-indigo-600 font-semibold hover:underline cursor-pointer"
                               >
-                                <div className="flex items-center gap-2 truncate">
-                                  <FileText className="w-3.5 h-3.5 shrink-0" />
-                                  <span className="truncate">{l.title}</span>
+                                + Add quiz
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              {topicAssessments.map((a) => (
+                                <div
+                                  key={a.id}
+                                  onClick={() =>
+                                    onNavigate('assessment_editor', {
+                                      assessmentId: a.id,
+                                    })
+                                  }
+                                  className="py-1.5 px-2.5 rounded bg-white hover:bg-indigo-50/50 border border-gray-200 flex items-center justify-between text-xs transition-colors cursor-pointer group"
+                                >
+                                  <div className="flex items-center gap-2 truncate">
+                                    <CheckSquare className="w-3.5 h-3.5 shrink-0 text-indigo-600" />
+                                    <span className="truncate text-gray-900 group-hover:text-indigo-700 font-medium">
+                                      {a.title}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                      {a.type}
+                                    </span>
+                                    <span className="text-[10px] text-gray-500">
+                                      {a.questionIds?.length || 0}Q
+                                    </span>
+                                  </div>
                                 </div>
-                                <span className="text-[10px] text-[#737D8C] shrink-0 bg-white px-1.5 py-0.5 rounded border border-gray-200">
-                                  {resCount} res
-                                </span>
-                              </div>
-                            );
-                          })
-                        )}
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -541,16 +634,94 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#D9DEE7] flex items-center justify-between">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    leftIcon={<Plus className="w-3.5 h-3.5" />}
-                    onClick={() => handleAddLesson(currentTopic.id)}
-                  >
-                    Add lesson under this topic
-                  </Button>
+                {/* Topic Assessments section */}
+                <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#1F2937] flex items-center gap-1.5">
+                        <CheckSquare className="w-4 h-4 text-indigo-600" />
+                        Topic Assessments & Quizzes ({assessments.filter((a) => a.topicId === currentTopic.id).length})
+                      </h4>
+                      <p className="text-xs text-[#5B6472] mt-0.5">
+                        Assessments configured to measure learner mastery for this unit.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<Plus className="w-3.5 h-3.5" />}
+                      onClick={() =>
+                        onNavigate('assessment_editor', {
+                          courseId: course.id,
+                          topicId: currentTopic.id,
+                        })
+                      }
+                    >
+                      New assessment
+                    </Button>
+                  </div>
+                  {assessments.filter((a) => a.topicId === currentTopic.id).length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {assessments
+                        .filter((a) => a.topicId === currentTopic.id)
+                        .map((a) => (
+                          <div
+                            key={a.id}
+                            onClick={() => onNavigate('assessment_editor', { assessmentId: a.id })}
+                            className="p-2.5 rounded-lg bg-white border border-gray-200 hover:border-indigo-300 transition-colors cursor-pointer flex items-center justify-between"
+                          >
+                            <div className="min-w-0 pr-2">
+                              <p className="text-xs font-semibold text-gray-900 truncate">{a.title}</p>
+                              <p className="text-[11px] text-gray-500 capitalize">
+                                {a.type} • {a.questionIds?.length || 0} questions
+                              </p>
+                            </div>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                a.status === 'published'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}
+                            >
+                              {a.status}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500 italic bg-white p-2.5 rounded-lg border border-dashed border-gray-200">
+                      No assessments created for this topic yet. Click "New assessment" to create a diagnostic or topic quiz.
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-[#D9DEE7] flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<Plus className="w-3.5 h-3.5" />}
+                      onClick={() => handleAddLesson(currentTopic.id)}
+                    >
+                      Add lesson
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<CheckSquare className="w-3.5 h-3.5 text-indigo-600" />}
+                      onClick={() =>
+                        onNavigate('assessment_editor', {
+                          courseId: course.id,
+                          topicId: currentTopic.id,
+                        })
+                      }
+                    >
+                      Add assessment
+                    </Button>
+                  </div>
                   <Button
                     type="submit"
                     variant="primary"
