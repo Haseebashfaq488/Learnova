@@ -307,6 +307,9 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
         topicTitle={topic?.title || 'Topic'}
         courseTitle={course?.title || 'Course'}
         lessonContent={lesson?.description || ''}
+        courseId={course?.id || courseId}
+        topicId={topic?.id || topicId}
+        resources={lessonResources}
       />
     </div>
   );

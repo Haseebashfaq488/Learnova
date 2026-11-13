@@ -71,6 +71,52 @@ export interface AICandidateRejectResponse {
   message: string;
 }
 
+export interface AIAttachmentItem {
+  id?: string;
+  title: string;
+  type: string;
+  content?: string;
+}
+
+export interface AISessionCreateRequest {
+  session_type: 'question_generation' | 'lesson_tutoring';
+  course_id: string;
+  topic_id?: string;
+  lesson_id?: string;
+  title?: string;
+  attachments?: AIAttachmentItem[];
+}
+
+export interface AISessionResponse {
+  id: string;
+  session_type: 'question_generation' | 'lesson_tutoring';
+  user_id: string;
+  course_id: string;
+  topic_id?: string;
+  lesson_id?: string;
+  agy_conversation_id?: string;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AISessionMessageItem {
+  id: string;
+  session_id: string;
+  sender: 'user' | 'agent' | 'system';
+  content: string;
+  attachments: AIAttachmentItem[];
+  raw_metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface AISendSessionMessageRequest {
+  content: string;
+  mode?: 'simplify' | 'analogy' | 'example' | 'custom' | 'refine_questions';
+  attachments?: AIAttachmentItem[];
+}
+
 class AIApiClient {
   private getHeaders(): HeadersInit {
     const token = authApi.getAccessToken();
@@ -168,6 +214,50 @@ class AIApiClient {
 
     if (!res.ok) {
       throw new Error(`Failed to reject candidate question (${res.status})`);
+    }
+
+    return res.json();
+  }
+
+  public async getOrCreateSession(req: AISessionCreateRequest): Promise<AISessionResponse> {
+    const res = await fetch('/api/v1/ai/sessions', {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(req),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to initialize AI session (${res.status})`);
+    }
+
+    return res.json();
+  }
+
+  public async getSessionMessages(sessionId: string): Promise<AISessionMessageItem[]> {
+    const res = await fetch(`/api/v1/ai/sessions/${sessionId}/messages`, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to load session messages (${res.status})`);
+    }
+
+    return res.json();
+  }
+
+  public async sendSessionMessage(
+    sessionId: string,
+    req: AISendSessionMessageRequest
+  ): Promise<AISessionMessageItem> {
+    const res = await fetch(`/api/v1/ai/sessions/${sessionId}/messages`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(req),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to send message to AI session (${res.status})`);
     }
 
     return res.json();

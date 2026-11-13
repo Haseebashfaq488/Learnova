@@ -79,12 +79,71 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
   const [rejectModalId, setRejectModalId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  // When course changes, update topic selection
+  // Persistent AGY session state for iterative question refinement
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [refinementPrompt, setRefinementPrompt] = useState('');
+  const [isRefining, setIsRefining] = useState(false);
+
+  // When course changes, update topic selection and reset session
   const handleCourseChange = (id: string) => {
     setSelectedCourseId(id);
+    setSessionId(null);
     const newTopics = topics.filter((t) => t.courseId === id);
     if (newTopics.length > 0) {
       setSelectedTopicId(newTopics[0].id);
+    }
+  };
+
+  const handleRefineSession = async () => {
+    if (!refinementPrompt.trim() || isRefining) return;
+    setIsRefining(true);
+    try {
+      let currentSessId = sessionId;
+      if (!currentSessId) {
+        const activeTopic = topics.find((t) => t.id === selectedTopicId);
+        const sess = await aiApi.getOrCreateSession({
+          session_type: 'question_generation',
+          course_id: selectedCourseId,
+          topic_id: selectedTopicId,
+          title: `Question Generation: ${activeTopic?.title || 'Topic'}`,
+        });
+        currentSessId = sess.id;
+        setSessionId(sess.id);
+      }
+
+      await aiApi.sendSessionMessage(currentSessId, {
+        content: refinementPrompt,
+        mode: 'refine_questions',
+      });
+
+      // Reload fresh candidates from DB
+      const res = await aiApi.listCandidates(selectedCourseId, selectedTopicId, 'pending_review');
+      const mapped: AICandidateQuestion[] = res.items.map((cand) => ({
+        id: cand.id,
+        courseId: cand.course_id,
+        topicId: cand.topic_id,
+        prompt: cand.prompt,
+        type: cand.type as QuestionType,
+        difficulty: cand.difficulty,
+        points: cand.points,
+        explanation: cand.explanation || '',
+        sourceContext: cand.source_context || '',
+        options: cand.payload?.options,
+        correctBool: cand.answer_key?.correct_bool,
+        acceptedAnswers: cand.answer_key?.accepted_answers,
+        matchingPairs: cand.payload?.matching_pairs,
+        expectedRubric: cand.answer_key?.expected_rubric,
+        status: cand.status as 'pending_review',
+        createdAt: cand.created_at,
+      }));
+      onSaveGeneratedCandidates(mapped);
+      setRefinementPrompt('');
+      onNotify('success', 'AGY agent refined questions in the active session.');
+    } catch (err: any) {
+      console.error('Refinement error:', err);
+      onNotify('error', err?.message || 'Could not refine questions in session.');
+    } finally {
+      setIsRefining(false);
     }
   };
 
@@ -433,6 +492,46 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
           <span className="text-xs text-[#737D8C]">
             Total candidates generated: {candidates.length}
           </span>
+        </div>
+
+        {/* Iterative AGY Persistent Session Refinement Bar */}
+        <div className="bg-[#F8FAFC] border border-[#D9DEE7] rounded-xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#3156D3]" />
+              <span className="text-xs font-bold text-[#1F2937]">
+                Iterative Question Refinement (Persistent AGY Session)
+              </span>
+            </div>
+            <span className="text-[11px] text-[#737D8C]">
+              Refine questions or add new formats in the same conversation
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={refinementPrompt}
+              onChange={(e) => setRefinementPrompt(e.target.value)}
+              placeholder="e.g. 'Make question 2 harder', 'Add 2 fill-in-the-blank questions', 'Replace option D with a trickier distractor'..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleRefineSession();
+                }
+              }}
+              disabled={isRefining}
+              className="flex-1 bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2 focus:border-[#3156D3] focus:outline-none"
+            />
+            <Button
+              variant="secondary"
+              isLoading={isRefining}
+              disabled={!refinementPrompt.trim() || isRefining}
+              onClick={handleRefineSession}
+              leftIcon={<Sparkles className="w-3.5 h-3.5 text-[#3156D3]" />}
+            >
+              {isRefining ? 'Refining...' : 'Refine with AGY'}
+            </Button>
+          </div>
         </div>
 
         {pendingList.length === 0 ? (
