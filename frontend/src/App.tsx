@@ -5,6 +5,12 @@ import {
   ToastMessage,
 } from './components/teacher/TeacherLayout';
 import { storage, CURRENT_TEACHER } from './services/storageService';
+import {
+  parseUrlToRoute,
+  pushHistoryState,
+  replaceHistoryState,
+  AppRouteState,
+} from './services/routerService';
 import { authApi, mapUserResponseToStudentUser, UserResponse } from './services/api/authApi';
 import {
   coursesApi,
@@ -121,6 +127,13 @@ import {
 } from './types';
 
 export default function App() {
+  // Parse initial route from browser URL
+  const [initialRoute] = useState<AppRouteState | null>(() => {
+    return typeof window !== 'undefined'
+      ? parseUrlToRoute(window.location.pathname, window.location.search)
+      : null;
+  });
+
   // Session & Authentication State
   const [currentUserAccount, setCurrentUserAccount] = useState<UserResponse | null>(() => authApi.getStoredUser());
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -128,30 +141,54 @@ export default function App() {
   });
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
-  // Portal Mode: persisted to localStorage to survive browser reloads
+  // Portal Mode: parsed from URL, or persisted to localStorage to survive browser reloads
   const [portalMode, setPortalModeState] = useState<'student' | 'teacher' | 'admin'>(() => {
+    if (initialRoute?.portal) return initialRoute.portal;
     return storage.getPersistedPortalMode() || 'student';
   });
 
-  const setPortalMode = (mode: 'student' | 'teacher' | 'admin') => {
+  const setPortalMode = (mode: 'student' | 'teacher' | 'admin', pushHistory = true) => {
     setPortalModeState(mode);
     storage.setPersistedPortalMode(mode);
+    if (pushHistory) {
+      const targetPage = mode === 'student' ? studentPage : mode === 'teacher' ? teacherPage : adminPage;
+      const targetParams = mode === 'student' ? studentNavParams : mode === 'teacher' ? teacherNavParams : adminNavParams;
+      pushHistoryState(mode, targetPage, targetParams);
+    }
   };
 
   // Student State
   const [currentStudent, setCurrentStudent] = useState<StudentUser | null>(() => storage.getStudentUser());
-  const [studentPage, setStudentPage] = useState<StudentNavigationPage>('dashboard');
-  const [studentNavParams, setStudentNavParams] = useState<Record<string, string>>({});
+  const [studentPage, setStudentPage] = useState<StudentNavigationPage>(() => {
+    if (initialRoute?.portal === 'student') return initialRoute.page as StudentNavigationPage;
+    return 'dashboard';
+  });
+  const [studentNavParams, setStudentNavParams] = useState<Record<string, string>>(() => {
+    if (initialRoute?.portal === 'student') return initialRoute.params || {};
+    return {};
+  });
   const [latestResult, setLatestResult] = useState<StudentAssessmentResult | null>(null);
 
   // Teacher State
-  const [teacherPage, setTeacherPage] = useState<TeacherNavigationPage>('overview');
-  const [teacherNavParams, setTeacherNavParams] = useState<Record<string, string>>({});
+  const [teacherPage, setTeacherPage] = useState<TeacherNavigationPage>(() => {
+    if (initialRoute?.portal === 'teacher') return initialRoute.page as TeacherNavigationPage;
+    return 'overview';
+  });
+  const [teacherNavParams, setTeacherNavParams] = useState<Record<string, string>>(() => {
+    if (initialRoute?.portal === 'teacher') return initialRoute.params || {};
+    return {};
+  });
 
   // Admin State
   const [currentAdmin, setCurrentAdmin] = useState<UserAccount | null>(() => storage.getAdminUser());
-  const [adminPage, setAdminPage] = useState<AdminNavigationPage>('dashboard');
-  const [adminNavParams, setAdminNavParams] = useState<Record<string, string>>({});
+  const [adminPage, setAdminPage] = useState<AdminNavigationPage>(() => {
+    if (initialRoute?.portal === 'admin') return initialRoute.page as AdminNavigationPage;
+    return 'dashboard';
+  });
+  const [adminNavParams, setAdminNavParams] = useState<Record<string, string>>(() => {
+    if (initialRoute?.portal === 'admin') return initialRoute.params || {};
+    return {};
+  });
   const [allUsers, setAllUsers] = useState<UserAccount[]>(() => storage.getUsers());
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>(() => storage.getAuditEvents());
   const [serviceHealth, setServiceHealth] = useState<ServiceHealthCheck[]>(() => storage.getServiceHealth());
@@ -206,28 +243,37 @@ export default function App() {
   };
 
   // Student Navigation
-  const handleStudentNavigate = (page: StudentNavigationPage, params?: Record<string, string>) => {
+  const handleStudentNavigate = (page: StudentNavigationPage, params?: Record<string, string>, pushHistory = true) => {
     setStudentPage(page);
     if (params) {
       setStudentNavParams((prev) => ({ ...prev, ...params }));
+    }
+    if (pushHistory) {
+      pushHistoryState('student', page, params);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Teacher Navigation
-  const handleTeacherNavigate = (page: string, params?: Record<string, string>) => {
+  const handleTeacherNavigate = (page: string, params?: Record<string, string>, pushHistory = true) => {
     setTeacherPage(page as TeacherNavigationPage);
     if (params) {
       setTeacherNavParams((prev) => ({ ...prev, ...params }));
+    }
+    if (pushHistory) {
+      pushHistoryState('teacher', page, params);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Admin Navigation
-  const handleAdminNavigate = (page: AdminNavigationPage, params?: Record<string, string>) => {
+  const handleAdminNavigate = (page: AdminNavigationPage, params?: Record<string, string>, pushHistory = true) => {
     setAdminPage(page);
     if (params) {
       setAdminNavParams((prev) => ({ ...prev, ...params }));
+    }
+    if (pushHistory) {
+      pushHistoryState('admin', page, params);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -837,14 +883,15 @@ export default function App() {
           setCurrentUserAccount(user);
           setIsAuthenticated(true);
           const savedPortal = storage.getPersistedPortalMode();
+          const targetPortal = (initialRoute?.portal as 'student' | 'teacher' | 'admin') || savedPortal;
           if (user.role === 'student') {
             const student = mapUserResponseToStudentUser(user);
             setCurrentStudent(student);
             storage.saveStudentUser(student);
-            setPortalMode(savedPortal || 'student');
+            setPortalMode(targetPortal || 'student', false);
             refreshStudentCourseData();
           } else if (user.role === 'teacher') {
-            setPortalMode(savedPortal || 'teacher');
+            setPortalMode(targetPortal || 'teacher', false);
             refreshTeacherCourseData();
           } else if (user.role === 'administrator') {
             const adminAccount: UserAccount = {
@@ -860,7 +907,7 @@ export default function App() {
             };
             setCurrentAdmin(adminAccount);
             storage.saveAdminUser(adminAccount);
-            setPortalMode(savedPortal || 'admin');
+            setPortalMode(targetPortal || 'admin', false);
             refreshAdminData();
           }
         } else {
@@ -886,6 +933,44 @@ export default function App() {
     };
   }, []);
 
+  // Synchronize browser history and handle Back/Forward button clicks (popstate)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const routeState = (event.state as AppRouteState) || parseUrlToRoute(window.location.pathname, window.location.search);
+      if (!routeState) return;
+
+      setPortalModeState(routeState.portal);
+      storage.setPersistedPortalMode(routeState.portal);
+
+      if (routeState.portal === 'student') {
+        setStudentPage(routeState.page as StudentNavigationPage);
+        setStudentNavParams(routeState.params || {});
+      } else if (routeState.portal === 'teacher') {
+        setTeacherPage(routeState.page as TeacherNavigationPage);
+        setTeacherNavParams(routeState.params || {});
+      } else if (routeState.portal === 'admin') {
+        setAdminPage(routeState.page as AdminNavigationPage);
+        setAdminNavParams(routeState.params || {});
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Initial URL synchronization: Ensure the browser URL accurately reflects active portal and page
+    if (typeof window !== 'undefined') {
+      const activePortal = initialRoute?.portal || portalMode;
+      const activePage = activePortal === 'student' ? studentPage : activePortal === 'teacher' ? teacherPage : adminPage;
+      const activeParams = activePortal === 'student' ? studentNavParams : activePortal === 'teacher' ? teacherNavParams : adminNavParams;
+      replaceHistoryState(activePortal, activePage, activeParams);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   const handleAuthSuccess = (user: UserResponse, token: string) => {
     authApi.setAccessToken(token);
     authApi.setStoredUser(user);
@@ -896,13 +981,17 @@ export default function App() {
       const student = mapUserResponseToStudentUser(user);
       setCurrentStudent(student);
       storage.saveStudentUser(student);
-      setPortalMode('student');
-      setStudentPage('dashboard');
+      setPortalMode('student', false);
+      const targetPage = initialRoute?.portal === 'student' ? (initialRoute.page as StudentNavigationPage) : 'dashboard';
+      setStudentPage(targetPage);
+      pushHistoryState('student', targetPage, initialRoute?.portal === 'student' ? initialRoute.params : undefined);
       refreshStudentCourseData();
       notify('success', `Welcome back, ${user.full_name}!`);
     } else if (user.role === 'teacher') {
-      setPortalMode('teacher');
-      setTeacherPage('overview');
+      setPortalMode('teacher', false);
+      const targetPage = initialRoute?.portal === 'teacher' ? (initialRoute.page as TeacherNavigationPage) : 'overview';
+      setTeacherPage(targetPage);
+      pushHistoryState('teacher', targetPage, initialRoute?.portal === 'teacher' ? initialRoute.params : undefined);
       refreshTeacherCourseData();
       notify('success', `Welcome to the Teacher Portal, ${user.full_name}!`);
     } else if (user.role === 'administrator') {
@@ -919,8 +1008,10 @@ export default function App() {
       };
       setCurrentAdmin(adminAccount);
       storage.saveAdminUser(adminAccount);
-      setPortalMode('admin');
-      setAdminPage('dashboard');
+      setPortalMode('admin', false);
+      const targetPage = initialRoute?.portal === 'admin' ? (initialRoute.page as AdminNavigationPage) : 'dashboard';
+      setAdminPage(targetPage);
+      pushHistoryState('admin', targetPage, initialRoute?.portal === 'admin' ? initialRoute.params : undefined);
       refreshAdminData();
       notify('success', `Administrator access granted: ${user.full_name}`);
     }
@@ -940,6 +1031,7 @@ export default function App() {
     setCurrentAdmin(null);
     setIsAuthenticated(false);
     setStudentPage('dashboard');
+    replaceHistoryState('student', 'dashboard');
     notify('info', 'You have been signed out.');
   };
 
@@ -1261,7 +1353,9 @@ export default function App() {
           onSwitchPortal={(portal) => {
             if (portal === 'admin') {
               setCurrentAdmin(storage.getAdminUser());
+              setPortalMode('admin', false);
               setAdminPage('dashboard');
+              pushHistoryState('admin', 'dashboard');
               refreshAdminData();
               notify('success', 'Authenticated with Administrator credentials.');
             } else {
