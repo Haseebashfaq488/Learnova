@@ -11,14 +11,17 @@ import {
   X,
   LogOut,
   ChevronRight,
+  ChevronLeft,
   ArrowRightLeft,
   CheckCircle2,
   AlertCircle,
   Shield,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { UserAccount } from '../../types';
 import { ToastMessage } from '../teacher/TeacherLayout';
+import { DesignStudioWidget } from '../ui/DesignStudioWidget';
 
 export type AdminNavigationPage =
   | 'dashboard'
@@ -60,6 +63,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   breadcrumbs = [],
   children,
 }) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState<boolean>(() => {
     try {
@@ -171,28 +175,58 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         />
       )}
 
-      {/* Desktop & Mobile Sidebar (w-64) */}
+      {/* Desktop & Mobile Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#181C24] border-r border-[#D9DEE7] dark:border-[#2D3545] flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-white dark:bg-[#181C24] border-r border-[#D9DEE7] dark:border-[#2D3545] flex flex-col justify-between transition-all duration-300 ease-in-out lg:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } ${sidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-64 w-64'}`}
       >
         <div>
           {/* Brand Header */}
-          <div className="h-16 px-5 border-b border-[#D9DEE7] dark:border-[#2D3545] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
-                <Shield className="w-4 h-4" />
+          <div
+            className={`h-16 border-b border-[#D9DEE7] dark:border-[#2D3545] flex items-center justify-between transition-all duration-200 ${
+              sidebarCollapsed ? 'px-2' : 'px-4'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div
+                className={`rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 text-white flex items-center justify-center font-bold shadow-sm shrink-0 ${
+                  sidebarCollapsed ? 'w-7 h-7' : 'w-8 h-8 text-base'
+                }`}
+                title="Learnova Admin Governance"
+              >
+                <Shield className={sidebarCollapsed ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
               </div>
-              <div>
-                <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight">
-                  Learnova
-                </span>
-                <span className="block text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                  Admin Governance
-                </span>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight block truncate">
+                    Learnova
+                  </span>
+                  <span className="block text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                    Admin Governance
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Desktop Collapse Toggle */}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`hidden lg:flex text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer ${
+                sidebarCollapsed ? 'p-1' : 'p-1.5'
+              }`}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* Mobile Close Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
@@ -214,23 +248,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                  title={sidebarCollapsed ? item.label : undefined}
+                  className={`w-full group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 font-bold'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60'
-                  }`}
+                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 font-bold shadow-2xs'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:translate-x-0.5'
+                  } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
                 >
+                  {isActive && <span className="nav-indicator-pill" aria-hidden="true" />}
                   <div className="flex items-center gap-2.5">
                     <Icon
-                      className={`w-4 h-4 shrink-0 ${
+                      className={`w-4 h-4 shrink-0 transition-colors ${
                         isActive
                           ? 'text-purple-600 dark:text-purple-400'
-                          : 'text-gray-400 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
                       }`}
                     />
-                    <span>{item.label}</span>
+                    {!sidebarCollapsed && <span>{item.label}</span>}
                   </div>
-                  {item.badge && (
+                  {!sidebarCollapsed && item.badge && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                       {item.badge}
                     </span>
@@ -239,6 +275,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               );
             })}
           </nav>
+
+          {/* Live System Health Badge (Expanded) */}
+          {!sidebarCollapsed && (
+            <div className="mx-3 my-2 p-2 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/40 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                100% Operational
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Bottom Section: Portal Switcher, Profile, Theme Toggle */}
@@ -307,7 +356,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <div
+        className={`flex-1 transition-all duration-300 ease-in-out flex flex-col min-h-screen ${
+          sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+        }`}
+      >
         {/* Global Header */}
         <header className="sticky top-0 z-30 h-16 bg-white dark:bg-[#181C24] border-b border-[#D9DEE7] dark:border-[#2D3545] px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -390,9 +443,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {/* Page Content Viewport */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-          {children}
+          <div className="view-enter-animation">
+            {children}
+          </div>
         </main>
       </div>
+
+      {/* Floating Design Studio Customizer Widget */}
+      <DesignStudioWidget />
     </div>
   );
 };

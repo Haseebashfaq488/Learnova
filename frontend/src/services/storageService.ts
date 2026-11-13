@@ -570,6 +570,7 @@ const SEED_QUESTIONS: QuestionData[] = [
     id: 'q-mc-1',
     courseId: 'course-cs101',
     topicId: 'topic-syntax',
+    lessonId: 'lesson-vars-1',
     type: 'multiple_choice',
     prompt: 'Which of the following is true regarding variable assignment in Python?',
     difficulty: 'easy',
@@ -590,6 +591,7 @@ const SEED_QUESTIONS: QuestionData[] = [
     id: 'q-tf-1',
     courseId: 'course-cs101',
     topicId: 'topic-syntax',
+    lessonId: 'lesson-vars-2',
     type: 'true_false',
     prompt: 'In Python, strings are immutable and cannot have individual characters modified in-place.',
     difficulty: 'easy',
@@ -605,6 +607,7 @@ const SEED_QUESTIONS: QuestionData[] = [
     id: 'q-fb-1',
     courseId: 'course-cs101',
     topicId: 'topic-control',
+    lessonId: 'lesson-ctrl-1',
     type: 'fill_blank',
     prompt: 'In a conditional statement, the keyword used to check additional mutually exclusive conditions after "if" is [blank].',
     difficulty: 'easy',
@@ -621,6 +624,7 @@ const SEED_QUESTIONS: QuestionData[] = [
     id: 'q-mat-1',
     courseId: 'course-cs101',
     topicId: 'topic-control',
+    lessonId: 'lesson-ctrl-2',
     type: 'matching',
     prompt: 'Match each loop control statement with its execution behavior:',
     difficulty: 'medium',
@@ -640,6 +644,7 @@ const SEED_QUESTIONS: QuestionData[] = [
     id: 'q-sa-1',
     courseId: 'course-cs101',
     topicId: 'topic-functions',
+    lessonId: 'lesson-func-1',
     type: 'short_answer',
     prompt: 'Explain what happens when a mutable object (like a list) is passed as a default argument in a function definition.',
     difficulty: 'hard',
@@ -753,6 +758,7 @@ const SEED_AI_CANDIDATES: AICandidateQuestion[] = [
     id: 'cand-1',
     courseId: 'course-cs101',
     topicId: 'topic-collections',
+    lessonId: 'lesson-vars-1',
     prompt: 'Which operation creates a shallow copy of a Python dictionary?',
     type: 'multiple_choice',
     difficulty: 'medium',
@@ -772,6 +778,7 @@ const SEED_AI_CANDIDATES: AICandidateQuestion[] = [
     id: 'cand-2',
     courseId: 'course-cs101',
     topicId: 'topic-collections',
+    lessonId: 'lesson-vars-2',
     prompt: 'Dictionary keys in Python must be hashable and therefore immutable.',
     type: 'true_false',
     difficulty: 'easy',
@@ -1638,6 +1645,7 @@ class StorageService {
           id: `q-approved-${cand.id}`,
           courseId: cand.courseId,
           topicId: cand.topicId,
+          lessonId: cand.lessonId,
           type: cand.type,
           prompt: cand.prompt,
           difficulty: cand.difficulty,
@@ -1657,6 +1665,17 @@ class StorageService {
       }
     }
     return cand;
+  }
+
+  deleteCandidate(id: string): void {
+    const list = this.getCandidates().filter((c) => c.id !== id);
+    this.set('candidates', list);
+  }
+
+  deleteCandidates(ids: string[]): void {
+    const idSet = new Set(ids);
+    const list = this.getCandidates().filter((c) => !idSet.has(c.id));
+    this.set('candidates', list);
   }
 
   // Assessments

@@ -33,22 +33,46 @@ class AgyCliAdapter:
         self.poll_timeout_seconds = poll_timeout_seconds
 
     @staticmethod
-    def _discover_cli() -> str:
+    def _discover_cli() -> Any:
         """Locate agy or agentapi executable on system PATH or default directory."""
-        if shutil.which("agy"):
-            return "agy"
-        if shutil.which("agentapi"):
-            return "agentapi"
+        # Direct language_server binary on Windows avoids cmd.exe argument newline splitting
+        userprofile = Path(os.environ.get("USERPROFILE", "C:/Users/PMYLS"))
+        localappdata = Path(os.environ.get("LOCALAPPDATA", str(userprofile / "AppData" / "Local")))
+        direct_exe = localappdata / "Programs" / "antigravity" / "resources" / "bin" / "language_server.exe"
+        if direct_exe.exists():
+            return [str(direct_exe), "agentapi"]
 
         candidate_bat = DEFAULT_BIN_DIR / "agentapi.bat"
         if candidate_bat.exists():
+            try:
+                bat_text = candidate_bat.read_text(encoding="utf-8", errors="ignore")
+                m = re.search(r'"([^"]+language_server\.exe)"', bat_text)
+                if m and Path(m.group(1)).exists():
+                    return [m.group(1), "agentapi"]
+            except Exception:
+                pass
             return str(candidate_bat)
 
         candidate_cmd = DEFAULT_BIN_DIR / "agy.cmd"
         if candidate_cmd.exists():
             return str(candidate_cmd)
 
+        if shutil.which("agy"):
+            return "agy"
+        if shutil.which("agentapi"):
+            return "agentapi"
+
         return "agentapi"
+
+    def _build_cmd(self, subcmd: str) -> List[str]:
+        if isinstance(self.cli_command, (list, tuple)):
+            return list(self.cli_command) + [subcmd]
+        return [str(self.cli_command), subcmd]
+
+    def _should_use_shell(self) -> bool:
+        cmd_parts = [self.cli_command] if isinstance(self.cli_command, str) else list(self.cli_command)
+        first_part = str(cmd_parts[0]).lower()
+        return first_part.endswith(".bat") or first_part.endswith(".cmd")
 
     def new_conversation(
         self,
@@ -57,7 +81,7 @@ class AgyCliAdapter:
         model: Optional[str] = None,
     ) -> Optional[str]:
         """Start a new agent conversation via agy new-conversation and return the conversation_id."""
-        cmd = [self.cli_command, "new-conversation"]
+        cmd = self._build_cmd("new-conversation")
         chosen_model = model or self.default_model
         if chosen_model:
             cmd.append(f"--model={chosen_model}")
@@ -72,7 +96,7 @@ class AgyCliAdapter:
                 cmd,
                 capture_output=True,
                 text=True,
-                shell=True,
+                shell=self._should_use_shell(),
                 timeout=20,
             )
             if proc.returncode == 0 and proc.stdout:
@@ -94,7 +118,7 @@ class AgyCliAdapter:
         title: Optional[str] = None,
     ) -> bool:
         """Send follow-up message into an existing conversation session."""
-        cmd = [self.cli_command, "send-message"]
+        cmd = self._build_cmd("send-message")
         if title:
             clean_title = re.sub(r'[\r\n"]', " ", title)[:80].strip()
             cmd.append(f'--title="{clean_title}"')
@@ -106,7 +130,7 @@ class AgyCliAdapter:
                 cmd,
                 capture_output=True,
                 text=True,
-                shell=True,
+                shell=self._should_use_shell(),
                 timeout=15,
             )
             return proc.returncode == 0
@@ -120,9 +144,10 @@ class AgyCliAdapter:
         previous_step_count: int = 0,
         timeout_seconds: Optional[float] = None,
     ) -> Tuple[Optional[str], int]:
-        """Poll the conversation's transcript.jsonl until a new response is written."""
+        """Poll the conversation's transcript.jsonl until a completed model response is written."""
         timeout = timeout_seconds or self.poll_timeout_seconds
         transcript_path = self.brain_dir / conversation_id / ".system_generated" / "logs" / "transcript.jsonl"
+        full_transcript_path = self.brain_dir / conversation_id / ".system_generated" / "logs" / "transcript_full.jsonl"
         start_time = time.time()
 
         last_content = None
@@ -134,22 +159,31 @@ class AgyCliAdapter:
                     lines = transcript_path.read_text(encoding="utf-8", errors="replace").strip().splitlines()
                     if len(lines) > previous_step_count:
                         new_step_count = len(lines)
-                        # Scan backward for the most recent MODEL response
-                        for line in reversed(lines):
+                        # Scan backward for the most recent completed MODEL PLANNER_RESPONSE (not tool outputs)
+                        for idx in range(len(lines) - 1, -1, -1):
+                            line = lines[idx]
                             try:
                                 record = json.loads(line)
-                                if record.get("source") == "MODEL" and record.get("status") == "DONE":
+                                if (
+                                    record.get("source") == "MODEL"
+                                    and record.get("status") == "DONE"
+                                    and record.get("type") == "PLANNER_RESPONSE"
+                                    and not record.get("tool_calls")
+                                ):
                                     content = record.get("content")
-                                    if content:
+                                    # If truncated, resolve full content from transcript_full.jsonl
+                                    if "content" in record.get("truncated_fields", []) and full_transcript_path.exists():
+                                        try:
+                                            full_lines = full_transcript_path.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+                                            if idx < len(full_lines):
+                                                full_rec = json.loads(full_lines[idx])
+                                                content = full_rec.get("content") or content
+                                        except Exception:
+                                            pass
+                                    if content and content.strip():
                                         return content.strip(), new_step_count
-                                    # Fallback to thinking or tool calls if pure text content is blank
-                                    thinking = record.get("thinking")
-                                    if thinking and not last_content:
-                                        last_content = thinking.strip()
                             except Exception:
                                 continue
-                        if last_content:
-                            return last_content, new_step_count
                 except Exception as exc:
                     logger.debug("Error reading transcript: %s", exc)
 

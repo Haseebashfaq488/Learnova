@@ -9,7 +9,8 @@ def test_agy_cli_discovery_and_running_command():
     """Verify that agy / agentapi CLI is discoverable and responds to system calls."""
     adapter = AgyCliAdapter()
     assert adapter.cli_command is not None
-    assert "agentapi" in adapter.cli_command.lower() or "agy" in adapter.cli_command.lower()
+    cmd_str = " ".join(adapter.cli_command) if isinstance(adapter.cli_command, list) else str(adapter.cli_command)
+    assert "agentapi" in cmd_str.lower() or "agy" in cmd_str.lower()
 
 
 def test_agy_live_new_conversation_execution():

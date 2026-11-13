@@ -274,3 +274,66 @@ def test_tutoring_mode_worked_example_and_analogy():
     assert agent_msg.sender == "agent"
     assert "Worked Example: Recursion" in agent_msg.content
     assert "```python" in agent_msg.content
+
+
+def test_agy_adapter_transcript_filtering_and_shell_resolution(tmp_path):
+    """Verify wait_for_latest_response ignores tool outputs and resolves true PLANNER_RESPONSE."""
+    import json
+    conv_id = "test-conv-filter"
+    logs_dir = tmp_path / conv_id / ".system_generated" / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    transcript_file = logs_dir / "transcript.jsonl"
+    transcript_full_file = logs_dir / "transcript_full.jsonl"
+
+    adapter = AgyCliAdapter(cli_command="test-cli", brain_dir=tmp_path)
+    assert adapter._should_use_shell() is False
+
+    bat_adapter = AgyCliAdapter(cli_command="C:/agentapi.bat", brain_dir=tmp_path)
+    assert bat_adapter._should_use_shell() is True
+
+    # 1. Step 1 is tool call (MODEL, PLANNER_RESPONSE with tool_calls)
+    step1 = {
+        "step_index": 1,
+        "source": "MODEL",
+        "type": "PLANNER_RESPONSE",
+        "status": "DONE",
+        "tool_calls": [{"name": "run_command", "args": {}}],
+    }
+    # 2. Step 2 is tool output (MODEL, GENERIC)
+    step2 = {
+        "step_index": 2,
+        "source": "MODEL",
+        "type": "GENERIC",
+        "status": "DONE",
+        "content": "Directory of C:\\files\ncontent.md",
+    }
+    # 3. Step 3 is final assistant reply with truncated content
+    step3_compact = {
+        "step_index": 3,
+        "source": "MODEL",
+        "type": "PLANNER_RESPONSE",
+        "status": "DONE",
+        "content": "Short preview...",
+        "truncated_fields": ["content"],
+    }
+    step3_full = {
+        "step_index": 3,
+        "source": "MODEL",
+        "type": "PLANNER_RESPONSE",
+        "status": "DONE",
+        "content": "Full pedagogical tutoring response explaining short-circuiting in depth.",
+    }
+
+    transcript_file.write_text(
+        "\n".join([json.dumps(step1), json.dumps(step2), json.dumps(step3_compact)]),
+        encoding="utf-8",
+    )
+    transcript_full_file.write_text(
+        "\n".join([json.dumps(step1), json.dumps(step2), json.dumps(step3_full)]),
+        encoding="utf-8",
+    )
+
+    resp, count = adapter.wait_for_latest_response(conv_id, previous_step_count=0, timeout_seconds=1)
+    assert resp == "Full pedagogical tutoring response explaining short-circuiting in depth."
+    assert count == 3
+

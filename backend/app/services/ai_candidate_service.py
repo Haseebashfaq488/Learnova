@@ -177,7 +177,7 @@ class AICandidateService:
             prompt_str = updates.prompt.strip()
             if not prompt_str:
                 raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail="Prompt cannot be empty",
                 )
             cand.prompt = prompt_str

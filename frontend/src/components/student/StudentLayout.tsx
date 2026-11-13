@@ -17,9 +17,11 @@ import {
   Zap,
   ArrowRightLeft,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
 } from 'lucide-react';
 import { StudentUser, GamificationProfile } from '../../types';
+import { DesignStudioWidget } from '../ui/DesignStudioWidget';
 
 export type StudentNavigationPage =
   | 'sign_in'
@@ -74,6 +76,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   breadcrumbs = [],
   children,
 }) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -123,28 +126,58 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
         />
       )}
 
-      {/* Desktop & Mobile Sidebar (248px) */}
+      {/* Desktop & Mobile Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-62 bg-white dark:bg-[#181C24] border-r border-[#D9DEE7] dark:border-[#2D3545] flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-white dark:bg-[#181C24] border-r border-[#D9DEE7] dark:border-[#2D3545] flex flex-col justify-between transition-all duration-300 ease-in-out lg:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } ${sidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-64 w-64'}`}
       >
         {/* Brand & Portal Label */}
         <div>
-          <div className="h-16 px-5 border-b border-[#D9DEE7] dark:border-[#2D3545] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+          <div
+            className={`h-16 border-b border-[#D9DEE7] dark:border-[#2D3545] flex items-center justify-between transition-all duration-200 ${
+              sidebarCollapsed ? 'px-2' : 'px-4'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div
+                className={`rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm shrink-0 ${
+                  sidebarCollapsed ? 'w-7 h-7 text-xs' : 'w-8 h-8 text-base'
+                }`}
+                title="Learnova Student Portal"
+              >
                 L
               </div>
-              <div>
-                <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight">
-                  Learnova
-                </span>
-                <span className="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-                  Student Portal
-                </span>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight block truncate">
+                    Learnova
+                  </span>
+                  <span className="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                    Student Portal
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Desktop Collapse Toggle */}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`hidden lg:flex text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer ${
+                sidebarCollapsed ? 'p-1' : 'p-1.5'
+              }`}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* Mobile Close Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
@@ -165,18 +198,47 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  title={sidebarCollapsed ? item.label : undefined}
+                  className={`w-full group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 font-semibold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
+                      ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 font-semibold shadow-2xs'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:translate-x-0.5'
+                  } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#2646B8] dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} />
-                  <span>{item.label}</span>
+                  {isActive && <span className="nav-indicator-pill" aria-hidden="true" />}
+                  <Icon
+                    className={`w-4 h-4 shrink-0 transition-colors ${
+                      isActive
+                        ? 'text-[#2646B8] dark:text-indigo-400'
+                        : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                    }`}
+                  />
+                  {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                 </button>
               );
             })}
           </nav>
+
+          {/* Gamification Progress Mini-Card (Visible when expanded) */}
+          {!sidebarCollapsed && (
+            <div className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-br from-indigo-50/80 to-blue-50/50 dark:from-[#1E232E] dark:to-[#181C24] border border-indigo-100/80 dark:border-indigo-900/40">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  Level {gamificationProfile.level}
+                </span>
+                <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-300">
+                  {gamificationProfile.xp % 500} / 500 XP
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, ((gamificationProfile.xp % 500) / 500) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar Footer: Portal Switcher & Profile Quick Menu */}
@@ -187,16 +249,20 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
               <button
                 type="button"
                 onClick={onSwitchPortal}
-                className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer"
                 title="Switch to Teacher Portal"
+                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
+                  sidebarCollapsed ? 'justify-center px-0' : ''
+                }`}
               >
                 <div className="flex items-center gap-2">
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  <span>Teacher Portal</span>
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  {!sidebarCollapsed && <span>Teacher Portal</span>}
                 </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium">
-                  Staff
-                </span>
+                {!sidebarCollapsed && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium">
+                    Staff
+                  </span>
+                )}
               </button>
             )}
 
@@ -204,46 +270,61 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
               <button
                 type="button"
                 onClick={onSwitchToAdmin}
-                className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer"
                 title="Switch to Administrator Portal"
+                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
+                  sidebarCollapsed ? 'justify-center px-0' : ''
+                }`}
               >
                 <div className="flex items-center gap-2">
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                  <span>Admin Portal</span>
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                  {!sidebarCollapsed && <span>Admin Portal</span>}
                 </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium">
-                  Admin
-                </span>
+                {!sidebarCollapsed && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium">
+                    Admin
+                  </span>
+                )}
               </button>
             )}
           </div>
 
           {/* Student Profile Row */}
-          <div className="p-2.5 rounded-xl bg-gray-50/70 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 flex items-center justify-between">
+          <div
+            className={`p-2.5 rounded-xl bg-gray-50/70 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 flex items-center justify-between ${
+              sidebarCollapsed ? 'justify-center p-1.5' : ''
+            }`}
+          >
             <button
               type="button"
               onClick={() => handleNavClick('profile')}
-              className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-80 transition"
+              className={`flex items-center gap-2.5 min-w-0 text-left hover:opacity-80 transition cursor-pointer ${
+                sidebarCollapsed ? 'justify-center' : ''
+              }`}
               title="View profile and settings"
             >
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                {currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()}
+              <div className="relative">
+                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  {currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()}
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#181C24]" />
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
-                  {currentUser.name}
-                </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                  Level {gamificationProfile.level} • {gamificationProfile.xp} XP
-                </p>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                    {currentUser.name}
+                  </p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                    Level {gamificationProfile.level} • {gamificationProfile.xp} XP
+                  </p>
+                </div>
+              )}
             </button>
 
-            {onSignOut && (
+            {!sidebarCollapsed && onSignOut && (
               <button
                 type="button"
                 onClick={onSignOut}
-                className="p-1 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition"
+                className="p-1 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition cursor-pointer"
                 title="Sign out"
                 aria-label="Sign out"
               >
@@ -255,7 +336,11 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
       </aside>
 
       {/* Main App Container */}
-      <div className="flex-1 lg:pl-62 flex flex-col min-h-screen">
+      <div
+        className={`flex-1 transition-all duration-300 ease-in-out flex flex-col min-h-screen ${
+          sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+        }`}
+      >
         {/* Global Student Header */}
         <header className="sticky top-0 z-30 h-16 bg-white dark:bg-[#181C24] border-b border-[#D9DEE7] dark:border-[#2D3545] px-4 sm:px-6 flex items-center justify-between gap-4">
           {/* Left: Mobile Menu Toggle & Breadcrumbs */}
@@ -455,9 +540,14 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
 
         {/* Page Content Outlet */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {children}
+          <div className="view-enter-animation">
+            {children}
+          </div>
         </main>
       </div>
+
+      {/* Floating Design Studio Customizer Widget */}
+      <DesignStudioWidget />
     </div>
   );
 };

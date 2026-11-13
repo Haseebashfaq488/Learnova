@@ -1,1 +1,0 @@
-"""Learnova Backend Application."""

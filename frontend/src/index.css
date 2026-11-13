@@ -4,11 +4,13 @@
 
 @layer base {
   :root {
-    /* Primary Colors */
+    /* Default: Oxford Royal (Navy & Indigo) */
     --color-primary-700: #2646B8;
     --color-primary-600: #3156D3;
+    --color-primary-500: #4364E8;
     --color-primary-100: #E8EEFF;
     --color-primary-050: #F4F6FF;
+    --color-focus-ring: #3156D3;
 
     /* Text Colors */
     --color-text-primary: #1F2937;
@@ -29,7 +31,6 @@
     --color-border: #D9DEE7;
     --color-border-strong: #B8C1D0;
     --color-input-border: #D9DEE7;
-    --color-focus-ring: #3156D3;
 
     /* Semantic Status Colors */
     --color-success: #18794E;
@@ -42,13 +43,76 @@
     --color-info-bg: #EFF8FF;
   }
 
+  /* -------------------------------------------------------------
+     ACADEMIC PALETTES (LIGHT MODE)
+     ------------------------------------------------------------- */
+  :root[data-palette="emerald"],
+  [data-palette="emerald"] {
+    --color-primary-700: #047857;
+    --color-primary-600: #059669;
+    --color-primary-500: #10B981;
+    --color-primary-100: #D1FAE5;
+    --color-primary-050: #ECFDF5;
+    --color-focus-ring: #059669;
+    --color-surface-selected: #D1FAE5;
+  }
+
+  :root[data-palette="crimson"],
+  [data-palette="crimson"] {
+    --color-primary-700: #881337;
+    --color-primary-600: #9F1239;
+    --color-primary-500: #BE123C;
+    --color-primary-100: #FFE4E6;
+    --color-primary-050: #FFF1F2;
+    --color-focus-ring: #9F1239;
+    --color-surface-selected: #FFE4E6;
+  }
+
+  :root[data-palette="cyan"],
+  [data-palette="cyan"] {
+    --color-primary-700: #0E7490;
+    --color-primary-600: #0891B2;
+    --color-primary-500: #06B6D4;
+    --color-primary-100: #CFFAFE;
+    --color-primary-050: #ECFEFF;
+    --color-focus-ring: #0891B2;
+    --color-surface-selected: #CFFAFE;
+  }
+
+  :root[data-palette="violet"],
+  [data-palette="violet"] {
+    --color-primary-700: #581C87;
+    --color-primary-600: #6D28D9;
+    --color-primary-500: #7C3AED;
+    --color-primary-100: #EDE9FE;
+    --color-primary-050: #F5F3FF;
+    --color-focus-ring: #6D28D9;
+    --color-surface-selected: #EDE9FE;
+  }
+
+  :root[data-palette="obsidian"],
+  [data-palette="obsidian"] {
+    --color-primary-700: #0F172A;
+    --color-primary-600: #1E293B;
+    --color-primary-500: #334155;
+    --color-primary-100: #E2E8F0;
+    --color-primary-050: #F1F5F9;
+    --color-focus-ring: #1E293B;
+    --color-surface-selected: #E2E8F0;
+  }
+
+  /* -------------------------------------------------------------
+     DARK MODE BASE
+     ------------------------------------------------------------- */
   [data-theme="dark"],
   .dark {
-    /* Primary Colors */
+    /* Primary Colors default (Oxford Royal dark) */
     --color-primary-700: #4F75FF;
     --color-primary-600: #3B66F5;
+    --color-primary-500: #6388FF;
     --color-primary-100: rgba(59, 102, 245, 0.18);
     --color-primary-050: rgba(59, 102, 245, 0.1);
+    --color-focus-ring: #4F75FF;
 
     /* Text Colors */
     --color-text-primary: #F3F4F6;
@@ -69,7 +133,6 @@
     --color-border: #2D3545;
     --color-border-strong: #3E485D;
     --color-input-border: #2D3545;
-    --color-focus-ring: #4F75FF;
 
     /* Semantic Status Colors */
     --color-success: #34D399;
@@ -82,12 +145,172 @@
     --color-info-bg: rgba(59, 130, 246, 0.16);
   }
 
+  /* -------------------------------------------------------------
+     ACADEMIC PALETTES (DARK MODE)
+     ------------------------------------------------------------- */
+  .dark[data-palette="emerald"],
+  [data-theme="dark"][data-palette="emerald"],
+  [data-palette="emerald"] .dark,
+  [data-palette="emerald"][data-theme="dark"] {
+    --color-primary-700: #34D399;
+    --color-primary-600: #10B981;
+    --color-primary-500: #6EE7B7;
+    --color-primary-100: rgba(16, 185, 129, 0.18);
+    --color-primary-050: rgba(16, 185, 129, 0.1);
+    --color-focus-ring: #34D399;
+    --color-surface-selected: rgba(16, 185, 129, 0.2);
+  }
+
+  .dark[data-palette="crimson"],
+  [data-theme="dark"][data-palette="crimson"],
+  [data-palette="crimson"] .dark,
+  [data-palette="crimson"][data-theme="dark"] {
+    --color-primary-700: #FB7185;
+    --color-primary-600: #F43F5E;
+    --color-primary-500: #FDA4AF;
+    --color-primary-100: rgba(244, 63, 94, 0.18);
+    --color-primary-050: rgba(244, 63, 94, 0.1);
+    --color-focus-ring: #FB7185;
+    --color-surface-selected: rgba(244, 63, 94, 0.2);
+  }
+
+  .dark[data-palette="cyan"],
+  [data-theme="dark"][data-palette="cyan"],
+  [data-palette="cyan"] .dark,
+  [data-palette="cyan"][data-theme="dark"] {
+    --color-primary-700: #38BDF8;
+    --color-primary-600: #06B6D4;
+    --color-primary-500: #7DD3FC;
+    --color-primary-100: rgba(6, 182, 212, 0.18);
+    --color-primary-050: rgba(6, 182, 212, 0.1);
+    --color-focus-ring: #38BDF8;
+    --color-surface-selected: rgba(6, 182, 212, 0.2);
+  }
+
+  .dark[data-palette="violet"],
+  [data-theme="dark"][data-palette="violet"],
+  [data-palette="violet"] .dark,
+  [data-palette="violet"][data-theme="dark"] {
+    --color-primary-700: #A78BFA;
+    --color-primary-600: #8B5CF6;
+    --color-primary-500: #C4B5FD;
+    --color-primary-100: rgba(139, 92, 246, 0.18);
+    --color-primary-050: rgba(139, 92, 246, 0.1);
+    --color-focus-ring: #A78BFA;
+    --color-surface-selected: rgba(139, 92, 246, 0.2);
+  }
+
+  .dark[data-palette="obsidian"],
+  [data-theme="dark"][data-palette="obsidian"],
+  [data-palette="obsidian"] .dark,
+  [data-palette="obsidian"][data-theme="dark"] {
+    --color-primary-700: #CBD5E1;
+    --color-primary-600: #94A3B8;
+    --color-primary-500: #E2E8F0;
+    --color-primary-100: rgba(148, 163, 184, 0.18);
+    --color-primary-050: rgba(148, 163, 184, 0.1);
+    --color-focus-ring: #CBD5E1;
+    --color-surface-selected: rgba(148, 163, 184, 0.2);
+  }
+
   body {
     background-color: var(--color-canvas);
     color: var(--color-text-primary);
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1), color 150ms cubic-bezier(0.2, 0, 0, 1);
+    transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
+}
+
+/* -------------------------------------------------------------
+   DYNAMIC TYPOGRAPHY MODES
+   ------------------------------------------------------------- */
+[data-font="inter"],
+body[data-font="inter"] {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+[data-font="jakarta"],
+body[data-font="jakarta"] {
+  font-family: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font="outfit"],
+body[data-font="outfit"] {
+  font-family: 'Outfit', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font="lexend"],
+body[data-font="lexend"] {
+  font-family: 'Lexend', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font="poppins"],
+body[data-font="poppins"] {
+  font-family: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font="space"],
+body[data-font="space"] {
+  font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font="serif"],
+body[data-font="serif"] {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font="serif"] h1,
+[data-font="serif"] h2,
+[data-font="serif"] h3,
+[data-font="serif"] .academic-heading,
+[data-font="serif"] .page-header-title {
+  font-family: 'Newsreader', Georgia, Cambria, 'Times New Roman', serif !important;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------
+   DYNAMIC PALETTE SYNCHRONIZATION
+   Rewires existing portal button and badge classes to active theme
+   ------------------------------------------------------------- */
+[data-palette] .bg-indigo-600,
+[data-palette] .bg-\[\#3156D3\],
+[data-palette] .bg-\[\#2646B8\] {
+  background-color: var(--color-primary-600) !important;
+}
+
+[data-palette] .hover\:bg-indigo-700:hover,
+[data-palette] .hover\:bg-\[\#2646B8\]:hover {
+  background-color: var(--color-primary-700) !important;
+}
+
+[data-palette] .text-indigo-600,
+[data-palette] .text-\[\#2646B8\],
+[data-palette] .text-\[\#3156D3\] {
+  color: var(--color-primary-600) !important;
+}
+
+[data-palette] .border-indigo-600,
+[data-palette] .border-\[\#2646B8\],
+[data-palette] .border-\[\#3156D3\] {
+  border-color: var(--color-primary-600) !important;
+}
+
+[data-palette] .bg-indigo-50,
+[data-palette] .bg-indigo-100,
+[data-palette] .bg-\[\#E8EEFF\] {
+  background-color: var(--color-primary-100) !important;
+}
+
+.dark[data-palette] .text-indigo-400,
+.dark[data-palette] .text-indigo-300,
+.dark[data-palette] .text-\[\#8EB0FF\] {
+  color: var(--color-primary-500) !important;
+}
+
+.dark[data-palette] .bg-indigo-950\/40,
+.dark[data-palette] .bg-indigo-950\/60,
+.dark[data-palette] .bg-\[\#E8EEFF\] {
+  background-color: var(--color-primary-100) !important;
 }
 
 /* Accessible focus ring */
@@ -96,25 +319,118 @@
   outline-offset: 2px;
 }
 
+/* -------------------------------------------------------------
+   IMPECCABLE INTERACTIVE MICRO-ANIMATIONS & POLISH
+   ------------------------------------------------------------- */
+.interactive-card {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms ease-out;
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.06), 0 4px 8px -2px rgba(0, 0, 0, 0.02);
+}
+
+.dark .interactive-card:hover {
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Interactive Button Press State */
+button:not(:disabled),
+a[role="button"]:not(:disabled) {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 150ms ease,
+              border-color 150ms ease,
+              box-shadow 150ms ease;
+}
+
+button:not(:disabled):active,
+a[role="button"]:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+/* Smooth Navigation Pill Indicator */
+.nav-indicator-pill {
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3.5px;
+  background-color: var(--color-primary-600);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 8px var(--color-primary-500);
+}
+
+/* Page Entry Fade Animation */
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-enter-animation {
+  animation: viewFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Themed Modern Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+  transition: background-color 150ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-600);
+}
+
+/* Selection Highlight matching Theme */
+::selection {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+.dark ::selection {
+  background-color: var(--color-primary-600);
+  color: #FFFFFF;
+}
+
+/* Motion Mode Reductions */
+[data-motion="minimal"] *,
+[data-motion="minimal"] ::before,
+[data-motion="minimal"] ::after,
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
   }
 }
 
 /* ====================================================================
    COHESIVE DARK THEME HARMONIZATION
-   Prevents unstyled/spoiled colors in dark mode across all surfaces
    ==================================================================== */
-
 .dark body {
   background-color: #0F1218 !important;
   color: #F3F4F6 !important;
 }
 
-/* Surfaces and Cards */
 .dark .bg-white {
   background-color: #181C24 !important;
 }
@@ -123,7 +439,6 @@
   background-color: #0F1218 !important;
 }
 
-/* Structural Borders */
 .dark .border-\[\#D9DEE7\] {
   border-color: #2D3545 !important;
 }
@@ -134,7 +449,6 @@
   border-color: #2D3545 !important;
 }
 
-/* Text Hierarchy */
 .dark .text-\[\#1F2937\] {
   color: #F3F4F6 !important;
 }
@@ -147,7 +461,6 @@
   color: #828B99 !important;
 }
 
-/* Interactive Hovers & Neutrals */
 .dark .hover\:bg-gray-100:hover {
   background-color: #222834 !important;
 }
@@ -167,20 +480,6 @@
 
 .dark .bg-gray-200 {
   background-color: #2D3545 !important;
-}
-
-/* Brand Primary Soft Tints & Tags */
-.dark .bg-\[\#E8EEFF\] {
-  background-color: rgba(59, 102, 245, 0.16) !important;
-}
-
-.dark .text-\[\#2646B8\] {
-  color: #8EB0FF !important;
-}
-
-.dark .border-\[\#2646B8\]\/20,
-.dark .border-\[\#2646B8\]\/30 {
-  border-color: rgba(142, 176, 255, 0.25) !important;
 }
 
 /* Warning & Pending Tints */
@@ -257,7 +556,7 @@
 .dark input:focus,
 .dark select:focus,
 .dark textarea:focus {
-  border-color: #3B66F5 !important;
+  border-color: var(--color-primary-600) !important;
   outline: none !important;
 }
 

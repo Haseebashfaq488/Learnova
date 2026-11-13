@@ -73,7 +73,7 @@ class AIService:
         # 1. Require and resolve persisted lesson
         if not req.lesson_id:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="A valid lesson_id is required for AI lesson tutoring",
             )
 

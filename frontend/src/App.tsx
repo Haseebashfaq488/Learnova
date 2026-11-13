@@ -1534,6 +1534,12 @@ export default function App() {
     notify(status === 'approved' ? 'success' : 'info', `Candidate question ${status}.`);
   };
 
+  const handleDeleteCandidate = (id: string) => {
+    storage.deleteCandidate(id);
+    setCandidates(storage.getCandidates());
+    notify('info', 'Candidate question removed.');
+  };
+
   const handleSaveAssessment = async (a: Assessment) => {
     try {
       if (authApi.getAccessToken()) {
@@ -1703,7 +1709,11 @@ export default function App() {
         <QuestionBankPage
           courses={courses}
           topics={topics}
+          lessons={lessons}
           questions={questions}
+          initialCourseId={teacherNavParams.courseId}
+          initialTopicId={teacherNavParams.topicId}
+          initialLessonId={teacherNavParams.lessonId}
           onNavigate={handleTeacherNavigate}
           onDeleteQuestion={handleDeleteQuestion}
           onNotify={notify}
@@ -1725,11 +1735,16 @@ export default function App() {
         <AIReviewPage
           courses={courses}
           topics={topics}
+          lessons={lessons}
           resources={resources}
           candidates={candidates}
+          initialCourseId={teacherNavParams.courseId}
+          initialTopicId={teacherNavParams.topicId}
+          initialLessonId={teacherNavParams.lessonId}
           onNavigate={handleTeacherNavigate}
           onSaveGeneratedCandidates={handleSaveGeneratedCandidates}
           onUpdateCandidateStatus={handleUpdateCandidateStatus}
+          onDeleteCandidate={handleDeleteCandidate}
           onNotify={notify}
         />
       )}

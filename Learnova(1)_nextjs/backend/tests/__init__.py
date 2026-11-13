@@ -1,1 +1,0 @@
-"""Learnova backend test package."""

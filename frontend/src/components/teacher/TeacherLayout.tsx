@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { CURRENT_TEACHER } from '../../services/storageService';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { DesignStudioWidget } from '../ui/DesignStudioWidget';
 
 export type NavigationPage =
   | 'overview'
@@ -146,41 +147,66 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
       </div>
 
       <div className="flex flex-1">
-        {/* Desktop Sidebar (248px or 72px collapsed) */}
+        {/* Desktop Sidebar (248px or 72px collapsed) - Sticky & Never moves on scroll */}
         <aside
-          className={`hidden md:flex flex-col border-r border-[#D9DEE7] bg-white transition-all duration-200 select-none z-20 shrink-0 ${
+          className={`hidden md:flex flex-col border-r border-[#D9DEE7] bg-white transition-all duration-200 select-none z-20 shrink-0 sticky top-0 h-screen self-start ${
             sidebarCollapsed ? 'w-[72px]' : 'w-[248px]'
           }`}
           aria-label="Main Navigation"
         >
           {/* Brand header */}
-          <div className="h-[72px] px-5 border-b border-[#D9DEE7] flex items-center justify-between">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-xl bg-[#3156D3] text-white flex items-center justify-center shrink-0 shadow-xs">
-                <GraduationCap className="w-5 h-5" />
+          <div
+            className={`h-[72px] border-b border-[#D9DEE7] flex items-center justify-between transition-all duration-200 ${
+              sidebarCollapsed ? 'px-2' : 'px-5'
+            }`}
+          >
+            {sidebarCollapsed ? (
+              <div className="w-full flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(false)}
+                  className="w-7 h-7 rounded-lg bg-[#3156D3] text-white flex items-center justify-center shrink-0 shadow-xs hover:opacity-90 transition cursor-pointer"
+                  title="Learnova Teacher Portal - Click to expand"
+                  aria-label="Learnova Teacher Portal"
+                >
+                  <GraduationCap className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(false)}
+                  className="p-1 rounded-md text-[#5B6472] hover:bg-gray-100 hover:text-[#1F2937] transition cursor-pointer"
+                  aria-label="Expand sidebar"
+                  title="Expand sidebar"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
-              {!sidebarCollapsed && (
-                <div className="flex flex-col">
-                  <span className="font-bold text-base tracking-tight text-[#1F2937] leading-none">
-                    Learnova
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#3156D3] uppercase tracking-wider mt-1">
-                    Teacher Portal
-                  </span>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 overflow-hidden min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#3156D3] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-bold text-base tracking-tight text-[#1F2937] leading-none truncate">
+                      Learnova
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#3156D3] uppercase tracking-wider mt-1 truncate">
+                      Teacher Portal
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1 rounded-md text-[#5B6472] hover:bg-gray-100 hover:text-[#1F2937] transition-colors cursor-pointer"
-              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronLeft className="w-4 h-4" />
-              )}
-            </button>
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(true)}
+                  className="p-1 rounded-md text-[#5B6472] hover:bg-gray-100 hover:text-[#1F2937] transition-colors cursor-pointer shrink-0"
+                  aria-label="Collapse sidebar"
+                  title="Collapse sidebar"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
 
           {/* Navigation links */}
@@ -192,19 +218,14 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
                   title={sidebarCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative cursor-pointer group ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative cursor-pointer group ${
                     isActive
-                      ? 'bg-[#E8EEFF] text-[#2646B8] font-semibold'
-                      : 'text-[#5B6472] hover:bg-gray-100 hover:text-[#1F2937]'
+                      ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 font-semibold shadow-2xs'
+                      : 'text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#1F2937] hover:translate-x-0.5'
                   } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
                 >
                   {/* Left edge indicator */}
-                  {isActive && (
-                    <span
-                      className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#3156D3] rounded-r"
-                      aria-hidden="true"
-                    />
-                  )}
+                  {isActive && <span className="nav-indicator-pill" aria-hidden="true" />}
                   <span
                     className={
                       isActive
@@ -266,7 +287,11 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
               </button>
 
               {userMenuOpen && (
-                <div className="absolute bottom-12 left-0 right-0 bg-white border border-[#D9DEE7] rounded-xl shadow-lg p-2 z-30 flex flex-col gap-1 text-xs animate-in fade-in duration-100">
+                <div
+                  className={`absolute bottom-12 bg-white border border-[#D9DEE7] rounded-xl shadow-lg p-2 z-30 flex flex-col gap-1 text-xs animate-in fade-in duration-100 ${
+                    sidebarCollapsed ? 'left-0 w-60 shadow-xl' : 'left-0 right-0'
+                  }`}
+                >
                   <div className="px-2 py-1.5 border-b border-gray-100">
                     <p className="font-semibold text-[#1F2937]">{CURRENT_TEACHER.name}</p>
                     <p className="text-[#5B6472] text-[11px]">{CURRENT_TEACHER.email}</p>
@@ -432,10 +457,15 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
           {/* Main content viewport */}
           <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1440px] w-full mx-auto overflow-x-hidden">
-            {children}
+            <div className="view-enter-animation">
+              {children}
+            </div>
           </main>
         </div>
       </div>
+
+      {/* Floating Design Studio Customizer Widget */}
+      <DesignStudioWidget />
 
       {/* Teacher Portal Documentation Modal */}
       {helpModalOpen && (
