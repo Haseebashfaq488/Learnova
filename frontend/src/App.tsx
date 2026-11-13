@@ -872,27 +872,31 @@ export default function App() {
     }
   };
 
-  // Restore live session on mount from localStorage / refresh cookie
+  // Restore live session on mount from localStorage / refresh cookie and hydrate data
   useEffect(() => {
     let isMounted = true;
-    authApi
-      .restoreSession()
-      .then((user) => {
+
+    const restoreAndHydrateSession = async () => {
+      try {
+        const user = await authApi.restoreSession();
         if (!isMounted) return;
+
         if (user) {
           setCurrentUserAccount(user);
           setIsAuthenticated(true);
           const savedPortal = storage.getPersistedPortalMode();
           const targetPortal = (initialRoute?.portal as 'student' | 'teacher' | 'admin') || savedPortal;
+
           if (user.role === 'student') {
             const student = mapUserResponseToStudentUser(user);
             setCurrentStudent(student);
             storage.saveStudentUser(student);
             setPortalMode(targetPortal || 'student', false);
-            refreshStudentCourseData();
+            // Await live hydration before dismissing loading screen
+            await refreshStudentCourseData();
           } else if (user.role === 'teacher') {
             setPortalMode(targetPortal || 'teacher', false);
-            refreshTeacherCourseData();
+            await refreshTeacherCourseData();
           } else if (user.role === 'administrator') {
             const adminAccount: UserAccount = {
               id: user.id,
@@ -908,7 +912,7 @@ export default function App() {
             setCurrentAdmin(adminAccount);
             storage.saveAdminUser(adminAccount);
             setPortalMode(targetPortal || 'admin', false);
-            refreshAdminData();
+            await refreshAdminData();
           }
         } else {
           // No active session restored
@@ -918,15 +922,16 @@ export default function App() {
             setIsAuthenticated(false);
           }
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.warn('Session restoration failed:', err);
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) {
           setIsAuthChecking(false);
         }
-      });
+      }
+    };
+
+    restoreAndHydrateSession();
 
     return () => {
       isMounted = false;
@@ -1100,11 +1105,18 @@ export default function App() {
   if (isAuthChecking) {
     return (
       <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] flex flex-col items-center justify-center p-4 font-sans">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-lg mb-4 animate-pulse">
-          L
+        <div className="relative flex items-center justify-center mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold text-2xl shadow-xl shadow-indigo-500/25">
+            L
+          </div>
+          <div className="absolute -inset-2 rounded-3xl border-2 border-indigo-500/30 border-t-indigo-600 animate-spin" />
         </div>
-        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Restoring Learnova Session...
+        <p className="text-base font-bold text-gray-800 dark:text-gray-100 tracking-tight">
+          Loading your learning dashboard...
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+          Synchronizing verified achievements & courses
         </p>
       </div>
     );

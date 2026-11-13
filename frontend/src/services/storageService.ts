@@ -1022,238 +1022,22 @@ export const CURRENT_STUDENT: StudentUser = {
   },
 };
 
-const SEED_ENROLLMENTS: Enrollment[] = [
-  // CS101 Enrollments
-  {
-    id: 'enr-cs101-1',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    status: 'active',
-    enrolledAt: '2026-09-16T09:00:00Z',
-    progressPercent: 65,
-  },
-  {
-    id: 'enr-cs101-2',
-    studentId: 'std-clara',
-    courseId: 'course-cs101',
-    status: 'active',
-    enrolledAt: '2026-09-18T10:15:00Z',
-    progressPercent: 45,
-  },
-  {
-    id: 'enr-cs101-3',
-    studentId: 'std-marcus',
-    courseId: 'course-cs101',
-    status: 'active',
-    enrolledAt: '2026-09-20T11:30:00Z',
-    progressPercent: 30,
-  },
-  {
-    id: 'enr-cs101-4',
-    studentId: 'std-sarah',
-    courseId: 'course-cs101',
-    status: 'active',
-    enrolledAt: '2026-09-22T08:45:00Z',
-    progressPercent: 85,
-  },
-  {
-    id: 'enr-cs101-5',
-    studentId: 'std-liam',
-    courseId: 'course-cs101',
-    status: 'active',
-    enrolledAt: '2026-09-25T14:20:00Z',
-    progressPercent: 20,
-  },
-  {
-    id: 'enr-cs101-6',
-    studentId: 'std-priya',
-    courseId: 'course-cs101',
-    status: 'completed',
-    enrolledAt: '2026-09-15T09:00:00Z',
-    completedAt: '2026-10-12T16:00:00Z',
-    progressPercent: 100,
-  },
+const SEED_ENROLLMENTS: Enrollment[] = [];
 
-  // CS201 Enrollments
-  {
-    id: 'enr-cs201-1',
-    studentId: 'std-alex',
-    courseId: 'course-cs201',
-    status: 'active',
-    enrolledAt: '2026-09-20T13:00:00Z',
-    progressPercent: 50,
-  },
-  {
-    id: 'enr-cs201-2',
-    studentId: 'std-clara',
-    courseId: 'course-cs201',
-    status: 'active',
-    enrolledAt: '2026-09-22T15:30:00Z',
-    progressPercent: 70,
-  },
-  {
-    id: 'enr-cs201-3',
-    studentId: 'std-priya',
-    courseId: 'course-cs201',
-    status: 'active',
-    enrolledAt: '2026-09-26T10:00:00Z',
-    progressPercent: 40,
-  },
-  {
-    id: 'enr-cs201-4',
-    studentId: 'std-devon',
-    courseId: 'course-cs201',
-    status: 'active',
-    enrolledAt: '2026-09-29T11:45:00Z',
-    progressPercent: 15,
-  },
+const SEED_LESSON_COMPLETIONS: LessonCompletion[] = [];
 
-  // CS305 Enrollments
-  {
-    id: 'enr-cs305-1',
-    studentId: 'std-alex',
-    courseId: 'course-cs305',
-    status: 'active',
-    enrolledAt: '2026-10-02T09:30:00Z',
-    progressPercent: 35,
-  },
-  {
-    id: 'enr-cs305-2',
-    studentId: 'std-sarah',
-    courseId: 'course-cs305',
-    status: 'active',
-    enrolledAt: '2026-10-04T14:15:00Z',
-    progressPercent: 60,
-  },
-  {
-    id: 'enr-cs305-3',
-    studentId: 'std-hannah',
-    courseId: 'course-cs305',
-    status: 'active',
-    enrolledAt: '2026-10-05T16:00:00Z',
-    progressPercent: 25,
-  },
-];
-
-const SEED_LESSON_COMPLETIONS: LessonCompletion[] = [
-  {
-    id: 'lc-1',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-syntax',
-    lessonId: 'lesson-vars-1',
-    completedAt: '2026-10-14T10:30:00Z',
-  },
-  {
-    id: 'lc-2',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-syntax',
-    lessonId: 'lesson-vars-2',
-    completedAt: '2026-10-15T11:45:00Z',
-  },
-];
-
-const SEED_MASTERY_STATES: MasteryState[] = [
-  {
-    id: 'ms-syntax',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-syntax',
-    scorePercent: 88,
-    status: 'mastered',
-    lastAssessedAt: '2026-10-14T12:00:00Z',
-  },
-  {
-    id: 'ms-control',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-control',
-    scorePercent: 78,
-    status: 'competent',
-    lastAssessedAt: '2026-10-15T14:30:00Z',
-  },
-  {
-    id: 'ms-functions',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-functions',
-    scorePercent: 62,
-    status: 'developing',
-    lastAssessedAt: '2026-10-16T16:00:00Z',
-  },
-  {
-    id: 'ms-collections',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-collections',
-    scorePercent: -1,
-    status: 'not_assessed',
-  },
-  {
-    id: 'ms-oop',
-    studentId: 'std-alex',
-    courseId: 'course-cs101',
-    topicId: 'topic-oop',
-    scorePercent: -1,
-    status: 'not_assessed',
-  },
-];
+const SEED_MASTERY_STATES: MasteryState[] = [];
 
 const SEED_GAMIFICATION_PROFILE: GamificationProfile = {
-  id: 'gp-alex',
-  studentId: 'std-alex',
-  xp: 520,
-  level: 2,
-  streakDays: 4,
-  lastActiveDate: '2026-10-17',
+  id: 'gp-default',
+  studentId: '',
+  xp: 0,
+  level: 1,
+  streakDays: 0,
+  lastActiveDate: new Date().toISOString().split('T')[0],
 };
 
-const SEED_XP_EVENTS: XPEvent[] = [
-  {
-    id: 'xp-1',
-    studentId: 'std-alex',
-    type: 'lesson_completed',
-    xpEarned: 50,
-    timestamp: '2026-10-14T10:30:00Z',
-    description: 'Completed lesson: Introduction to Primitive Types and Namespaces',
-    relatedId: 'lesson-vars-1',
-  },
-  {
-    id: 'xp-2',
-    studentId: 'std-alex',
-    type: 'lesson_completed',
-    xpEarned: 50,
-    timestamp: '2026-10-15T11:45:00Z',
-    description: 'Completed lesson: String Immutability and Interpolation',
-    relatedId: 'lesson-vars-2',
-  },
-  {
-    id: 'xp-3',
-    studentId: 'std-alex',
-    type: 'diagnostic_completed',
-    xpEarned: 150,
-    timestamp: '2026-10-16T14:00:00Z',
-    description: 'Completed Diagnostic Baseline: Pre-Course Python Proficiency',
-    relatedId: 'asm-1',
-  },
-  {
-    id: 'xp-4',
-    studentId: 'std-alex',
-    type: 'daily_streak',
-    xpEarned: 70,
-    timestamp: '2026-10-17T08:00:00Z',
-    description: '4-day consecutive active study streak bonus',
-  },
-  {
-    id: 'xp-5',
-    studentId: 'std-alex',
-    type: 'badge_earned',
-    xpEarned: 200,
-    timestamp: '2026-10-17T08:05:00Z',
-    description: 'Unlocked achievement badge: Streak Sentinel',
-  },
-];
+const SEED_XP_EVENTS: XPEvent[] = [];
 
 const SEED_BADGES: Badge[] = [
   {
@@ -1262,8 +1046,7 @@ const SEED_BADGES: Badge[] = [
     description: 'Enrolled in a course and completed the first curriculum unit.',
     icon: 'Footprints',
     category: 'achievement',
-    isUnlocked: true,
-    earnedAt: '2026-09-16T09:15:00Z',
+    isUnlocked: false,
   },
   {
     id: 'badge-diagnostic',
@@ -1271,8 +1054,7 @@ const SEED_BADGES: Badge[] = [
     description: 'Completed initial diagnostic baseline assessment to calibrate mastery.',
     icon: 'Compass',
     category: 'achievement',
-    isUnlocked: true,
-    earnedAt: '2026-10-16T14:00:00Z',
+    isUnlocked: false,
   },
   {
     id: 'badge-syntax-master',
@@ -1280,8 +1062,7 @@ const SEED_BADGES: Badge[] = [
     description: 'Achieved 85%+ mastery in Syntax, Variables & Primitive Data Types.',
     icon: 'Code',
     category: 'mastery',
-    isUnlocked: true,
-    earnedAt: '2026-10-14T12:00:00Z',
+    isUnlocked: false,
   },
   {
     id: 'badge-streak',
@@ -1289,8 +1070,7 @@ const SEED_BADGES: Badge[] = [
     description: 'Maintained a 3-day or greater continuous learning streak.',
     icon: 'Flame',
     category: 'streak',
-    isUnlocked: true,
-    earnedAt: '2026-10-17T08:05:00Z',
+    isUnlocked: false,
   },
   {
     id: 'badge-adaptive-ace',
@@ -1741,12 +1521,7 @@ class StorageService {
   }
 
   getEnrollments(): Enrollment[] {
-    const list = this.get<Enrollment[]>('enrollments', SEED_ENROLLMENTS);
-    if (!list || list.length <= 1) {
-      this.set('enrollments', SEED_ENROLLMENTS);
-      return SEED_ENROLLMENTS;
-    }
-    return list;
+    return this.get<Enrollment[]>('enrollments', SEED_ENROLLMENTS);
   }
 
   getEnrollment(courseId: string): Enrollment | undefined {
@@ -2278,6 +2053,12 @@ class StorageService {
       store.removeItem('learnova_portal_mode');
       store.removeItem('learnova_student_user');
       store.removeItem('learnova_admin_user');
+      store.removeItem('learnova_badges');
+      store.removeItem('learnova_gamification_profile');
+      store.removeItem('learnova_enrollments');
+      store.removeItem('learnova_lesson_completions');
+      store.removeItem('learnova_mastery_states');
+      store.removeItem('learnova_xp_events');
     }
   }
 
