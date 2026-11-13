@@ -1,0 +1,14 @@
+{
+  "name": "@learnova/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/utils/dag.test.ts src/utils/assessment.test.ts src/utils/studentLogic.test.ts src/utils/adminLogic.test.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^0.546.0"
+  }
+}

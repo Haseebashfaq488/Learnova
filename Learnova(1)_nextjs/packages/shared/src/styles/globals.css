@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --color-primary-700: #2646B8;
+    --color-primary-600: #3156D3;
+    --color-primary-100: #E8EEFF;
+    --color-primary-050: #F4F6FF;
+
+    /* Text Colors */
+    --color-text-primary: #1F2937;
+    --color-text-secondary: #5B6472;
+    --color-text-muted: #737D8C;
+    --color-text-disabled: #9CA3AF;
+
+    /* Surfaces & Backgrounds */
+    --color-canvas: #F5F7FA;
+    --color-surface: #FFFFFF;
+    --color-surface-elevated: #FFFFFF;
+    --color-surface-subtle: #F5F7FA;
+    --color-surface-hover: #F0F3F8;
+    --color-surface-selected: #E8EEFF;
+    --color-overlay: rgba(17, 24, 39, 0.45);
+
+    /* Borders & Inputs */
+    --color-border: #D9DEE7;
+    --color-border-strong: #B8C1D0;
+    --color-input-border: #D9DEE7;
+    --color-focus-ring: #3156D3;
+
+    /* Semantic Status Colors */
+    --color-success: #18794E;
+    --color-success-bg: #EAF7F0;
+    --color-warning: #946200;
+    --color-warning-bg: #FFF5D6;
+    --color-danger: #B42318;
+    --color-danger-bg: #FEF0EF;
+    --color-info: #175CD3;
+    --color-info-bg: #EFF8FF;
+  }
+
+  [data-theme="dark"],
+  .dark {
+    /* Primary Colors */
+    --color-primary-700: #4F75FF;
+    --color-primary-600: #3B66F5;
+    --color-primary-100: rgba(59, 102, 245, 0.18);
+    --color-primary-050: rgba(59, 102, 245, 0.08);
+
+    /* Text Colors */
+    --color-text-primary: #F3F4F6;
+    --color-text-secondary: #9CA3AF;
+    --color-text-muted: #6B7280;
+    --color-text-disabled: #4B5563;
+
+    /* Surfaces & Backgrounds */
+    --color-canvas: #0F1218;
+    --color-surface: #181C24;
+    --color-surface-elevated: #1F2430;
+    --color-surface-subtle: #13171F;
+    --color-surface-hover: #222836;
+    --color-surface-selected: rgba(59, 102, 245, 0.16);
+    --color-overlay: rgba(0, 0, 0, 0.7);
+
+    /* Borders & Inputs */
+    --color-border: #2D3545;
+    --color-border-strong: #3D475C;
+    --color-input-border: #2D3545;
+    --color-focus-ring: #4F75FF;
+
+    /* Semantic Status Colors */
+    --color-success: #22C55E;
+    --color-success-bg: rgba(34, 197, 94, 0.14);
+    --color-warning: #F59E0B;
+    --color-warning-bg: rgba(245, 158, 11, 0.14);
+    --color-danger: #EF4444;
+    --color-danger-bg: rgba(239, 68, 68, 0.14);
+    --color-info: #38BDF8;
+    --color-info-bg: rgba(56, 189, 248, 0.14);
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
