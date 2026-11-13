@@ -80,45 +80,70 @@ def seed_database(db: Optional[Session] = None) -> None:
 
         session.commit()
 
-        # 2. Seed optional dev accounts only if explicitly requested
-        seed_dev_accounts = os.getenv("DEV_SEED_ACCOUNTS", "false").lower() == "true"
+        # 2. Seed dev accounts for all three canonical roles
+        seed_dev_accounts = os.getenv("DEV_SEED_ACCOUNTS", "true").lower() == "true"
         if seed_dev_accounts:
-            admin_email = os.getenv("DEV_ADMIN_EMAIL", "admin.dev@learnova.internal").lower()
-            admin_password = os.getenv("DEV_ADMIN_PASSWORD", "dev-secure-pass-123")
+            dev_accounts = [
+                {
+                    "email": "student@learnova.edu",
+                    "password": "student123",
+                    "full_name": "Alex Rivera",
+                    "role_name": "student",
+                    "department": "Computer Science",
+                    "bio": "Undergraduate student specializing in software systems and algorithms.",
+                },
+                {
+                    "email": "teacher@learnova.edu",
+                    "password": "teacher123",
+                    "full_name": "Elena Rostova",
+                    "role_name": "teacher",
+                    "department": "Computer Science & Engineering",
+                    "bio": "Lead instructor for Data Structures and Distributed Systems.",
+                },
+                {
+                    "email": "admin@learnova.edu",
+                    "password": "admin123",
+                    "full_name": "Sarah Connor",
+                    "role_name": "administrator",
+                    "department": "Platform Governance",
+                    "bio": "System administrator with platform governance and security audit oversight.",
+                },
+            ]
 
-            admin_role = session.scalars(
-                select(Role).where(Role.name == "administrator")
-            ).first()
-
-            if admin_role:
-                existing_user = session.scalars(
-                    select(User).where(User.email == admin_email)
+            for acc in dev_accounts:
+                role = session.scalars(
+                    select(Role).where(Role.name == acc["role_name"])
                 ).first()
 
-                if not existing_user:
-                    admin_user = User(
-                        id=uuid.uuid4(),
-                        email=admin_email,
-                        hashed_password=_hash_seed_password(admin_password),
-                        full_name="Development Administrator",
-                        role_id=admin_role.id,
-                        is_active=True,
-                    )
-                    session.add(admin_user)
-                    session.flush()
+                if role:
+                    existing_user = session.scalars(
+                        select(User).where(User.email == acc["email"])
+                    ).first()
 
-                    admin_profile = UserProfile(
-                        id=uuid.uuid4(),
-                        user_id=admin_user.id,
-                        bio="System development administrator",
-                        department="Engineering",
-                        preferences={"theme": "system", "emailNotifications": False},
-                    )
-                    session.add(admin_profile)
-                    session.commit()
-                    logger.info("Seeded dev admin account: %s", admin_email)
-                else:
-                    logger.info("Dev admin account %s already exists; skipping.", admin_email)
+                    if not existing_user:
+                        user = User(
+                            id=uuid.uuid4(),
+                            email=acc["email"],
+                            hashed_password=_hash_seed_password(acc["password"]),
+                            full_name=acc["full_name"],
+                            role_id=role.id,
+                            is_active=True,
+                        )
+                        session.add(user)
+                        session.flush()
+
+                        profile = UserProfile(
+                            id=uuid.uuid4(),
+                            user_id=user.id,
+                            bio=acc["bio"],
+                            department=acc["department"],
+                            preferences={"theme": "system", "emailNotifications": True},
+                        )
+                        session.add(profile)
+                        session.commit()
+                        logger.info("Seeded dev %s account: %s", acc["role_name"], acc["email"])
+                    else:
+                        logger.info("Dev account %s already exists; skipping.", acc["email"])
 
         logger.info("Database seeding completed successfully.")
     except Exception as exc:

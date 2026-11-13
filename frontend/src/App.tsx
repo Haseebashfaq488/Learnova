@@ -5,7 +5,7 @@ import {
   ToastMessage,
 } from './components/teacher/TeacherLayout';
 import { storage, CURRENT_TEACHER } from './services/storageService';
-import { authApi, mapUserResponseToStudentUser } from './services/api/authApi';
+import { authApi, mapUserResponseToStudentUser, UserResponse } from './services/api/authApi';
 import {
   coursesApi,
   mapBackendCourseToCourse,
@@ -77,6 +77,7 @@ import {
   StudentLayout,
   StudentNavigationPage,
 } from './components/student/StudentLayout';
+import { AuthPage } from './pages/auth/AuthPage';
 import { SignInPage } from './pages/student/SignInPage';
 import { CreateAccountPage } from './pages/student/CreateAccountPage';
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
@@ -120,8 +121,22 @@ import {
 } from './types';
 
 export default function App() {
-  // Portal Mode: defaults to student mode, with support for teacher and admin
-  const [portalMode, setPortalMode] = useState<'student' | 'teacher' | 'admin'>('student');
+  // Session & Authentication State
+  const [currentUserAccount, setCurrentUserAccount] = useState<UserResponse | null>(() => authApi.getStoredUser());
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return Boolean(authApi.getAccessToken() || authApi.getStoredUser());
+  });
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+
+  // Portal Mode: persisted to localStorage to survive browser reloads
+  const [portalMode, setPortalModeState] = useState<'student' | 'teacher' | 'admin'>(() => {
+    return storage.getPersistedPortalMode() || 'student';
+  });
+
+  const setPortalMode = (mode: 'student' | 'teacher' | 'admin') => {
+    setPortalModeState(mode);
+    storage.setPersistedPortalMode(mode);
+  };
 
   // Student State
   const [currentStudent, setCurrentStudent] = useState<StudentUser | null>(() => storage.getStudentUser());
@@ -331,6 +346,9 @@ export default function App() {
     } catch {
       // Ignore network errors on logout
     }
+    storage.clearSessionCredentials();
+    authApi.setAccessToken(null);
+    authApi.setStoredUser(null);
     storage.logAuditEvent({
       actorId: currentAdmin?.id || 'adm-sarah',
       actorName: currentAdmin?.name || 'Sarah Connor',
@@ -345,7 +363,8 @@ export default function App() {
     });
     setAuditEvents(storage.getAuditEvents());
     setCurrentAdmin(null);
-    setAdminPage('access_denied');
+    setCurrentUserAccount(null);
+    setIsAuthenticated(false);
     notify('info', 'Administrative session terminated.');
   };
 
@@ -786,41 +805,59 @@ export default function App() {
     }
   };
 
-  // Restore live session on mount if valid refresh cookie exists
+  // Restore live session on mount from localStorage / refresh cookie
   useEffect(() => {
     let isMounted = true;
     authApi
-      .getMe()
+      .restoreSession()
       .then((user) => {
         if (!isMounted) return;
-        if (user.role === 'student') {
-          const student = mapUserResponseToStudentUser(user);
-          setCurrentStudent(student);
-          storage.saveStudentUser(student);
-          setPortalMode('student');
-          refreshStudentCourseData();
-        } else if (user.role === 'teacher') {
-          setPortalMode('teacher');
-          refreshTeacherCourseData();
-        } else if (user.role === 'administrator') {
-          const adminAccount: UserAccount = {
-            id: user.id,
-            name: user.full_name,
-            email: user.email,
-            role: 'administrator',
-            isActive: user.is_active,
-            createdAt: user.created_at,
-            lastActiveAt: user.created_at,
-            department: user.profile?.department || undefined,
-            avatar: user.profile?.avatar_url || undefined,
-          };
-          setCurrentAdmin(adminAccount);
-          storage.saveAdminUser(adminAccount);
-          refreshAdminData();
+        if (user) {
+          setCurrentUserAccount(user);
+          setIsAuthenticated(true);
+          const savedPortal = storage.getPersistedPortalMode();
+          if (user.role === 'student') {
+            const student = mapUserResponseToStudentUser(user);
+            setCurrentStudent(student);
+            storage.saveStudentUser(student);
+            setPortalMode(savedPortal || 'student');
+            refreshStudentCourseData();
+          } else if (user.role === 'teacher') {
+            setPortalMode(savedPortal || 'teacher');
+            refreshTeacherCourseData();
+          } else if (user.role === 'administrator') {
+            const adminAccount: UserAccount = {
+              id: user.id,
+              name: user.full_name,
+              email: user.email,
+              role: 'administrator',
+              isActive: user.is_active,
+              createdAt: user.created_at,
+              lastActiveAt: user.created_at,
+              department: user.profile?.department || undefined,
+              avatar: user.profile?.avatar_url || undefined,
+            };
+            setCurrentAdmin(adminAccount);
+            storage.saveAdminUser(adminAccount);
+            setPortalMode(savedPortal || 'admin');
+            refreshAdminData();
+          }
+        } else {
+          // No active session restored
+          const token = authApi.getAccessToken();
+          const stored = authApi.getStoredUser();
+          if (!token && !stored) {
+            setIsAuthenticated(false);
+          }
         }
       })
-      .catch(() => {
-        // Unauthenticated or expired session; keep existing state
+      .catch((err) => {
+        console.warn('Session restoration failed:', err);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsAuthChecking(false);
+        }
       });
 
     return () => {
@@ -828,23 +865,70 @@ export default function App() {
     };
   }, []);
 
+  const handleAuthSuccess = (user: UserResponse, token: string) => {
+    authApi.setAccessToken(token);
+    authApi.setStoredUser(user);
+    setCurrentUserAccount(user);
+    setIsAuthenticated(true);
+
+    if (user.role === 'student') {
+      const student = mapUserResponseToStudentUser(user);
+      setCurrentStudent(student);
+      storage.saveStudentUser(student);
+      setPortalMode('student');
+      setStudentPage('dashboard');
+      refreshStudentCourseData();
+      notify('success', `Welcome back, ${user.full_name}!`);
+    } else if (user.role === 'teacher') {
+      setPortalMode('teacher');
+      setTeacherPage('overview');
+      refreshTeacherCourseData();
+      notify('success', `Welcome to the Teacher Portal, ${user.full_name}!`);
+    } else if (user.role === 'administrator') {
+      const adminAccount: UserAccount = {
+        id: user.id,
+        name: user.full_name,
+        email: user.email,
+        role: 'administrator',
+        isActive: user.is_active,
+        createdAt: user.created_at,
+        lastActiveAt: user.created_at,
+        department: user.profile?.department || undefined,
+        avatar: user.profile?.avatar_url || undefined,
+      };
+      setCurrentAdmin(adminAccount);
+      storage.saveAdminUser(adminAccount);
+      setPortalMode('admin');
+      setAdminPage('dashboard');
+      refreshAdminData();
+      notify('success', `Administrator access granted: ${user.full_name}`);
+    }
+  };
+
+  const handleGlobalSignOut = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Ignore network errors during logout
+    }
+    storage.clearSessionCredentials();
+    authApi.setAccessToken(null);
+    authApi.setStoredUser(null);
+    setCurrentUserAccount(null);
+    setCurrentStudent(null);
+    setCurrentAdmin(null);
+    setIsAuthenticated(false);
+    setStudentPage('dashboard');
+    notify('info', 'You have been signed out.');
+  };
+
   const handleUpdateStudentProfile = (updated: StudentUser) => {
     storage.saveStudentUser(updated);
     setCurrentStudent(updated);
     setLeaderboard(storage.getLeaderboard());
   };
 
-  const handleStudentSignOut = async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // Ignore network errors during logout
-    }
-    storage.saveStudentUser(null as any);
-    setCurrentStudent(null);
-    setStudentPage('sign_in');
-    notify('info', 'You have been signed out.');
-  };
+  const handleStudentSignOut = handleGlobalSignOut;
 
   const handleStudentSignInSuccess = (user: StudentUser) => {
     storage.saveStudentUser(user);
@@ -898,32 +982,34 @@ export default function App() {
   };
 
   // =========================================================================
+  // VIEW ROUTING: AUTHENTICATION GATE & SESSION RESTORE
+  // =========================================================================
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] flex flex-col items-center justify-center p-4 font-sans">
+        <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-lg mb-4 animate-pulse">
+          L
+        </div>
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Restoring Learnova Session...
+        </p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  // =========================================================================
   // VIEW ROUTING: STUDENT PORTAL
   // =========================================================================
   if (portalMode === 'student') {
-    // If not authenticated or on auth screens
-    if (!currentStudent || studentPage === 'sign_in') {
+    if (studentPage === 'sign_in' || studentPage === 'register') {
       return (
-        <SignInPage
-          onSignInSuccess={handleStudentSignInSuccess}
-          onNavigateToRegister={() => setStudentPage('register')}
-          onSwitchToTeacher={() => {
-            setPortalMode('teacher');
-            refreshTeacherCourseData();
-          }}
-          onSwitchToAdmin={() => {
-            setPortalMode('admin');
-            refreshAdminData();
-          }}
-        />
-      );
-    }
-
-    if (studentPage === 'register') {
-      return (
-        <CreateAccountPage
-          onRegisterSuccess={handleStudentSignInSuccess}
-          onNavigateToSignIn={() => setStudentPage('sign_in')}
+        <AuthPage
+          initialMode={studentPage === 'register' ? 'register' : 'signin'}
+          onAuthSuccess={handleAuthSuccess}
         />
       );
     }
@@ -1597,6 +1683,16 @@ export default function App() {
       onNavigate={handleTeacherNavigate}
       selectedCourseId={activeCourse?.id}
       selectedCourseTitle={activeCourse?.title}
+      teacherUser={
+        currentUserAccount
+          ? {
+              name: currentUserAccount.full_name,
+              email: currentUserAccount.email,
+              department: currentUserAccount.profile?.department || undefined,
+            }
+          : undefined
+      }
+      onSignOut={handleGlobalSignOut}
       toasts={toasts}
       onDismissToast={handleDismissToast}
     >

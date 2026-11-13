@@ -15,7 +15,7 @@
  * Direct persistence mutations here are strictly non-authoritative when a backend session is active.
  */
 
-import {
+import type {
   Course,
   Topic,
   Lesson,
@@ -38,17 +38,17 @@ import {
   LeaderboardEntry,
   StudentAssessmentSession,
   StudentAssessmentResult,
-} from '../types';
-import {
   UserAccount,
   UserRole,
   AuditEvent,
   ServiceHealthCheck,
+} from '../types/index.ts';
+import {
   validateRoleChange,
   validateAccountStatusChange,
   maskIpAddress,
   generateCorrelationId,
-} from '../utils/adminLogic';
+} from '../utils/adminLogic.ts';
 
 export const CURRENT_ADMIN: UserAccount = {
   id: 'adm-sarah',
@@ -1426,6 +1426,23 @@ const SEED_LEADERBOARD: LeaderboardEntry[] = [
   },
 ];
 
+function getLocalStorageStore(): Storage | null {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage;
+    }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage;
+    }
+    if (typeof globalThis !== 'undefined' && (globalThis as any).localStorage) {
+      return (globalThis as any).localStorage;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 class StorageService {
   private get<T>(key: string, seed: T): T {
     try {
@@ -2215,8 +2232,37 @@ class StorageService {
     return updated;
   }
 
+  getPersistedPortalMode(): 'student' | 'teacher' | 'admin' | null {
+    return this.get<'student' | 'teacher' | 'admin' | null>('portal_mode', null);
+  }
+
+  setPersistedPortalMode(mode: 'student' | 'teacher' | 'admin' | null): void {
+    if (mode) {
+      this.set('portal_mode', mode);
+    } else {
+      const store = getLocalStorageStore();
+      if (store) {
+        store.removeItem('learnova_portal_mode');
+      }
+    }
+  }
+
+  clearSessionCredentials(): void {
+    const store = getLocalStorageStore();
+    if (store) {
+      store.removeItem('learnova_access_token');
+      store.removeItem('learnova_current_user');
+      store.removeItem('learnova_portal_mode');
+      store.removeItem('learnova_student_user');
+      store.removeItem('learnova_admin_user');
+    }
+  }
+
   resetAllData(): void {
-    localStorage.clear();
+    const store = getLocalStorageStore();
+    if (store) {
+      store.clear();
+    }
   }
 }
 

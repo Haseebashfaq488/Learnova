@@ -47,6 +47,8 @@ interface TeacherLayoutProps {
   onNavigate: (page: NavigationPage, params?: Record<string, string>) => void;
   selectedCourseId?: string;
   selectedCourseTitle?: string;
+  teacherUser?: { name: string; email: string; department?: string };
+  onSignOut?: () => void;
   toasts: ToastMessage[];
   onDismissToast: (id: string) => void;
   children: React.ReactNode;
@@ -57,6 +59,8 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   onNavigate,
   selectedCourseId,
   selectedCourseTitle,
+  teacherUser,
+  onSignOut,
   toasts,
   onDismissToast,
   children,
@@ -272,15 +276,15 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                 aria-expanded={userMenuOpen}
               >
                 <div className="w-8 h-8 rounded-full bg-[#E8EEFF] text-[#2646B8] flex items-center justify-center font-bold text-xs shrink-0 border border-[#2646B8]/20">
-                  ER
+                  {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'ER'}
                 </div>
                 {!sidebarCollapsed && (
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-[#1F2937] truncate">
-                      {CURRENT_TEACHER.name}
+                      {teacherUser?.name || CURRENT_TEACHER.name}
                     </p>
                     <p className="text-[11px] text-[#5B6472] truncate">
-                      {CURRENT_TEACHER.department}
+                      {teacherUser?.department || CURRENT_TEACHER.department}
                     </p>
                   </div>
                 )}
@@ -293,8 +297,8 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   }`}
                 >
                   <div className="px-2 py-1.5 border-b border-gray-100">
-                    <p className="font-semibold text-[#1F2937]">{CURRENT_TEACHER.name}</p>
-                    <p className="text-[#5B6472] text-[11px]">{CURRENT_TEACHER.email}</p>
+                    <p className="font-semibold text-[#1F2937]">{teacherUser?.name || CURRENT_TEACHER.name}</p>
+                    <p className="text-[#5B6472] text-[11px]">{teacherUser?.email || CURRENT_TEACHER.email}</p>
                     <span className="inline-block mt-1 bg-green-100 text-green-800 text-[10px] px-1.5 py-0.2 rounded font-medium">
                       Role: Instructor (Verified)
                     </span>
@@ -312,11 +316,12 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   <button
                     onClick={() => {
                       setUserMenuOpen(false);
+                      onSignOut?.();
                     }}
                     className="flex items-center gap-2 px-2 py-1.5 rounded text-[#B42318] hover:bg-[#FEF0EF] transition-colors cursor-pointer w-full text-left font-medium"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>Active Session</span>
+                    <span>Sign Out</span>
                   </button>
                 </div>
               )}
