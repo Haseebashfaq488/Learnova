@@ -181,8 +181,21 @@ export default function App() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const notify = (type: 'success' | 'error' | 'info', message: string) => {
+    let cleanMessage = message;
+    if (typeof message === 'string' && (message.trim().startsWith('[{"') || message.trim().startsWith('{"'))) {
+      try {
+        const parsed = JSON.parse(message);
+        if (Array.isArray(parsed) && parsed[0]?.msg) {
+          cleanMessage = parsed.map((p) => p.msg).join('; ');
+        } else if (parsed.detail) {
+          cleanMessage = typeof parsed.detail === 'string' ? parsed.detail : JSON.stringify(parsed.detail);
+        }
+      } catch {
+        cleanMessage = message;
+      }
+    }
     const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    setToasts((prev) => [...prev, { id, type, message }]);
+    setToasts((prev) => [...prev, { id, type, message: cleanMessage }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4500);
@@ -392,10 +405,15 @@ export default function App() {
     return list;
   };
 
+  // UUID format guard to prevent 422 errors on legacy/offline seed data
+  const isUuid = (val: any): boolean => {
+    return typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+  };
+
   // Student Actions
   const handleEnrollCourse = async (courseId: string) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(courseId)) {
         const backendEnr = await coursesApi.enrollCourse(courseId);
         const mapped = mapBackendEnrollmentToEnrollment(backendEnr);
         setEnrollments((prev) => {
@@ -727,8 +745,11 @@ export default function App() {
       if (gXp && gXp.items) {
         setXpEvents(gXp.items.map(mapBackendXPToXPEvent));
       }
-      if (gLeaderboard && gLeaderboard.leaderboard) {
-        setLeaderboard(gLeaderboard.leaderboard.map(mapBackendLeaderboardToLeaderboard));
+      if (gLeaderboard) {
+        const lbItems = gLeaderboard.entries || gLeaderboard.leaderboard;
+        if (lbItems && lbItems.length > 0) {
+          setLeaderboard(lbItems.map(mapBackendLeaderboardToLeaderboard));
+        }
       }
     } catch (e) {
       console.warn('Failed to hydrate student course data from API:', e);
@@ -1407,18 +1428,18 @@ export default function App() {
 
   const handleSaveTopic = async (t: Topic) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(t.courseId)) {
         const existing = topics.find((item) => item.id === t.id);
-        if (existing) {
+        if (existing && isUuid(t.id)) {
           await teacherApi.updateTopic(t.id, {
             title: t.title,
             description: t.description,
             order: t.order,
           });
-          if (t.prerequisiteTopicIds) {
+          if (t.prerequisiteTopicIds && t.prerequisiteTopicIds.every(isUuid)) {
             await teacherApi.updateTopicPrerequisites(t.id, t.prerequisiteTopicIds);
           }
-        } else {
+        } else if (!existing && isUuid(t.courseId)) {
           const created = await teacherApi.createTopic(t.courseId, {
             title: t.title,
             description: t.description,
@@ -1427,7 +1448,7 @@ export default function App() {
           if (created && created.id) {
             t.id = created.id;
           }
-          if (t.prerequisiteTopicIds && t.prerequisiteTopicIds.length > 0) {
+          if (t.prerequisiteTopicIds && t.prerequisiteTopicIds.length > 0 && t.prerequisiteTopicIds.every(isUuid)) {
             await teacherApi.updateTopicPrerequisites(t.id, t.prerequisiteTopicIds);
           }
         }
@@ -1442,7 +1463,7 @@ export default function App() {
 
   const handleDeleteTopic = async (id: string) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(id)) {
         await teacherApi.deleteTopic(id);
       }
     } catch (err: any) {
@@ -1454,15 +1475,15 @@ export default function App() {
 
   const handleSaveLesson = async (l: Lesson) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(l.topicId)) {
         const existing = lessons.find((item) => item.id === l.id);
-        if (existing) {
+        if (existing && isUuid(l.id)) {
           await teacherApi.updateLesson(l.id, {
             title: l.title,
             description: l.description,
             order: l.order,
           });
-        } else {
+        } else if (!existing && isUuid(l.topicId)) {
           const created = await teacherApi.createLesson(l.topicId, {
             title: l.title,
             description: l.description,
@@ -1482,7 +1503,7 @@ export default function App() {
 
   const handleDeleteLesson = async (id: string) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(id)) {
         await teacherApi.deleteLesson(id);
       }
     } catch (err: any) {

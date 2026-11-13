@@ -131,11 +131,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
-      {/* Centered Split-Screen Card */}
-      <div className="w-full max-w-5xl bg-white dark:bg-[#181C24] rounded-3xl shadow-2xl border border-[#D9DEE7] dark:border-[#2D3545] overflow-hidden flex flex-col md:flex-row min-h-[640px] transition-all">
+      {/* Centered Split-Screen Card with Fixed Matching Dimensions */}
+      <div className="w-full max-w-5xl bg-white dark:bg-[#181C24] rounded-3xl shadow-2xl border border-[#D9DEE7] dark:border-[#2D3545] overflow-hidden flex flex-col md:flex-row md:h-[690px] min-h-[690px] transition-all duration-300">
         
         {/* Left Section: Educational Visual & Brand Banner */}
-        <div className="md:w-1/2 bg-gradient-to-br from-[#1E3A8A] via-[#2563EB] to-[#4338CA] p-8 sm:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+        <div className="md:w-1/2 bg-gradient-to-br from-[#1E3A8A] via-[#2563EB] to-[#4338CA] p-8 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden h-full">
           {/* Ambient Background Decorative Elements */}
           <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-400/20 blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-indigo-500/25 blur-3xl pointer-events-none" />
@@ -204,8 +204,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </div>
         </div>
 
-        {/* Right Section: Interactive Auth Form */}
-        <div className="md:w-1/2 p-8 sm:p-12 flex flex-col justify-between bg-white dark:bg-[#181C24]">
+        {/* Right Section: Interactive Auth Form with Exact Matching Footprint */}
+        <div className="md:w-1/2 p-8 sm:p-10 flex flex-col justify-between bg-white dark:bg-[#181C24] h-full overflow-y-auto">
           <div>
             {/* Form Toggle Header (Sign In vs Create Account) */}
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
@@ -264,222 +264,225 @@ export const AuthPage: React.FC<AuthPageProps> = ({
               </div>
             )}
 
-            {/* SIGN IN FORM */}
-            {mode === 'signin' && (
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="auth-email"
-                    className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5"
-                  >
-                    University Email
-                  </label>
-                  <div className="relative rounded-xl">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="auth-email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@learnova.edu"
-                      className="block w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label
-                      htmlFor="auth-password"
-                      className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300"
-                    >
-                      Password
-                    </label>
-                  </div>
-                  <div className="relative rounded-xl">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="auth-password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="block w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700"
-                    />
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">
-                      Stay signed in across reloads
-                    </span>
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full mt-2 py-3 px-4 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Signing in...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Sign In to Learnova</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* CREATE ACCOUNT FORM */}
-            {mode === 'register' && (
-              <form onSubmit={handleRegister} className="space-y-3.5">
-                <div>
-                  <label
-                    htmlFor="reg-fullname"
-                    className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Full Name
-                  </label>
-                  <div className="relative rounded-xl">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="reg-fullname"
-                      type="text"
-                      required
-                      value={regFullName}
-                      onChange={(e) => setRegFullName(e.target.value)}
-                      placeholder="e.g. Jordan Lee"
-                      className="block w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reg-email"
-                    className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    University Email
-                  </label>
-                  <div className="relative rounded-xl">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="reg-email"
-                      type="email"
-                      required
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="jordan.lee@university.edu"
-                      className="block w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Form Slot: Locked min-height so switching forms never shifts or jumps card size */}
+            <div className="min-h-[285px] flex flex-col justify-center">
+              {/* SIGN IN FORM */}
+              {mode === 'signin' && (
+                <form key="signin" onSubmit={handleSignIn} className="space-y-3.5 animate-in fade-in duration-200">
                   <div>
                     <label
-                      htmlFor="reg-pass"
+                      htmlFor="auth-email"
                       className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
                     >
-                      Password
+                      University Email
                     </label>
                     <div className="relative rounded-xl">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <Lock className="w-3.5 h-3.5" />
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <Mail className="w-4 h-4" />
                       </div>
                       <input
-                        id="reg-pass"
-                        type={showRegPassword ? 'text' : 'password'}
+                        id="auth-email"
+                        type="email"
                         required
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Min 8 chars"
-                        className="block w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@learnova.edu"
+                        className="block w-full pl-10 pr-3.5 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label
+                        htmlFor="auth-password"
+                        className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300"
+                      >
+                        Password
+                      </label>
+                    </div>
+                    <div className="relative rounded-xl">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <input
+                        id="auth-password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="block w-full pl-10 pr-10 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowRegPassword(!showRegPassword)}
-                        className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
 
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700"
+                      />
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">
+                        Stay signed in across reloads
+                      </span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full mt-1 py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Signing in...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Sign In to Learnova</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {/* CREATE ACCOUNT FORM */}
+              {mode === 'register' && (
+                <form key="register" onSubmit={handleRegister} className="space-y-3 animate-in fade-in duration-200">
                   <div>
                     <label
-                      htmlFor="reg-confirm-pass"
+                      htmlFor="reg-fullname"
                       className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
                     >
-                      Confirm
+                      Full Name
                     </label>
                     <div className="relative rounded-xl">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <Lock className="w-3.5 h-3.5" />
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <User className="w-4 h-4" />
                       </div>
                       <input
-                        id="reg-confirm-pass"
-                        type={showRegPassword ? 'text' : 'password'}
+                        id="reg-fullname"
+                        type="text"
                         required
-                        value={regConfirmPassword}
-                        onChange={(e) => setRegConfirmPassword(e.target.value)}
-                        placeholder="Re-enter password"
-                        className="block w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        value={regFullName}
+                        onChange={(e) => setRegFullName(e.target.value)}
+                        placeholder="e.g. Haseeb Ashfaq"
+                        className="block w-full pl-10 pr-3.5 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full mt-3 py-3 px-4 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Creating Account...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Create Student Account</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
+                  <div>
+                    <label
+                      htmlFor="reg-email"
+                      className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      University Email
+                    </label>
+                    <div className="relative rounded-xl">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <input
+                        id="reg-email"
+                        type="email"
+                        required
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        placeholder="haseeb@learnova.edu"
+                        className="block w-full pl-10 pr-3.5 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label
+                        htmlFor="reg-pass"
+                        className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
+                      >
+                        Password
+                      </label>
+                      <div className="relative rounded-xl">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          id="reg-pass"
+                          type={showRegPassword ? 'text' : 'password'}
+                          required
+                          value={regPassword}
+                          onChange={(e) => setRegPassword(e.target.value)}
+                          placeholder="Min 8 chars"
+                          className="block w-full pl-8 pr-7 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRegPassword(!showRegPassword)}
+                          className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                        >
+                          {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="reg-confirm-pass"
+                        className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1"
+                      >
+                        Confirm
+                      </label>
+                      <div className="relative rounded-xl">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          id="reg-confirm-pass"
+                          type={showRegPassword ? 'text' : 'password'}
+                          required
+                          value={regConfirmPassword}
+                          onChange={(e) => setRegConfirmPassword(e.target.value)}
+                          placeholder="Re-enter password"
+                          className="block w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E232E] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full mt-1 py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Creating Account...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Create Student Account</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
 
             {/* Quick 1-Click Demo Profiles */}
             <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">

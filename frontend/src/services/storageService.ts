@@ -1368,7 +1368,7 @@ const SEED_LEADERBOARD: LeaderboardEntry[] = [
     xp: 520,
     level: 2,
     earnedBadgesCount: 4,
-    isCurrentUser: true,
+    isCurrentUser: false,
     badges: [
       { id: 'badge-first-step', title: 'First Step', icon: 'Footprints', description: 'Enrolled and completed first lesson' },
       { id: 'badge-diagnostic', title: 'Diagnostic Pioneer', icon: 'Compass', description: 'Completed baseline diagnostic' },
@@ -1919,19 +1919,42 @@ class StorageService {
     const student = this.getStudentUser();
     const badges = this.getBadges().filter((b) => b.isUnlocked);
 
+    let hasCurrent = false;
     const updated = list.map((entry) => {
-      if (entry.isCurrentUser || entry.studentId === student.id) {
+      const isMe = entry.studentId === student.id || (student.name && entry.displayName === student.name);
+      if (isMe) {
+        hasCurrent = true;
         return {
           ...entry,
+          studentId: student.id,
           displayName: student.name,
+          avatar: student.avatar || (student.name ? student.name.slice(0, 2).toUpperCase() : 'ST'),
           xp: profile.xp,
           level: profile.level,
           earnedBadgesCount: badges.length,
+          isCurrentUser: true,
           badges: badges.map((b) => ({ id: b.id, title: b.title, icon: b.icon, description: b.description })),
         };
       }
-      return entry;
+      return {
+        ...entry,
+        isCurrentUser: false,
+      };
     });
+
+    if (!hasCurrent && student?.id) {
+      updated.push({
+        rank: updated.length + 1,
+        studentId: student.id,
+        displayName: student.name,
+        avatar: student.avatar || (student.name ? student.name.slice(0, 2).toUpperCase() : 'ST'),
+        xp: profile.xp,
+        level: profile.level,
+        earnedBadgesCount: badges.length,
+        isCurrentUser: true,
+        badges: badges.map((b) => ({ id: b.id, title: b.title, icon: b.icon, description: b.description })),
+      });
+    }
 
     updated.sort((a, b) => b.xp - a.xp);
     return updated.map((entry, idx) => ({ ...entry, rank: idx + 1 }));

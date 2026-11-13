@@ -30,10 +30,13 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
       .getLeaderboard()
       .then((res: BackendLeaderboardResponse) => {
         if (!isMounted) return;
-        if (res.leaderboard && res.leaderboard.length > 0) {
-          setLeaderboardData(res.leaderboard.map(mapBackendLeaderboardToLeaderboard));
+        const items = res.entries || res.leaderboard;
+        if (items && items.length > 0) {
+          setLeaderboardData(items.map(mapBackendLeaderboardToLeaderboard));
         }
-        setOptedIn(res.current_user_opted_in);
+        if (res.current_user_opted_in !== undefined) {
+          setOptedIn(res.current_user_opted_in);
+        }
       })
       .catch(() => {
         // Fall back to initial prop
@@ -51,8 +54,9 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
       await gamificationApi.updateProfile({ is_opted_in_leaderboard: nextVal });
       setOptedIn(nextVal);
       const res = await gamificationApi.getLeaderboard();
-      if (res.leaderboard) {
-        setLeaderboardData(res.leaderboard.map(mapBackendLeaderboardToLeaderboard));
+      const items = res.entries || res.leaderboard;
+      if (items && items.length > 0) {
+        setLeaderboardData(items.map(mapBackendLeaderboardToLeaderboard));
       }
     } catch (e) {
       console.warn('Failed to update leaderboard privacy:', e);
@@ -123,7 +127,9 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
 
         <div className="divide-y divide-gray-100 dark:divide-gray-800">
           {activeLeaderboard.map((entry) => {
-            const isMe = entry.isCurrentUser || entry.studentId === currentStudentId;
+            const isMe =
+              entry.studentId === currentStudentId ||
+              Boolean(entry.isCurrentUser && (!currentStudentId || entry.studentId === currentStudentId));
 
             return (
               <div

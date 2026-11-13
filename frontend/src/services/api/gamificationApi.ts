@@ -64,10 +64,13 @@ export interface BackendLeaderboardEntry {
 }
 
 export interface BackendLeaderboardResponse {
-  leaderboard: BackendLeaderboardEntry[];
+  entries?: BackendLeaderboardEntry[];
+  leaderboard?: BackendLeaderboardEntry[];
+  current_user_entry?: BackendLeaderboardEntry | null;
   current_user_rank?: number | null;
-  current_user_opted_in: boolean;
-  total_participants: number;
+  current_user_opted_in?: boolean;
+  total_participants?: number;
+  total_ranked?: number;
 }
 
 export function mapBackendProfileToProfile(p: BackendGamificationProfileResponse): GamificationProfile {
