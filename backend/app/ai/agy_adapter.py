@@ -138,13 +138,67 @@ class AgyCliAdapter:
             logger.warning("Failed to send message to agy conversation %s: %s", conversation_id, exc)
             return False
 
+    def get_transcript_step_count(self, conversation_id: str) -> int:
+        """Return the current number of recorded step lines in the conversation's transcript."""
+        transcript_path = self.brain_dir / conversation_id / ".system_generated" / "logs" / "transcript.jsonl"
+        if not transcript_path.exists():
+            return 0
+        try:
+            lines = transcript_path.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+            return len(lines)
+        except Exception as exc:
+            logger.debug("Error reading transcript line count: %s", exc)
+            return 0
+
+    @staticmethod
+    def _extract_text_from_record(
+        record: Dict[str, Any],
+        full_lines: Optional[List[str]] = None,
+        idx: int = -1,
+    ) -> Optional[str]:
+        """Extract user-facing text from a MODEL transcript step (direct content or send_message tool call)."""
+        # 1. Direct text content
+        content = record.get("content")
+        if "content" in record.get("truncated_fields", []) and full_lines and 0 <= idx < len(full_lines):
+            try:
+                full_rec = json.loads(full_lines[idx])
+                content = full_rec.get("content") or content
+            except Exception:
+                pass
+        if content and content.strip():
+            return content.strip()
+
+        # 2. Check tool_calls for send_message argument
+        tool_calls = record.get("tool_calls") or []
+        for tc in tool_calls:
+            if isinstance(tc, dict) and tc.get("name") == "send_message":
+                args = tc.get("args") or {}
+                msg = args.get("Message") or args.get("message")
+                if msg is not None:
+                    raw_str = str(msg).strip()
+                    if (raw_str.startswith('"') and raw_str.endswith('"')) or (
+                        raw_str.startswith("'") and raw_str.endswith("'")
+                    ):
+                        try:
+                            unpacked = json.loads(raw_str)
+                            if isinstance(unpacked, str):
+                                raw_str = unpacked
+                            else:
+                                raw_str = raw_str[1:-1]
+                        except Exception:
+                            raw_str = raw_str[1:-1]
+                    if raw_str.strip():
+                        return raw_str.strip()
+
+        return None
+
     def wait_for_latest_response(
         self,
         conversation_id: str,
         previous_step_count: int = 0,
         timeout_seconds: Optional[float] = None,
     ) -> Tuple[Optional[str], int]:
-        """Poll the conversation's transcript.jsonl until a completed model response is written."""
+        """Poll the conversation's transcript.jsonl strictly looking for new model responses."""
         timeout = timeout_seconds or self.poll_timeout_seconds
         transcript_path = self.brain_dir / conversation_id / ".system_generated" / "logs" / "transcript.jsonl"
         full_transcript_path = self.brain_dir / conversation_id / ".system_generated" / "logs" / "transcript_full.jsonl"
@@ -159,29 +213,27 @@ class AgyCliAdapter:
                     lines = transcript_path.read_text(encoding="utf-8", errors="replace").strip().splitlines()
                     if len(lines) > previous_step_count:
                         new_step_count = len(lines)
-                        # Scan backward for the most recent completed MODEL PLANNER_RESPONSE (not tool outputs)
-                        for idx in range(len(lines) - 1, -1, -1):
+                        full_lines = None
+                        if full_transcript_path.exists():
+                            try:
+                                full_lines = full_transcript_path.read_text(
+                                    encoding="utf-8", errors="replace"
+                                ).strip().splitlines()
+                            except Exception:
+                                pass
+
+                        # Scan backward ONLY down to previous_step_count to never accept stale previous turn responses
+                        for idx in range(len(lines) - 1, previous_step_count - 1, -1):
                             line = lines[idx]
                             try:
                                 record = json.loads(line)
                                 if (
                                     record.get("source") == "MODEL"
                                     and record.get("status") == "DONE"
-                                    and record.get("type") == "PLANNER_RESPONSE"
-                                    and not record.get("tool_calls")
                                 ):
-                                    content = record.get("content")
-                                    # If truncated, resolve full content from transcript_full.jsonl
-                                    if "content" in record.get("truncated_fields", []) and full_transcript_path.exists():
-                                        try:
-                                            full_lines = full_transcript_path.read_text(encoding="utf-8", errors="replace").strip().splitlines()
-                                            if idx < len(full_lines):
-                                                full_rec = json.loads(full_lines[idx])
-                                                content = full_rec.get("content") or content
-                                        except Exception:
-                                            pass
-                                    if content and content.strip():
-                                        return content.strip(), new_step_count
+                                    extracted = self._extract_text_from_record(record, full_lines, idx)
+                                    if extracted:
+                                        return extracted, new_step_count
                             except Exception:
                                 continue
                 except Exception as exc:

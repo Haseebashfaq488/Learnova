@@ -1130,7 +1130,7 @@ export default function App() {
   // VIEW ROUTING: STUDENT PORTAL
   // =========================================================================
   if (portalMode === 'student') {
-    if (studentPage === 'sign_in' || studentPage === 'register') {
+    if (!currentStudent || studentPage === 'sign_in' || studentPage === 'register') {
       return (
         <AuthPage
           initialMode={studentPage === 'register' ? 'register' : 'signin'}

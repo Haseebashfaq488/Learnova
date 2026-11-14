@@ -17,7 +17,7 @@ export interface AISimplifyLessonRequest {
 export interface AISimplifyLessonResponse {
   success: boolean;
   explanation: string;
-  source: 'gemini' | 'gemini_cache' | 'academic_cache' | 'deterministic_fallback';
+  source: 'gemini' | 'gemini_cache' | 'academic_cache' | 'deterministic_fallback' | 'agy_cli' | 'agy_cache';
   is_cached?: boolean;
   prompt_used?: string;
 }

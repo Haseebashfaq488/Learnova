@@ -53,27 +53,35 @@ def test_agy_adapter_extract_json_array():
 
 
 def test_master_prompt_templates_exist_and_contain_rules():
-    """Verify context.md and content.md master instruction templates exist with required sections."""
+    """Verify generate_question.md and simplification.md master instruction templates exist with required sections."""
     prompts_dir = Path(__file__).resolve().parent.parent / "app" / "ai" / "prompts"
-    context_file = prompts_dir / "context.md"
-    content_file = prompts_dir / "content.md"
+    gen_q_file = prompts_dir / "generate_question.md"
+    simp_file = prompts_dir / "simplification.md"
 
-    assert context_file.exists(), "context.md master template must exist"
-    assert content_file.exists(), "content.md master template must exist"
+    assert gen_q_file.exists(), "generate_question.md master template must exist"
+    assert simp_file.exists(), "simplification.md master template must exist"
 
-    context_text = context_file.read_text(encoding="utf-8")
-    assert "multiple_choice" in context_text
-    assert "true_false" in context_text
-    assert "fill_blank" in context_text
-    assert "matching" in context_text
-    assert "short_answer" in context_text
-    assert "Iterative Modification Rules" in context_text
+    gen_q_text = gen_q_file.read_text(encoding="utf-8")
+    assert "multiple_choice" in gen_q_text
+    assert "true_false" in gen_q_text
+    assert "fill_blank" in gen_q_text
+    assert "matching" in gen_q_text
+    assert "short_answer" in gen_q_text
+    assert "question generator" in gen_q_text.lower()
+    assert "json" in gen_q_text.lower()
+    assert "anti-hallucination" in gen_q_text.lower() or "not invent" in gen_q_text.lower()
 
-    content_text = content_file.read_text(encoding="utf-8")
-    assert "Handling Attachments" in content_text
-    assert "simplify" in content_text
-    assert "analogy" in content_text
-    assert "example" in content_text
+    simp_text = simp_file.read_text(encoding="utf-8")
+    assert "attached_resources" in simp_text or "attachment" in simp_text.lower()
+    assert "simplify" in simp_text
+    assert "analogy" in simp_text
+    assert "example" in simp_text
+
+    # Also test AISessionService fallback loading
+    loaded_gen_q = AISessionService._read_prompt_template("generate_question.md")
+    loaded_simp = AISessionService._read_prompt_template("simplification.md")
+    assert len(loaded_gen_q) > 500
+    assert len(loaded_simp) > 500
 
 
 def test_ai_session_model_and_relationship_structure():

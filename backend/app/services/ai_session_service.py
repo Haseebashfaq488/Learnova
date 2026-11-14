@@ -47,13 +47,20 @@ class AISessionService:
 
     @staticmethod
     def _read_prompt_template(filename: str) -> str:
-        """Read master context prompt markdown file."""
-        file_path = PROMPTS_DIR / filename
-        if file_path.exists():
-            try:
-                return file_path.read_text(encoding="utf-8")
-            except Exception as exc:
-                logger.warning("Error reading %s: %s", filename, exc)
+        """Read master context prompt markdown file with backward-compatible fallback."""
+        candidates = [filename]
+        if filename in ("generate_question.md", "context.md"):
+            candidates = ["generate_question.md", "context.md"]
+        elif filename in ("simplification.md", "content.md"):
+            candidates = ["simplification.md", "content.md"]
+
+        for cand in candidates:
+            file_path = PROMPTS_DIR / cand
+            if file_path.exists():
+                try:
+                    return file_path.read_text(encoding="utf-8")
+                except Exception as exc:
+                    logger.warning("Error reading %s: %s", cand, exc)
         return ""
 
     @staticmethod
@@ -115,7 +122,7 @@ class AISessionService:
         # 4. Presave context and load master instruction templates
         if req.session_type == "question_generation":
             session_title = req.title or f"Question Generation: {topic_title}"
-            master_instructions = AISessionService._read_prompt_template("context.md")
+            master_instructions = AISessionService._read_prompt_template("generate_question.md")
             init_prompt = (
                 f"{master_instructions}\n\n"
                 f"<curriculum_context>\n"
@@ -127,7 +134,7 @@ class AISessionService:
             )
         else:
             session_title = req.title or f"Tutoring: {lesson_title}"
-            master_instructions = AISessionService._read_prompt_template("content.md")
+            master_instructions = AISessionService._read_prompt_template("simplification.md")
             lesson_desc = lesson.description if lesson else ""
             init_prompt = (
                 f"{master_instructions}\n\n"
@@ -153,7 +160,7 @@ class AISessionService:
             "topic_title": topic_title,
             "lesson_title": lesson_title,
             "session_type": req.session_type,
-            "master_template_used": "context.md" if req.session_type == "question_generation" else "content.md",
+            "master_template_used": "generate_question.md" if req.session_type == "question_generation" else "simplification.md",
         }
 
         new_session = AISession(
@@ -254,9 +261,20 @@ class AISessionService:
         source_label = "agy_cli"
 
         if session.agy_conversation_id:
-            adapter.send_message(session.agy_conversation_id, combined_prompt)
-            # Wait for response from transcript.jsonl
-            response_text, _ = adapter.wait_for_latest_response(session.agy_conversation_id, timeout_seconds=15)
+            baseline_step_count = adapter.get_transcript_step_count(session.agy_conversation_id)
+            instruction_prefix = (
+                "[Instructions: Answer the user's inquiry directly. Do NOT execute workspace tools or bash commands.]\n\n"
+            )
+            send_ok = adapter.send_message(
+                session.agy_conversation_id,
+                instruction_prefix + combined_prompt,
+            )
+            if send_ok:
+                response_text, new_steps = adapter.wait_for_latest_response(
+                    session.agy_conversation_id,
+                    previous_step_count=baseline_step_count,
+                    timeout_seconds=25,
+                )
 
         # If AGY daemon did not return text (e.g. offline/daemon not active), use curriculum-grounded deterministic fallback
         if not response_text:
