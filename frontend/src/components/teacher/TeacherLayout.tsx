@@ -17,10 +17,15 @@ import {
   CheckCircle2,
   AlertCircle,
   HelpCircle,
+  Palette,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { CURRENT_TEACHER } from '../../services/storageService';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { DesignStudioWidget } from '../ui/DesignStudioWidget';
+import { AppFooter } from '../ui/AppFooter';
+import { useTheme } from '../../context/ThemeContext';
 
 export type NavigationPage =
   | 'overview'
@@ -69,6 +74,13 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [designStudioOpen, setDesignStudioOpen] = useState(false);
+  const { actualTheme, setTheme } = useTheme();
+  const isDark = actualTheme === 'dark';
+
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
 
   const navItems = [
     {
@@ -116,7 +128,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] text-[#1F2937] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] text-[#1F2937] dark:text-[#F3F4F6] flex flex-col font-sans">
       {/* Toast Notification Stack */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
         {toasts.map((t) => (
@@ -153,14 +165,14 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
       <div className="flex flex-1">
         {/* Desktop Sidebar (248px or 72px collapsed) - Sticky & Never moves on scroll */}
         <aside
-          className={`hidden md:flex flex-col border-r border-[#D9DEE7] bg-white transition-all duration-200 select-none z-20 shrink-0 sticky top-0 h-screen self-start ${
+          className={`hidden md:flex flex-col border-r border-[#D9DEE7] dark:border-[#2D3545] bg-white dark:bg-[#181C24] transition-all duration-200 select-none z-20 shrink-0 sticky top-0 h-screen self-start ${
             sidebarCollapsed ? 'w-[72px]' : 'w-[248px]'
           }`}
           aria-label="Main Navigation"
         >
           {/* Brand header */}
           <div
-            className={`h-[72px] border-b border-[#D9DEE7] flex items-center justify-between transition-all duration-200 ${
+            className={`h-[72px] border-b border-[#D9DEE7] dark:border-[#2D3545] flex items-center justify-between transition-all duration-200 ${
               sidebarCollapsed ? 'px-2' : 'px-5'
             }`}
           >
@@ -192,10 +204,10 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                     <GraduationCap className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-base tracking-tight text-[#1F2937] leading-none truncate">
+                    <span className="font-bold text-base tracking-tight text-[#1F2937] dark:text-white leading-none truncate">
                       Learnova
                     </span>
-                    <span className="text-[11px] font-semibold text-[#3156D3] uppercase tracking-wider mt-1 truncate">
+                    <span className="text-[11px] font-semibold text-[#3156D3] dark:text-indigo-400 uppercase tracking-wider mt-1 truncate">
                       Teacher Portal
                     </span>
                   </div>
@@ -253,25 +265,25 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
           </nav>
 
           {/* Bottom user utility area */}
-          <div className="p-3 border-t border-[#D9DEE7]">
+          <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545]">
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors text-left cursor-pointer ${
+                className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left cursor-pointer ${
                   sidebarCollapsed ? 'justify-center p-1.5' : ''
                 }`}
                 aria-haspopup="true"
                 aria-expanded={userMenuOpen}
               >
-                <div className="w-8 h-8 rounded-full bg-[#E8EEFF] text-[#2646B8] flex items-center justify-center font-bold text-xs shrink-0 border border-[#2646B8]/20">
+                <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs shrink-0 border border-[#2646B8]/20 dark:border-indigo-700/40">
                   {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'ER'}
                 </div>
                 {!sidebarCollapsed && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#1F2937] truncate">
+                    <p className="text-xs font-semibold text-[#1F2937] dark:text-white truncate">
                       {teacherUser?.name || CURRENT_TEACHER.name}
                     </p>
-                    <p className="text-[11px] text-[#5B6472] truncate">
+                    <p className="text-[11px] text-[#5B6472] dark:text-gray-400 truncate">
                       {teacherUser?.department || CURRENT_TEACHER.department}
                     </p>
                   </div>
@@ -280,15 +292,15 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
               {userMenuOpen && (
                 <div
-                  className={`absolute bottom-12 bg-white border border-[#D9DEE7] rounded-xl shadow-lg p-2 z-30 flex flex-col gap-1 text-xs animate-in fade-in duration-100 ${
+                  className={`absolute bottom-12 bg-white dark:bg-[#181C24] border border-[#D9DEE7] dark:border-[#2D3545] rounded-xl shadow-lg p-2 z-30 flex flex-col gap-1 text-xs animate-in fade-in duration-100 ${
                     sidebarCollapsed ? 'left-0 w-60 shadow-xl' : 'left-0 right-0'
                   }`}
                 >
-                  <div className="px-2 py-1.5 border-b border-gray-100">
-                    <p className="font-semibold text-[#1F2937]">{teacherUser?.name || CURRENT_TEACHER.name}</p>
-                    <p className="text-[#5B6472] text-[11px]">{teacherUser?.email || CURRENT_TEACHER.email}</p>
-                    <span className="inline-block mt-1 bg-green-100 text-green-800 text-[10px] px-1.5 py-0.2 rounded font-medium">
-                      Role: Instructor (Verified)
+                  <div className="px-2 py-1.5 border-b border-gray-100 dark:border-gray-800">
+                    <p className="font-semibold text-[#1F2937] dark:text-white">{teacherUser?.name || CURRENT_TEACHER.name}</p>
+                    <p className="text-[#5B6472] dark:text-gray-400 text-[11px]">{teacherUser?.email || CURRENT_TEACHER.email}</p>
+                    <span className="inline-block mt-1 bg-green-100 dark:bg-green-950/60 text-green-800 dark:text-green-300 text-[10px] px-1.5 py-0.2 rounded font-medium">
+                      Role: Instructor
                     </span>
                   </div>
                   <button
@@ -296,9 +308,9 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                       setHelpModalOpen(true);
                       setUserMenuOpen(false);
                     }}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded text-[#5B6472] hover:bg-gray-100 hover:text-[#1F2937] transition-colors cursor-pointer w-full text-left"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#1F2937] dark:hover:text-white transition-colors cursor-pointer w-full text-left"
                   >
-                    <HelpCircle className="w-3.5 h-3.5 text-[#3156D3]" />
+                    <HelpCircle className="w-3.5 h-3.5 text-[#3156D3] dark:text-indigo-400" />
                     <span>Documentation & Help</span>
                   </button>
                   <button
@@ -306,7 +318,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                       setUserMenuOpen(false);
                       onSignOut?.();
                     }}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded text-[#B42318] hover:bg-[#FEF0EF] transition-colors cursor-pointer w-full text-left font-medium"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded text-[#B42318] dark:text-rose-400 hover:bg-[#FEF0EF] dark:hover:bg-rose-950/40 transition-colors cursor-pointer w-full text-left font-medium"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sign Out</span>
@@ -319,12 +331,12 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
         {/* Mobile Header and Drawer */}
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-[72px] bg-white border-b border-[#D9DEE7] px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
+          <header className="h-[72px] frosted-header px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
             <div className="flex items-center gap-3">
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden p-2 rounded-lg text-[#5B6472] hover:bg-gray-100 transition-colors cursor-pointer"
+                className="md:hidden p-2 rounded-lg text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 aria-label="Open mobile navigation"
               >
                 <Menu className="w-5 h-5" />
@@ -334,39 +346,73 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                 <div className="w-7 h-7 rounded-lg bg-[#3156D3] text-white flex items-center justify-center font-bold text-xs">
                   <GraduationCap className="w-4 h-4" />
                 </div>
-                <span className="font-bold text-sm tracking-tight text-[#1F2937]">Learnova</span>
+                <span className="font-bold text-sm tracking-tight text-[#1F2937] dark:text-white">Learnova</span>
               </div>
 
               {/* Course breadcrumb indicator in top header */}
               {selectedCourseTitle && (
-                <div className="hidden lg:flex items-center gap-2 text-xs text-[#5B6472] pl-3 border-l border-gray-200">
-                  <span className="text-[#737D8C]">Active Course:</span>
-                  <span className="font-semibold text-[#1F2937] max-w-sm truncate bg-[#F5F7FA] px-2 py-0.5 rounded border border-[#D9DEE7]">
+                <div className="hidden lg:flex items-center gap-2 text-xs text-[#5B6472] dark:text-gray-400 pl-3 border-l border-gray-200 dark:border-gray-700">
+                  <span className="text-[#737D8C] dark:text-gray-400">Course:</span>
+                  <span className="font-semibold text-[#1F2937] dark:text-white max-w-sm truncate bg-[#F5F7FA] dark:bg-[#1C212B] px-2 py-0.5 rounded border border-[#D9DEE7] dark:border-[#2D3545]">
                     {selectedCourseTitle}
                   </span>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <ThemeToggle />
+            <div className="flex items-center gap-2">
+              {/* Consolidated Header Command Dock */}
+              <div className="command-dock">
+                {/* 1-Click Appearance Mode Toggle */}
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="p-1.5 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
+                  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  title="Toggle appearance mode"
+                >
+                  {isDark ? (
+                    <Sun className="w-4 h-4 text-amber-400" />
+                  ) : (
+                    <Moon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                  )}
+                </button>
 
-              <button
-                onClick={() => setHelpModalOpen(true)}
-                className="p-2 text-[#5B6472] hover:text-[#3156D3] hover:bg-gray-100 rounded-lg transition-colors cursor-pointer hidden sm:flex items-center gap-1.5 text-xs font-medium"
-                title="Teacher Help Guide"
-              >
-                <HelpCircle className="w-4 h-4" />
-                <span>Guide</span>
-              </button>
+                <button
+                  type="button"
+                  data-design-studio-trigger="true"
+                  onClick={() => setDesignStudioOpen((prev) => !prev)}
+                  className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                    designStudioOpen
+                      ? 'bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 shadow-xs'
+                      : 'text-[#5B6472] dark:text-gray-300 hover:text-[#3156D3] dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-gray-800'
+                  }`}
+                  title="Design Studio (Palettes & Fonts)"
+                  aria-label="Toggle Design Studio"
+                  aria-expanded={designStudioOpen}
+                  aria-controls="design-studio-dialog"
+                >
+                  <Palette className="w-4 h-4 text-[#3156D3] dark:text-indigo-400 pointer-events-none" />
+                </button>
 
-              <div className="w-px h-5 bg-gray-200 hidden sm:block" />
+                <button
+                  onClick={() => setHelpModalOpen(true)}
+                  className="p-1.5 text-[#5B6472] dark:text-gray-300 hover:text-[#3156D3] dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer hidden sm:flex items-center gap-1 text-xs font-medium"
+                  title="Teacher Guide"
+                  aria-label="Teacher Guide"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span className="text-[11px] pr-1">Guide</span>
+                </button>
+              </div>
+
+              <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 hidden sm:block mx-1" />
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[#E8EEFF] text-[#2646B8] flex items-center justify-center font-bold text-xs border border-[#2646B8]/20">
+                <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs border border-[#2646B8]/20 dark:border-indigo-700/40">
                   ER
                 </div>
-                <span className="text-xs font-semibold text-[#1F2937] hidden sm:inline">
+                <span className="text-xs font-semibold text-[#1F2937] dark:text-white hidden sm:inline">
                   {CURRENT_TEACHER.name}
                 </span>
               </div>
@@ -380,20 +426,20 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
               role="dialog"
               aria-modal="true"
             >
-              <div className="w-72 bg-white h-full shadow-2xl flex flex-col p-4 animate-in slide-in-from-left duration-200">
-                <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+              <div className="w-72 bg-white dark:bg-[#181C24] h-full shadow-2xl flex flex-col p-4 animate-in slide-in-from-left duration-200 border-r border-gray-200 dark:border-gray-800">
+                <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-[#3156D3] text-white flex items-center justify-center">
                       <GraduationCap className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-[#1F2937]">Learnova</p>
-                      <p className="text-[11px] text-[#3156D3] font-semibold">Teacher Portal</p>
+                      <p className="font-bold text-sm text-[#1F2937] dark:text-white">Learnova</p>
+                      <p className="text-[11px] text-[#3156D3] dark:text-indigo-400 font-semibold">Teacher Portal</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 text-[#5B6472] hover:bg-gray-100 rounded-lg cursor-pointer"
+                    className="p-1.5 text-[#5B6472] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
                     aria-label="Close menu"
                   >
                     <X className="w-5 h-5" />
@@ -409,8 +455,8 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                         onClick={() => handleNavClick(item.id)}
                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                           isActive
-                            ? 'bg-[#E8EEFF] text-[#2646B8] font-semibold'
-                            : 'text-[#5B6472] hover:bg-gray-100 text-left'
+                            ? 'bg-[#E8EEFF] dark:bg-indigo-950/50 text-[#2646B8] dark:text-indigo-300 font-semibold'
+                            : 'text-[#5B6472] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#1F2937] dark:hover:text-white text-left'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -418,7 +464,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                           <span>{item.label}</span>
                         </div>
                         {item.badge && (
-                          <span className="text-[10px] font-semibold bg-[#FFF5D6] text-[#946200] px-1.5 py-0.5 rounded border border-[#946200]/20">
+                          <span className="text-[10px] font-semibold bg-[#FFF5D6] dark:bg-amber-950/50 text-[#946200] dark:text-amber-300 px-1.5 py-0.5 rounded border border-[#946200]/20 dark:border-amber-700/40">
                             {item.badge}
                           </span>
                         )}
@@ -427,7 +473,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   })}
                 </nav>
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
                   <div className="mb-3">
                     <span className="text-[10px] font-semibold uppercase text-[#737D8C] dark:text-[#828B99] block mb-1.5">
                       Theme Mode
@@ -435,10 +481,10 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                     <ThemeToggle compact />
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-[#F5F7FA] border border-[#D9DEE7] mb-3">
-                    <p className="text-xs font-semibold text-[#1F2937]">{CURRENT_TEACHER.name}</p>
-                    <p className="text-[11px] text-[#5B6472]">{CURRENT_TEACHER.email}</p>
-                    <p className="text-[10px] text-[#3156D3] font-medium mt-1">
+                  <div className="p-2.5 rounded-lg bg-[#F5F7FA] dark:bg-[#1C212B] border border-[#D9DEE7] dark:border-[#2D3545] mb-3">
+                    <p className="text-xs font-semibold text-[#1F2937] dark:text-white">{CURRENT_TEACHER.name}</p>
+                    <p className="text-[11px] text-[#5B6472] dark:text-gray-400">{CURRENT_TEACHER.email}</p>
+                    <p className="text-[10px] text-[#3156D3] dark:text-indigo-400 font-medium mt-1">
                       {CURRENT_TEACHER.department}
                     </p>
                   </div>
@@ -454,11 +500,18 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
               {children}
             </div>
           </main>
+
+          {/* Quiet Studio-Grade Utility Footer */}
+          <AppFooter onOpenDesignStudio={() => setDesignStudioOpen(true)} />
         </div>
       </div>
 
-      {/* Floating Design Studio Customizer Widget */}
-      <DesignStudioWidget />
+      {/* Design Studio Customizer Widget */}
+      <DesignStudioWidget
+        isOpen={designStudioOpen}
+        onClose={() => setDesignStudioOpen(false)}
+        onToggle={() => setDesignStudioOpen((prev) => !prev)}
+      />
 
       {/* Teacher Portal Documentation Modal */}
       {helpModalOpen && (

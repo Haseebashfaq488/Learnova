@@ -136,7 +136,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 view-enter-animation">
       <PageHeader
         title="Courses"
         description="Manage the courses available to you."
@@ -185,12 +185,12 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
           />
         )
       ) : (
-        <div className="bg-white rounded-xl border border-[#D9DEE7] overflow-hidden shadow-2xs">
+        <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 overflow-hidden shadow-xs">
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#F5F7FA] border-b border-[#D9DEE7] text-xs font-semibold text-[#5B6472]">
+                <tr className="bg-gray-50/70 dark:bg-[#12161F] border-b border-gray-200 dark:border-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400">
                   <th scope="col" className="py-3.5 px-5">Course Title & Overview</th>
                   <th scope="col" className="py-3.5 px-4 text-center">Curriculum Structure</th>
                   <th scope="col" className="py-3.5 px-4">Status</th>
@@ -198,36 +198,36 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                   <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#D9DEE7] text-sm">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
                 {filteredCourses.map((c) => {
                   const courseTopics = topics.filter((t) => t.courseId === c.id);
                   const courseLessons = lessons.filter((l) => l.courseId === c.id);
 
                   return (
-                    <tr key={c.id} className="hover:bg-[#F5F7FA] transition-colors group">
+                    <tr key={c.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-colors group">
                       <td className="py-4 px-5 max-w-md">
                         <button
                           onClick={() => onNavigate('course_overview', { courseId: c.id })}
-                          className="font-semibold text-[#1F2937] group-hover:text-[#3156D3] text-left transition-colors cursor-pointer text-sm"
+                          className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-left transition-colors cursor-pointer text-sm"
                         >
                           {c.title}
                         </button>
-                        <p className="text-xs text-[#5B6472] line-clamp-2 mt-0.5 leading-relaxed">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">
                           {c.description}
                         </p>
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <div className="inline-flex items-center gap-2 text-xs font-medium text-[#1F2937] bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-md">
-                          <Layers className="w-3.5 h-3.5 text-[#3156D3]" />
+                        <div className="inline-flex items-center gap-2 text-xs font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 px-2.5 py-1 rounded-md">
+                          <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                           <span>{courseTopics.length} topics</span>
-                          <span className="text-gray-300">•</span>
+                          <span className="text-gray-300 dark:text-gray-600">•</span>
                           <span>{courseLessons.length} lessons</span>
                         </div>
                       </td>
                       <td className="py-4 px-4">
                         <StatusBadge status={c.status} />
                       </td>
-                      <td className="py-4 px-4 text-xs text-[#5B6472]">
+                      <td className="py-4 px-4 text-xs text-gray-500 dark:text-gray-400">
                         {new Date(c.updatedAt).toLocaleDateString(undefined, {
                           year: 'numeric',
                           month: 'short',
@@ -252,7 +252,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                           </Button>
                           <button
                             onClick={() => openEditModal(c)}
-                            className="p-1.5 text-[#5B6472] hover:text-[#1F2937] hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
                             aria-label={`Edit ${c.title}`}
                             title="Edit course details"
                           >
@@ -268,7 +268,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden divide-y divide-[#D9DEE7]">
+          <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
             {filteredCourses.map((c) => {
               const courseTopics = topics.filter((t) => t.courseId === c.id);
               const courseLessons = lessons.filter((l) => l.courseId === c.id);
@@ -278,14 +278,14 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <button
                       onClick={() => onNavigate('course_overview', { courseId: c.id })}
-                      className="font-bold text-sm text-[#1F2937] text-left hover:text-[#3156D3]"
+                      className="font-bold text-sm text-gray-900 dark:text-white text-left hover:text-indigo-600 dark:hover:text-indigo-400"
                     >
                       {c.title}
                     </button>
                     <StatusBadge status={c.status} />
                   </div>
-                  <p className="text-xs text-[#5B6472] line-clamp-2">{c.description}</p>
-                  <div className="flex items-center justify-between text-xs text-[#5B6472] pt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{c.description}</p>
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-1">
                     <span>{courseTopics.length} topics • {courseLessons.length} lessons</span>
                     <span>Updated {new Date(c.updatedAt).toLocaleDateString()}</span>
                   </div>

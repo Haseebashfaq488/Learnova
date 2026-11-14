@@ -18,10 +18,16 @@ import {
   Shield,
   Layers,
   Sparkles,
+  Palette,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { UserAccount } from '../../types';
 import { ToastMessage } from '../teacher/TeacherLayout';
 import { DesignStudioWidget } from '../ui/DesignStudioWidget';
+import { AppFooter } from '../ui/AppFooter';
+import { Avatar } from '../ui/Avatar';
+import { useTheme } from '../../context/ThemeContext';
 
 export type AdminNavigationPage =
   | 'dashboard'
@@ -65,26 +71,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    try {
-      return document.documentElement.classList.contains('dark');
-    } catch {
-      return false;
-    }
-  });
+  const [designStudioOpen, setDesignStudioOpen] = useState(false);
+  const { actualTheme, setTheme } = useTheme();
+  const isDark = actualTheme === 'dark';
 
   const toggleTheme = () => {
-    const nextDark = !isDark;
-    setIsDark(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('learnova_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('learnova_theme', 'light');
-    }
+    setTheme(isDark ? 'light' : 'dark');
   };
 
   const navItems = [
@@ -329,9 +321,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-80 transition cursor-pointer"
               title="Administrator profile and security credentials"
             >
-              <div className="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                {currentAdmin.avatar || currentAdmin.name.slice(0, 2).toUpperCase()}
-              </div>
+              <Avatar
+                src={currentAdmin.avatar}
+                name={currentAdmin.name}
+                fallbackText={currentAdmin.name ? currentAdmin.name.slice(0, 2).toUpperCase() : 'AD'}
+                className="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs shrink-0 shadow-xs"
+              />
               <div className="min-w-0">
                 <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
                   {currentAdmin.name}
@@ -362,7 +357,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         }`}
       >
         {/* Global Header */}
-        <header className="sticky top-0 z-30 h-16 bg-white dark:bg-[#181C24] border-b border-[#D9DEE7] dark:border-[#2D3545] px-4 sm:px-6 flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-30 h-16 frosted-header px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
@@ -404,7 +399,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
 
           {/* Right Header: Health indicator, Security Badge, Theme Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {/* Live Operational Health Status Dot */}
             <button
               type="button"
@@ -413,31 +408,44 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               title="View system telemetry"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Telemetry: Active</span>
+              <span>Operational</span>
             </button>
 
-            {/* Dark/Light Theme Toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
-              aria-label="Toggle theme mode"
-              title="Toggle theme mode"
-            >
-              {isDark ? (
-                <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
-              )}
-            </button>
+            {/* Utility Command Dock */}
+            <div className="command-dock">
+              {/* Dark/Light Theme Toggle */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-1.5 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
+                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                title="Toggle appearance mode"
+              >
+                {isDark ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-gray-600" />
+                )}
+              </button>
+
+              {/* Design Studio Trigger */}
+              <button
+                type="button"
+                data-design-studio-trigger="true"
+                onClick={() => setDesignStudioOpen((prev) => !prev)}
+                className={`p-1.5 rounded-full transition cursor-pointer ${
+                  designStudioOpen
+                    ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 shadow-xs'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+                }`}
+                aria-label="Toggle Design Studio"
+                aria-expanded={designStudioOpen}
+                aria-controls="design-studio-dialog"
+                title="Design Studio (Palettes & Fonts)"
+              >
+                <Palette className="w-4 h-4 text-purple-600 dark:text-purple-400 pointer-events-none" />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -447,10 +455,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             {children}
           </div>
         </main>
+
+        {/* Quiet Studio-Grade Utility Footer */}
+        <AppFooter onOpenDesignStudio={() => setDesignStudioOpen(true)} />
       </div>
 
-      {/* Floating Design Studio Customizer Widget */}
-      <DesignStudioWidget />
+      {/* Design Studio Customizer Widget */}
+      <DesignStudioWidget
+        isOpen={designStudioOpen}
+        onClose={() => setDesignStudioOpen(false)}
+        onToggle={() => setDesignStudioOpen((prev) => !prev)}
+      />
     </div>
   );
 };

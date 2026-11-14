@@ -81,7 +81,7 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12 view-enter-animation">
       {/* Top Bar with Navigation & AI Helper Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button

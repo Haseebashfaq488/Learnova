@@ -40,6 +40,7 @@ import {
 } from './services/api/teacherApi';
 import {
   adminApi,
+  AdminDashboardResponse,
   mapBackendUserToUserAccount,
   mapBackendAuditToAuditEvent,
   mapBackendHealthToServiceHealth,
@@ -192,6 +193,7 @@ export default function App() {
   const [allUsers, setAllUsers] = useState<UserAccount[]>(() => storage.getUsers());
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>(() => storage.getAuditEvents());
   const [serviceHealth, setServiceHealth] = useState<ServiceHealthCheck[]>(() => storage.getServiceHealth());
+  const [adminDashboardData, setAdminDashboardData] = useState<AdminDashboardResponse | null>(null);
   const [roleModalUser, setRoleModalUser] = useState<UserAccount | null>(null);
   const [statusModalUser, setStatusModalUser] = useState<UserAccount | null>(null);
 
@@ -282,12 +284,14 @@ export default function App() {
     try {
       if (authApi.getAccessToken()) {
         await adminApi.changeUserRole(targetUserId, newRole as any);
-        const [usersRes, auditRes] = await Promise.all([
+        const [usersRes, auditRes, dashRes] = await Promise.all([
           adminApi.listUsers({ page_size: 100 }),
           adminApi.getAuditLogs({ page_size: 100 }),
+          adminApi.getAdminDashboard().catch(() => null),
         ]);
         if (usersRes?.items) setAllUsers(usersRes.items.map(mapBackendUserToUserAccount));
         if (auditRes?.items) setAuditEvents(auditRes.items.map(mapBackendAuditToAuditEvent));
+        if (dashRes) setAdminDashboardData(dashRes);
         notify('success', `Role successfully updated to "${newRole}". Audit event recorded.`);
         return { success: true };
       }
@@ -311,12 +315,14 @@ export default function App() {
     try {
       if (authApi.getAccessToken()) {
         await adminApi.toggleUserStatus(targetUserId, nextStatus);
-        const [usersRes, auditRes] = await Promise.all([
+        const [usersRes, auditRes, dashRes] = await Promise.all([
           adminApi.listUsers({ page_size: 100 }),
           adminApi.getAuditLogs({ page_size: 100 }),
+          adminApi.getAdminDashboard().catch(() => null),
         ]);
         if (usersRes?.items) setAllUsers(usersRes.items.map(mapBackendUserToUserAccount));
         if (auditRes?.items) setAuditEvents(auditRes.items.map(mapBackendAuditToAuditEvent));
+        if (dashRes) setAdminDashboardData(dashRes);
         notify('success', `Account ${nextStatus ? 'reactivated' : 'deactivated'} successfully.`);
         return { success: true };
       }
@@ -487,9 +493,14 @@ export default function App() {
   const handleMarkLessonComplete = async (lessonId: string, courseId: string, topicId: string) => {
     try {
       if (authApi.getAccessToken()) {
+        const wasAlready = completions.some((c) => c.lessonId === lessonId);
         const backendRes = await curriculumApi.completeLesson(lessonId);
         const mapped = mapBackendCompletionToCompletion(backendRes);
-        setCompletions((prev) => [...prev.filter((c) => c.lessonId !== lessonId), mapped]);
+        setCompletions((prev) => {
+          const updated = [...prev.filter((c) => c.lessonId !== lessonId), mapped];
+          storage.saveLessonCompletions(updated);
+          return updated;
+        });
 
         // Keep local storage in sync as fallback
         storage.completeLesson(lessonId, courseId, topicId);
@@ -507,17 +518,23 @@ export default function App() {
 
         // Fetch refreshed gamification state directly from database
         try {
-          const [updatedProfile, updatedXp, updatedLeaderboard] = await Promise.all([
+          const [updatedProfile, updatedBadges, updatedXp, updatedLeaderboard] = await Promise.all([
             gamificationApi.getProfile().catch(() => null),
+            gamificationApi.getBadges().catch(() => null),
             gamificationApi.getXPHistory().catch(() => null),
             gamificationApi.getLeaderboard().catch(() => null),
           ]);
           if (updatedProfile) {
-            const mapped = mapBackendProfileToProfile(updatedProfile);
-            setGamificationProfile(mapped);
-            storage.saveGamificationProfile(mapped);
+            const mappedProf = mapBackendProfileToProfile(updatedProfile);
+            setGamificationProfile(mappedProf);
+            storage.saveGamificationProfile(mappedProf);
           } else {
             setGamificationProfile(storage.getGamificationProfile());
+          }
+          if (updatedBadges && updatedBadges.items) {
+            const mappedBadges = updatedBadges.items.map(mapBackendBadgeToBadge);
+            setBadges(mappedBadges);
+            storage.saveBadges(mappedBadges);
           }
           if (updatedXp && updatedXp.items) {
             setXpEvents(updatedXp.items.map(mapBackendXPToXPEvent));
@@ -536,7 +553,11 @@ export default function App() {
           setLeaderboard(storage.getLeaderboard());
         }
 
-        notify('success', `Lesson marked complete! +50 XP awarded.`);
+        if (wasAlready) {
+          notify('info', 'This lesson was already marked complete. Progress is up to date.');
+        } else {
+          notify('success', 'Lesson marked complete! +50 XP awarded.');
+        }
         return;
       }
     } catch (err: any) {
@@ -845,10 +866,17 @@ export default function App() {
 
   const refreshStudentCourseData = async () => {
     try {
-      const [backendCourses, backendEnrollments] = await Promise.all([
+      const [backendCourses, backendEnrollments, backendCompletions] = await Promise.all([
         coursesApi.listCourses().catch(() => null),
         coursesApi.getMyEnrollments().catch(() => null),
+        curriculumApi.getLessonCompletions().catch(() => null),
       ]);
+
+      if (backendCompletions) {
+        const mappedCompletions = backendCompletions.map(mapBackendCompletionToCompletion);
+        setCompletions(mappedCompletions);
+        storage.saveLessonCompletions(mappedCompletions);
+      }
 
       if (backendCourses && backendCourses.length > 0) {
         const mappedCourses = backendCourses.map(mapBackendCourseToCourse);
@@ -914,7 +942,9 @@ export default function App() {
         storage.saveGamificationProfile(mapped);
       }
       if (gBadges && gBadges.items) {
-        setBadges(gBadges.items.map(mapBackendBadgeToBadge));
+        const mappedBadges = gBadges.items.map(mapBackendBadgeToBadge);
+        setBadges(mappedBadges);
+        storage.saveBadges(mappedBadges);
       }
       if (gXp && gXp.items) {
         setXpEvents(gXp.items.map(mapBackendXPToXPEvent));
@@ -980,10 +1010,12 @@ export default function App() {
 
   const refreshAdminData = async () => {
     try {
-      const [usersRes, auditRes, healthRes] = await Promise.all([
+      const [usersRes, auditRes, healthRes, dashboardRes, coursesRes] = await Promise.all([
         adminApi.listUsers({ page_size: 100 }).catch(() => null),
         adminApi.getAuditLogs({ page_size: 100 }).catch(() => null),
         adminApi.getSystemHealth().catch(() => null),
+        adminApi.getAdminDashboard().catch(() => null),
+        coursesApi.listCourses().catch(() => null),
       ]);
 
       if (usersRes && usersRes.items) {
@@ -994,6 +1026,12 @@ export default function App() {
       }
       if (healthRes) {
         setServiceHealth(mapBackendHealthToServiceHealth(healthRes));
+      }
+      if (dashboardRes) {
+        setAdminDashboardData(dashboardRes);
+      }
+      if (coursesRes && coursesRes.length > 0) {
+        setCourses(coursesRes.map(mapBackendCourseToCourse));
       }
     } catch (e) {
       console.warn('Failed to hydrate admin data from API:', e);
@@ -1043,15 +1081,22 @@ export default function App() {
             await refreshAdminData();
           }
         } else {
-          // No active session restored
-          const token = authApi.getAccessToken();
-          const stored = authApi.getStoredUser();
-          if (!token && !stored) {
-            setIsAuthenticated(false);
-          }
+          // No active session restored (token expired, 401 on /me, or unauthenticated)
+          authApi.clearSession();
+          storage.clearSessionCredentials();
+          setCurrentUserAccount(null);
+          setCurrentStudent(null);
+          setCurrentAdmin(null);
+          setIsAuthenticated(false);
         }
       } catch (err) {
         console.warn('Session restoration failed:', err);
+        authApi.clearSession();
+        storage.clearSessionCredentials();
+        setCurrentUserAccount(null);
+        setCurrentStudent(null);
+        setCurrentAdmin(null);
+        setIsAuthenticated(false);
       } finally {
         if (isMounted) {
           setIsAuthChecking(false);
@@ -1524,6 +1569,7 @@ export default function App() {
             auditEvents={auditEvents}
             serviceHealth={serviceHealth}
             onNavigate={handleAdminNavigate}
+            dashboardData={adminDashboardData}
           />
         )}
 

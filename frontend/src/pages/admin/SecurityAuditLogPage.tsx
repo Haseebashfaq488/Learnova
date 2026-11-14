@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   AlertCircle,
+  Info,
   Eye,
   ChevronLeft,
   ChevronRight,
@@ -54,7 +55,7 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 view-enter-animation">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
         <div>
@@ -75,7 +76,7 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#181C24] border border-gray-200 dark:border-gray-800 shadow-xs space-y-3">
+      <div className="p-4 rounded-2xl bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Keyword Search */}
           <div className="relative md:col-span-2">
@@ -88,13 +89,13 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
                 setCurrentPageNum(1);
               }}
               placeholder="Search by actor, target name, reason, or correlation ID..."
-              className="w-full pl-10 pr-9 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#12161F] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-10 pr-9 py-2 rounded-xl border border-gray-200/90 dark:border-gray-700/90 bg-white/90 dark:bg-[#12161F]/90 text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-0.5"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-0.5 cursor-pointer"
                 aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -161,7 +162,7 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
       </div>
 
       {/* Audit Log Table */}
-      <div className="bg-white dark:bg-[#181C24] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs overflow-hidden">
+      <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs overflow-hidden">
         {paginatedEvents.length === 0 ? (
           <div className="p-12 text-center">
             <div className="w-12 h-12 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center mb-3">
@@ -239,22 +240,25 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
 
                     {/* Outcome Badge */}
                     <td className="py-3 px-4">
-                      {ev.outcome === 'success' && (
+                      {ev.outcome === 'success' ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                           Success
                         </span>
-                      )}
-                      {ev.outcome === 'blocked' && (
+                      ) : ev.outcome === 'blocked' ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                           <AlertTriangle className="w-3 h-3 text-amber-600" />
                           Blocked
                         </span>
-                      )}
-                      {ev.outcome === 'failure' && (
+                      ) : ev.outcome === 'failure' ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
                           <AlertCircle className="w-3 h-3 text-rose-600" />
                           Failure
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 capitalize">
+                          <Info className="w-3 h-3 text-gray-500" />
+                          {ev.outcome || 'Info'}
                         </span>
                       )}
                     </td>

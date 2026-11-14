@@ -1,136 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import {
+  ThemeMode,
+  PaletteId,
+  FontId,
+  MotionMode,
+  PaletteInfo,
+  FontInfo,
+  PALETTES,
+  FONTS,
+} from './themeConfig';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
-export type PaletteId = 'indigo' | 'emerald' | 'crimson' | 'cyan' | 'violet' | 'obsidian';
-export type FontId = 'inter' | 'jakarta' | 'outfit' | 'lexend' | 'poppins' | 'serif' | 'space';
-export type MotionMode = 'expressive' | 'minimal';
-
-export interface PaletteInfo {
-  id: PaletteId;
-  name: string;
-  tagline: string;
-  primaryLight: string;
-  primaryDark: string;
-  accent: string;
-  badgeBg: string;
-}
-
-export interface FontInfo {
-  id: FontId;
-  name: string;
-  family: string;
-  category: string;
-  description: string;
-}
-
-export const PALETTES: PaletteInfo[] = [
-  {
-    id: 'indigo',
-    name: 'Oxford Royal',
-    tagline: 'Prestige, Focus & University Classic',
-    primaryLight: '#2646B8',
-    primaryDark: '#4F75FF',
-    accent: '#3156D3',
-    badgeBg: '#E8EEFF',
-  },
-  {
-    id: 'emerald',
-    name: 'Emerald Academy',
-    tagline: 'Growth, Biology, STEM & Calm Clarity',
-    primaryLight: '#059669',
-    primaryDark: '#34D399',
-    accent: '#10B981',
-    badgeBg: '#ECFDF5',
-  },
-  {
-    id: 'crimson',
-    name: 'Cambridge Crimson',
-    tagline: 'Ivy Heritage, Distinction & Warmth',
-    primaryLight: '#9F1239',
-    primaryDark: '#FB7185',
-    accent: '#E11D48',
-    badgeBg: '#FFF1F2',
-  },
-  {
-    id: 'cyan',
-    name: 'Nordic Aurora',
-    tagline: 'Scandinavian Clarity & Precision',
-    primaryLight: '#0E7490',
-    primaryDark: '#38BDF8',
-    accent: '#06B6D4',
-    badgeBg: '#ECFEFF',
-  },
-  {
-    id: 'violet',
-    name: 'Violet Scholar',
-    tagline: 'Intellect, Creative Curiosity & EdTech',
-    primaryLight: '#6D28D9',
-    primaryDark: '#A78BFA',
-    accent: '#8B5CF6',
-    badgeBg: '#F5F3FF',
-  },
-  {
-    id: 'obsidian',
-    name: 'Obsidian Minimal',
-    tagline: 'High Contrast, Slate & Distraction-Free',
-    primaryLight: '#1E293B',
-    primaryDark: '#94A3B8',
-    accent: '#475569',
-    badgeBg: '#F1F5F9',
-  },
-];
-
-export const FONTS: FontInfo[] = [
-  {
-    id: 'inter',
-    name: 'Inter',
-    family: "'Inter', system-ui, sans-serif",
-    category: 'Modern Sans',
-    description: 'Clean, balanced, high-legibility interface typography.',
-  },
-  {
-    id: 'jakarta',
-    name: 'Plus Jakarta Sans',
-    family: "'Plus Jakarta Sans', system-ui, sans-serif",
-    category: 'Refined Editorial',
-    description: 'Modern geometric elegance with distinctive humanist character.',
-  },
-  {
-    id: 'outfit',
-    name: 'Outfit',
-    family: "'Outfit', system-ui, sans-serif",
-    category: 'Inspiring EdTech',
-    description: 'Friendly, modern geometric design tailored for learning products.',
-  },
-  {
-    id: 'lexend',
-    name: 'Lexend',
-    family: "'Lexend', system-ui, sans-serif",
-    category: 'Cognitive Readability',
-    description: 'Empirically engineered to improve reading fluency and visual tracking.',
-  },
-  {
-    id: 'poppins',
-    name: 'Poppins',
-    family: "'Poppins', system-ui, sans-serif",
-    category: 'Approachable',
-    description: 'Warm, rounded geometric curves that inspire confidence and comfort.',
-  },
-  {
-    id: 'serif',
-    name: 'Academic Editorial',
-    family: "'Newsreader', 'Inter', Georgia, serif",
-    category: 'Scholarly Classic',
-    description: 'Prestigious serif display headings paired with high-clarity sans body.',
-  },
-  {
-    id: 'space',
-    name: 'Space Grotesk',
-    family: "'Space Grotesk', system-ui, sans-serif",
-    category: 'STEM & Engineering',
-    description: 'Technical, confident character inspired by scientific computing.',
-  },
-];
+export type { ThemeMode, PaletteId, FontId, MotionMode, PaletteInfo, FontInfo };
+export { PALETTES, FONTS };
 
 interface ThemeContextType {
   theme: ThemeMode;
@@ -217,8 +98,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.setAttribute('data-theme', resolved);
       if (resolved === 'dark') {
         root.classList.add('dark');
+        document.body.classList.add('dark');
       } else {
         root.classList.remove('dark');
+        document.body.classList.remove('dark');
       }
 
       try {
@@ -236,19 +119,41 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [theme]);
 
-  // Apply Palette
+  // Apply Palette (Dynamic CSS Custom Properties)
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-palette', palette);
+    document.body.setAttribute('data-palette', palette);
+
+    const pal = PALETTES.find((p) => p.id === palette) || PALETTES[0];
+    const isDark = actualTheme === 'dark';
+    const tokens = isDark ? pal.darkTokens : pal.lightTokens;
+
+    root.style.setProperty('--color-primary-700', tokens.primary700);
+    root.style.setProperty('--color-primary-600', tokens.primary600);
+    root.style.setProperty('--color-primary-500', tokens.primary500);
+    root.style.setProperty('--color-primary-100', tokens.primary100);
+    root.style.setProperty('--color-primary-050', tokens.primary050);
+    root.style.setProperty('--color-focus-ring', tokens.focusRing);
+    root.style.setProperty('--color-surface-selected', tokens.surfaceSelected);
+
     try {
       localStorage.setItem('learnova_palette', palette);
     } catch {}
-  }, [palette]);
+  }, [palette, actualTheme]);
 
   // Apply Font
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-font', font);
+    document.body.setAttribute('data-font', font);
+
+    const fontObj = FONTS.find((f) => f.id === font);
+    if (fontObj) {
+      root.style.setProperty('--font-sans', fontObj.family);
+      document.body.style.fontFamily = fontObj.family;
+    }
+
     try {
       localStorage.setItem('learnova_font', font);
     } catch {}
@@ -258,6 +163,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-motion', motionMode);
+    document.body.setAttribute('data-motion', motionMode);
+
     try {
       localStorage.setItem('learnova_motion', motionMode);
     } catch {}

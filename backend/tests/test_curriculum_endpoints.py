@@ -246,3 +246,52 @@ def test_publish_valid_course_success(client_with_db: TestClient, db_session: Se
     res = client_with_db.post(f"/api/v1/courses/{course.id}/publish", headers=auth_header(teacher))
     assert res.status_code == 200
     assert res.json()["status"] == "published"
+
+
+def test_get_student_lesson_completions_endpoint(client_with_db: TestClient, db_session: Session, seed_test_users):
+    """Student can retrieve recorded lesson completions via /api/v1/students/me/lesson-completions."""
+    from app.models.enrollment import Enrollment
+
+    student = seed_test_users["student"]
+    teacher = seed_test_users["teacher1"]
+
+    course = Course(title="Complete Test Course", status="published", creator_id=teacher.id)
+    db_session.add(course)
+    db_session.flush()
+
+    topic = Topic(course_id=course.id, title="Module 1", order=1)
+    db_session.add(topic)
+    db_session.flush()
+
+    lesson = Lesson(topic_id=topic.id, title="Lesson 1", order=1)
+    db_session.add(lesson)
+    db_session.flush()
+
+    enrollment = Enrollment(student_id=student.id, course_id=course.id, status="active")
+    db_session.add(enrollment)
+    db_session.commit()
+
+    # Complete the lesson
+    res_comp = client_with_db.post(
+        f"/api/v1/lessons/{lesson.id}/complete", headers=auth_header(student)
+    )
+    assert res_comp.status_code == 200
+    assert res_comp.json()["lesson_id"] == str(lesson.id)
+
+    # Retrieve completions via /students/me/lesson-completions
+    res_list1 = client_with_db.get(
+        "/api/v1/students/me/lesson-completions", headers=auth_header(student)
+    )
+    assert res_list1.status_code == 200
+    items1 = res_list1.json()
+    assert len(items1) >= 1
+    assert any(c["lesson_id"] == str(lesson.id) for c in items1)
+
+    # Retrieve completions via /lessons/completions
+    res_list2 = client_with_db.get(
+        f"/api/v1/lessons/completions?course_id={course.id}", headers=auth_header(student)
+    )
+    assert res_list2.status_code == 200
+    items2 = res_list2.json()
+    assert len(items2) == 1
+    assert items2[0]["lesson_id"] == str(lesson.id)

@@ -40,11 +40,11 @@ export const DiagnosticIntroPage: React.FC<DiagnosticIntroPageProps> = ({
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 py-4">
+    <div className="max-w-2xl mx-auto space-y-6 py-4 view-enter-animation">
       {/* Back button */}
       <button
         type="button"
-        onClick={() => onNavigate('course_map', { courseId: course?.id || '' })}
+        onClick={() => onNavigate('course_map', { courseId: course?.id || courses[0]?.id || '' })}
         className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -61,7 +61,7 @@ export const DiagnosticIntroPage: React.FC<DiagnosticIntroPageProps> = ({
             {assessment.title}
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            Course: <strong>{course?.title}</strong> • Target Unit: <strong>{topic?.title}</strong>
+            Course: <strong>{course?.title || 'Computer Science & Python'}</strong> • Target Unit: <strong>{topic?.title || 'Foundations & Prerequisite Diagnostic'}</strong>
           </p>
         </div>
 

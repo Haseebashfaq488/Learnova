@@ -8,6 +8,7 @@ import {
 } from '../services/api/authApi.ts';
 import type { UserResponse } from '../services/api/authApi.ts';
 import { storage } from '../services/storageService.ts';
+import { isAvatarImageUrl, getAvatarFallbackInitials } from './avatarUtils.ts';
 
 // Mock localStorage for node test environment if not present
 if (typeof globalThis.localStorage === 'undefined') {
@@ -90,6 +91,18 @@ describe('Authentication & Session Persistence', () => {
     assert.equal(storage.getPersistedPortalMode(), null);
   });
 
+  test('authApi.clearSession purges in-memory and stored token and user credentials', () => {
+    authApi.setAccessToken('stale-jwt-token');
+    authApi.setStoredUser({ id: 'u1', email: 'u@test.com', full_name: 'U', role: 'student', is_active: true, created_at: '' });
+
+    authApi.clearSession();
+
+    assert.equal(authApi.getAccessToken(), null);
+    assert.equal(authApi.getStoredUser(), null);
+    assert.equal(localStorage.getItem(TOKEN_STORAGE_KEY), null);
+    assert.equal(localStorage.getItem(USER_STORAGE_KEY), null);
+  });
+
   test('mapUserResponseToStudentUser maps backend user to student shape', () => {
     const user: UserResponse = {
       id: 'usr-999',
@@ -136,5 +149,25 @@ describe('Authentication & Session Persistence', () => {
     assert.equal(student.id, 'usr-google-1');
     assert.equal(student.name, 'Alex Rivera');
     assert.equal(student.avatar, 'https://lh3.googleusercontent.com/a/custom-avatar');
+  });
+
+  test('isAvatarImageUrl accurately identifies URL protocols and rejects initials', () => {
+    assert.equal(isAvatarImageUrl('https://images.unsplash.com/photo-123'), true);
+    assert.equal(isAvatarImageUrl('http://example.com/avatar.png'), true);
+    assert.equal(isAvatarImageUrl('data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=='), true);
+    assert.equal(isAvatarImageUrl('/avatars/user-1.jpg'), true);
+    assert.equal(isAvatarImageUrl('SC'), false);
+    assert.equal(isAvatarImageUrl(''), false);
+    assert.equal(isAvatarImageUrl(null), false);
+    assert.equal(isAvatarImageUrl(undefined), false);
+  });
+
+  test('getAvatarFallbackInitials safely computes initials without throwing on null or empty names', () => {
+    assert.equal(getAvatarFallbackInitials('Sarah Connor'), 'SA');
+    assert.equal(getAvatarFallbackInitials('John'), 'JO');
+    assert.equal(getAvatarFallbackInitials('', 'ADM'), 'AD');
+    assert.equal(getAvatarFallbackInitials(null, 'ER'), 'ER');
+    assert.equal(getAvatarFallbackInitials(undefined, undefined), 'ST');
+    assert.equal(getAvatarFallbackInitials('', ''), 'ST');
   });
 });

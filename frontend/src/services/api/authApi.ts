@@ -167,6 +167,11 @@ class AuthApiClient {
     }
   }
 
+  public clearSession(): void {
+    this.setAccessToken(null);
+    this.setStoredUser(null);
+  }
+
   public async restoreSession(): Promise<UserResponse | null> {
     const token = this.getAccessToken();
     if (token) {

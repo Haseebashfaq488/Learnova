@@ -1562,6 +1562,10 @@ class StorageService {
     return this.get<LessonCompletion[]>('lesson_completions', SEED_LESSON_COMPLETIONS);
   }
 
+  saveLessonCompletions(completions: LessonCompletion[]): void {
+    this.set('lesson_completions', completions);
+  }
+
   isLessonCompleted(lessonId: string): boolean {
     return this.getLessonCompletions().some((c) => c.lessonId === lessonId);
   }
@@ -1674,6 +1678,10 @@ class StorageService {
 
   getBadges(): Badge[] {
     return this.get<Badge[]>('badges', SEED_BADGES);
+  }
+
+  saveBadges(badges: Badge[]): void {
+    this.set('badges', badges);
   }
 
   unlockBadge(badgeId: string): Badge | undefined {

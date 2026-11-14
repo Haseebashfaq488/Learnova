@@ -46,6 +46,18 @@ export function mapBackendCompletionToCompletion(c: BackendLessonCompletionRespo
 
 class CurriculumApiClient {
   /**
+   * Retrieve all recorded lesson completions for the authenticated student.
+   */
+  public async getLessonCompletions(courseId?: string): Promise<BackendLessonCompletionResponse[]> {
+    const url = courseId
+      ? `/students/me/lesson-completions?course_id=${courseId}`
+      : '/students/me/lesson-completions';
+    return authApi.request<BackendLessonCompletionResponse[]>(url, {
+      method: 'GET',
+    });
+  }
+
+  /**
    * Idempotently mark a lesson as completed on the authoritative backend.
    */
   public async completeLesson(lessonId: string): Promise<BackendLessonCompletionResponse> {

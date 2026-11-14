@@ -29,13 +29,25 @@
           root.setAttribute('data-palette', palette);
           var font = localStorage.getItem('learnova_font') || 'inter';
           root.setAttribute('data-font', font);
+          var fontFamilies = {
+            inter: "'Inter', system-ui, sans-serif",
+            jakarta: "'Plus Jakarta Sans', system-ui, sans-serif",
+            outfit: "'Outfit', system-ui, sans-serif",
+            lexend: "'Lexend', system-ui, sans-serif",
+            poppins: "'Poppins', system-ui, sans-serif",
+            space: "'Space Grotesk', system-ui, sans-serif",
+            serif: "'Inter', system-ui, sans-serif"
+          };
+          if (fontFamilies[font]) {
+            root.style.setProperty('--font-sans', fontFamilies[font]);
+          }
           var motion = localStorage.getItem('learnova_motion') || 'expressive';
           root.setAttribute('data-motion', motion);
         } catch (e) {}
       })();
     </script>
   </head>
-  <body class="font-sans antialiased min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] text-[#1F2937] dark:text-[#F3F4F6]">
+  <body class="antialiased min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] text-[#1F2937] dark:text-[#F3F4F6]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

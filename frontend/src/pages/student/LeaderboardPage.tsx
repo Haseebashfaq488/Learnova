@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LeaderboardEntry } from '../../types';
 import { Trophy, Award, Zap, X, Shield, Users, Eye, EyeOff } from 'lucide-react';
 import { StudentNavigationPage } from '../../components/student/StudentLayout';
+import { Avatar } from '../../components/ui/Avatar';
 import {
   gamificationApi,
   mapBackendLeaderboardToLeaderboard,
@@ -68,7 +69,7 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
   const activeLeaderboard = leaderboardData.length > 0 ? leaderboardData : initialLeaderboard;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto view-enter-animation">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
@@ -81,7 +82,7 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
       </div>
 
       {/* Privacy Opt-In Status Banner */}
-      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-2xl bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs border border-gray-200/80 dark:border-gray-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
         <div className="flex items-center gap-2.5">
           {optedIn ? (
             <Eye className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -103,9 +104,9 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
           type="button"
           onClick={handleToggleOptIn}
           disabled={isTogglingOptIn}
-          className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer self-start sm:self-auto ${
+          className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer self-start sm:self-auto active:scale-[0.98] ${
             optedIn
-              ? 'border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              ? 'border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
           }`}
         >
@@ -114,10 +115,10 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
       </div>
 
       {/* Leaderboard Table / Cards */}
-      <div className="bg-white dark:bg-[#181C24] border border-[#D9DEE7] dark:border-[#2D3545] rounded-2xl shadow-xs overflow-hidden">
+      <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs border border-gray-200/80 dark:border-gray-800/80 rounded-2xl shadow-xs overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300">
-            <Users className="w-4 h-4 text-indigo-600" />
+            <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Top Scholars ({activeLeaderboard.length} Ranked)</span>
           </div>
           <span className="text-[11px] text-gray-500 dark:text-gray-400">
@@ -137,7 +138,7 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
                 onClick={() => setSelectedEntry(entry)}
                 className={`p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer transition ${
                   isMe
-                    ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-4 border-indigo-600'
+                    ? 'bg-indigo-50/70 dark:bg-indigo-950/40 ring-1 ring-inset ring-indigo-500/25'
                     : 'hover:bg-gray-50/60 dark:hover:bg-[#1C212B]'
                 }`}
               >
@@ -146,20 +147,23 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
                   <div
                     className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
                       entry.rank === 1
-                        ? 'bg-amber-400 text-amber-950 shadow-xs'
+                        ? 'bg-amber-400 text-amber-950 shadow-xs ring-1 ring-amber-400/50'
                         : entry.rank === 2
                         ? 'bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                         : entry.rank === 3
-                        ? 'bg-amber-700 text-amber-100'
+                        ? 'bg-amber-700/80 text-white'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                     }`}
                   >
                     {entry.rank}
                   </div>
 
-                  <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    {entry.avatar || entry.displayName.slice(0, 2).toUpperCase()}
-                  </div>
+                  <Avatar
+                    src={entry.avatar}
+                    name={entry.displayName}
+                    fallbackText={entry.displayName ? entry.displayName.slice(0, 2).toUpperCase() : 'ST'}
+                    className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs"
+                  />
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -192,10 +196,10 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
                       e.stopPropagation();
                       setSelectedEntry(entry);
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5 transition"
+                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5 transition active:scale-[0.98] cursor-pointer"
                   >
                     <Award className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="hidden sm:inline">View Badges</span>
+                    <span className="hidden sm:inline">Badges</span>
                   </button>
                 </div>
               </div>
@@ -218,9 +222,12 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-indigo-600 text-white font-black text-sm flex items-center justify-center">
-                {selectedEntry.avatar || selectedEntry.displayName.slice(0, 2).toUpperCase()}
-              </div>
+              <Avatar
+                src={selectedEntry.avatar}
+                name={selectedEntry.displayName}
+                fallbackText={selectedEntry.displayName ? selectedEntry.displayName.slice(0, 2).toUpperCase() : 'ST'}
+                className="w-12 h-12 rounded-full bg-indigo-600 text-white font-black text-sm"
+              />
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   {selectedEntry.displayName}
