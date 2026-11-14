@@ -114,4 +114,27 @@ describe('Authentication & Session Persistence', () => {
     assert.equal(student.bio, 'Math and computing scholar');
     assert.equal(student.joinDate, '2026-09-01');
   });
+
+  test('mapUserResponseToStudentUser handles Google avatar URLs cleanly', () => {
+    const googleUser: UserResponse = {
+      id: 'usr-google-1',
+      email: 'alex.rivera@gmail.com',
+      full_name: 'Alex Rivera',
+      role: 'student',
+      is_active: true,
+      created_at: '2026-11-14T09:00:00Z',
+      profile: {
+        id: 'prof-g1',
+        user_id: 'usr-google-1',
+        avatar_url: 'https://lh3.googleusercontent.com/a/custom-avatar',
+        created_at: '2026-11-14T09:00:00Z',
+        updated_at: '2026-11-14T09:00:00Z',
+      },
+    };
+
+    const student = mapUserResponseToStudentUser(googleUser);
+    assert.equal(student.id, 'usr-google-1');
+    assert.equal(student.name, 'Alex Rivera');
+    assert.equal(student.avatar, 'https://lh3.googleusercontent.com/a/custom-avatar');
+  });
 });

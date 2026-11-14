@@ -1532,8 +1532,12 @@ export default function App() {
     notify('info', 'Course deleted.');
   };
 
-  const handleSaveTopic = async (t: Topic) => {
+  const handleSaveTopic = async (t: Topic): Promise<Topic> => {
     let savedTopic = { ...t };
+    const rawThreshold = Number(t.masteryThreshold);
+    const normalizedThreshold =
+      !isNaN(rawThreshold) && rawThreshold > 1 ? rawThreshold / 100 : (!isNaN(rawThreshold) ? rawThreshold : 0.75);
+
     try {
       if (authApi.getAccessToken() && isUuid(t.courseId)) {
         const existing = topics.find((item) => item.id === t.id);
@@ -1542,7 +1546,7 @@ export default function App() {
             title: t.title,
             description: t.description,
             order: t.order,
-            mastery_threshold: t.masteryThreshold,
+            mastery_threshold: normalizedThreshold,
           });
           if (t.prerequisiteTopicIds && t.prerequisiteTopicIds.every(isUuid)) {
             await teacherApi.updateTopicPrerequisites(t.id, t.prerequisiteTopicIds);
@@ -1552,7 +1556,7 @@ export default function App() {
             title: t.title,
             description: t.description,
             order: t.order,
-            mastery_threshold: t.masteryThreshold,
+            mastery_threshold: normalizedThreshold,
           });
           if (created && created.id) {
             savedTopic.id = created.id;
@@ -1565,6 +1569,7 @@ export default function App() {
     } catch (err: any) {
       console.warn('Backend topic save notice:', err);
       notify('error', err.message || 'Failed to sync topic with server');
+      throw err;
     }
     setTopics((prev) => {
       const idx = prev.findIndex((item) => item.id === savedTopic.id || item.id === t.id);
@@ -1576,6 +1581,7 @@ export default function App() {
       return [...prev, savedTopic];
     });
     await refreshTeacherCourseData();
+    return savedTopic;
   };
 
   const handleDeleteTopic = async (id: string) => {
@@ -1591,7 +1597,7 @@ export default function App() {
     await refreshTeacherCourseData();
   };
 
-  const handleSaveLesson = async (l: Lesson) => {
+  const handleSaveLesson = async (l: Lesson): Promise<Lesson> => {
     let savedLesson = { ...l };
     try {
       if (authApi.getAccessToken() && isUuid(l.topicId)) {
@@ -1615,6 +1621,8 @@ export default function App() {
       }
     } catch (err: any) {
       console.warn('Backend lesson save notice:', err);
+      notify('error', err.message || 'Failed to sync lesson with server');
+      throw err;
     }
     setLessons((prev) => {
       const idx = prev.findIndex((item) => item.id === savedLesson.id || item.id === l.id);
@@ -1626,6 +1634,7 @@ export default function App() {
       return [...prev, savedLesson];
     });
     await refreshTeacherCourseData();
+    return savedLesson;
   };
 
   const handleDeleteLesson = async (id: string) => {
@@ -1917,6 +1926,8 @@ export default function App() {
           onDeleteTopic={handleDeleteTopic}
           onSaveLesson={handleSaveLesson}
           onDeleteLesson={handleDeleteLesson}
+          onSaveAssessment={handleSaveAssessment}
+          onSaveResource={handleSaveResource}
           onNotify={notify}
         />
       )}

@@ -49,6 +49,13 @@ export interface UserLoginRequest {
   password: string;
 }
 
+export interface GoogleAuthRequest {
+  credential: string;
+  email?: string;
+  full_name?: string;
+  avatar_url?: string;
+}
+
 export interface PasswordChangeRequest {
   current_password: string;
   new_password: string;
@@ -282,6 +289,18 @@ class AuthApiClient {
 
   public async login(payload: UserLoginRequest): Promise<TokenResponse> {
     const data = await this.request<TokenResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    this.setAccessToken(data.access_token);
+    if (data.user) {
+      this.setStoredUser(data.user);
+    }
+    return data;
+  }
+
+  public async loginWithGoogle(payload: GoogleAuthRequest): Promise<TokenResponse> {
+    const data = await this.request<TokenResponse>('/auth/google', {
       method: 'POST',
       body: JSON.stringify(payload),
     });

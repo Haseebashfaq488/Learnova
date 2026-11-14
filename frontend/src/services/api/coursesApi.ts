@@ -118,7 +118,12 @@ export function mapBackendCourseDetailToCurriculum(detail: BackendCourseDetailRe
       title: t.title,
       description: t.description || '',
       order: t.order,
-      masteryThreshold: Number(t.mastery_threshold) || 75,
+      masteryThreshold:
+        t.mastery_threshold !== undefined && t.mastery_threshold !== null
+          ? Number(t.mastery_threshold) <= 1
+            ? Math.round(Number(t.mastery_threshold) * 100)
+            : Math.round(Number(t.mastery_threshold))
+          : 75,
       prerequisiteTopicIds: t.prerequisite_topic_ids || [],
       createdAt: t.created_at,
       updatedAt: t.updated_at,

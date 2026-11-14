@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Layers,
   Plus,
@@ -17,12 +17,15 @@ import {
   HelpCircle,
   CheckSquare,
   ClipboardList,
+  UploadCloud,
+  X,
+  Search,
 } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { Course, Topic, Lesson, LearningResource, Assessment } from '../../types';
+import { Course, Topic, Lesson, LearningResource, Assessment, ResourceType } from '../../types';
 
 interface CurriculumEditorPageProps {
   course: Course;
@@ -31,12 +34,27 @@ interface CurriculumEditorPageProps {
   resources: LearningResource[];
   assessments?: Assessment[];
   onNavigate: (page: string, params?: Record<string, string>) => void;
-  onSaveTopic: (topic: Topic) => void;
+  onSaveTopic: (topic: Topic) => Promise<Topic | void> | void;
   onDeleteTopic: (id: string) => void;
-  onSaveLesson: (lesson: Lesson) => void;
+  onSaveLesson: (lesson: Lesson) => Promise<Lesson | void> | void;
   onDeleteLesson: (id: string) => void;
+  onSaveAssessment?: (assessment: Assessment) => void;
+  onSaveResource?: (resource: LearningResource) => void;
   onNotify: (type: 'success' | 'error' | 'info', msg: string) => void;
 }
+
+const ALLOWED_EXTENSIONS = ['.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx', '.md', '.txt', '.pdf'];
+
+const getFileExtension = (filename: string): string => {
+  const dotIndex = filename.lastIndexOf('.');
+  return dotIndex !== -1 ? filename.slice(dotIndex).toLowerCase() : '';
+};
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
   course,
@@ -49,6 +67,8 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
   onDeleteTopic,
   onSaveLesson,
   onDeleteLesson,
+  onSaveAssessment,
+  onSaveResource,
   onNotify,
 }) => {
   // Sort topics by order
@@ -84,9 +104,138 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Synchronize selection if selectedId becomes stale (e.g. temporary ID replaced by real UUID from backend)
+  useEffect(() => {
+    if (selectedType === 'topic') {
+      const found = sortedTopics.find((t) => t.id === selectedId);
+      if (!found && sortedTopics.length > 0) {
+        const matched =
+          sortedTopics.find((t) => t.title === topicTitle) ||
+          sortedTopics[sortedTopics.length - 1];
+        if (matched) {
+          setSelectedId(matched.id);
+          setTopicTitle(matched.title);
+          setTopicDesc(matched.description);
+          setTopicThreshold(matched.masteryThreshold || 75);
+          setExpandedTopics((prev) => ({ ...prev, [matched.id]: true }));
+        }
+      }
+    }
+  }, [topics, selectedType, selectedId]);
+
   // Deletion modals
   const [confirmDeleteTopic, setConfirmDeleteTopic] = useState<Topic | null>(null);
   const [confirmDeleteLesson, setConfirmDeleteLesson] = useState<Lesson | null>(null);
+
+  // Assessment Slide-over Picker Drawer state
+  const [isAssessmentDrawerOpen, setIsAssessmentDrawerOpen] = useState(false);
+  const [drawerTopic, setDrawerTopic] = useState<Topic | null>(null);
+  const [assessmentDrawerSearch, setAssessmentDrawerSearch] = useState('');
+
+  // Multi-File Upload from PC Modal state
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadTargetLesson, setUploadTargetLesson] = useState<Lesson | null>(null);
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Handlers for Assessment Picker Drawer
+  const handleOpenAssessmentDrawer = (t: Topic) => {
+    setDrawerTopic(t);
+    setAssessmentDrawerSearch('');
+    setIsAssessmentDrawerOpen(true);
+  };
+
+  const handleAttachAssessment = (assessment: Assessment, targetTopic: Topic) => {
+    if (!onSaveAssessment) {
+      onNotify('error', 'Unable to save assessment assignment.');
+      return;
+    }
+    const updated: Assessment = {
+      ...assessment,
+      topicId: targetTopic.id,
+      updatedAt: new Date().toISOString(),
+    };
+    onSaveAssessment(updated);
+    onNotify('success', `Assessment "${assessment.title}" attached to topic "${targetTopic.title}".`);
+    setIsAssessmentDrawerOpen(false);
+  };
+
+  // Handlers for PC File Upload Modal
+  const handleOpenUploadModal = (l: Lesson) => {
+    setUploadTargetLesson(l);
+    setStagedFiles([]);
+    setUploadError(null);
+    setIsUploadModalOpen(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const files = Array.from(e.target.files);
+    const validFiles: File[] = [];
+    const rejectedNames: string[] = [];
+
+    files.forEach((file) => {
+      const ext = getFileExtension(file.name);
+      if (ALLOWED_EXTENSIONS.includes(ext)) {
+        validFiles.push(file);
+      } else {
+        rejectedNames.push(file.name);
+      }
+    });
+
+    if (rejectedNames.length > 0) {
+      setUploadError(
+        `Rejected unsupported files: ${rejectedNames.join(', ')}. Only Word (.doc, .docx), PowerPoint (.ppt, .pptx), Excel (.xls, .xlsx), Markdown (.md), Plain Text (.txt), and PDF (.pdf) are allowed.`
+      );
+    }
+
+    if (validFiles.length > 0) {
+      setStagedFiles((prev) => {
+        const existingNames = new Set(prev.map((f) => f.name));
+        const filteredNew = validFiles.filter((f) => !existingNames.has(f.name));
+        return [...prev, ...filteredNew];
+      });
+    }
+
+    // Reset input so re-selecting same file triggers onChange
+    e.target.value = '';
+  };
+
+  const handleRemoveStagedFile = (idx: number) => {
+    setStagedFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleUploadStagedFiles = () => {
+    if (!uploadTargetLesson || stagedFiles.length === 0) return;
+    if (!onSaveResource) {
+      onNotify('error', 'Unable to save learning resources.');
+      return;
+    }
+
+    stagedFiles.forEach((file, index) => {
+      const ext = getFileExtension(file.name);
+      const resType: ResourceType = ext === '.md' ? 'markdown' : 'document';
+      const cleanTitle = file.name.replace(/\.[^/.]+$/, '');
+      const newResource: LearningResource = {
+        id: `res-${Date.now()}-${index}-${Math.random().toString(36).substring(2, 6)}`,
+        courseId: course.id,
+        lessonId: uploadTargetLesson.id,
+        title: cleanTitle,
+        type: resType,
+        contentOrUrl: `local-file://${file.name}`,
+        fileSize: `${formatFileSize(file.size)} (${ext.toUpperCase().replace('.', '')})`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      onSaveResource(newResource);
+    });
+
+    onNotify('success', `${stagedFiles.length} resource(s) successfully attached to "${uploadTargetLesson.title}".`);
+    setStagedFiles([]);
+    setIsUploadModalOpen(false);
+  };
 
   // Sync form when selection changes
   const selectTopicNode = (t: Topic) => {
@@ -117,9 +266,10 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
   };
 
   // Add Topic
-  const handleAddTopic = () => {
+  const handleAddTopic = async () => {
+    const tempId = `topic-${Date.now()}`;
     const newTopic: Topic = {
-      id: `topic-${Date.now()}`,
+      id: tempId,
       courseId: course.id,
       title: `Topic ${sortedTopics.length + 1}: New Curriculum Unit`,
       description: 'Topic syllabus summary and objectives.',
@@ -129,21 +279,32 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    onSaveTopic(newTopic);
     setSelectedType('topic');
-    setSelectedId(newTopic.id);
+    setSelectedId(tempId);
     setTopicTitle(newTopic.title);
     setTopicDesc(newTopic.description);
     setTopicThreshold(newTopic.masteryThreshold);
-    setExpandedTopics((prev) => ({ ...prev, [newTopic.id]: true }));
-    onNotify('success', 'New topic created.');
+    setExpandedTopics((prev) => ({ ...prev, [tempId]: true }));
+
+    try {
+      const saved = await onSaveTopic(newTopic);
+      if (saved && (saved as Topic).id) {
+        const realId = (saved as Topic).id;
+        setSelectedId(realId);
+        setExpandedTopics((prev) => ({ ...prev, [realId]: true }));
+      }
+      onNotify('success', 'New topic created.');
+    } catch {
+      // Error notifications handled by onSaveTopic
+    }
   };
 
   // Add Lesson to current topic
-  const handleAddLesson = (targetTopicId: string) => {
+  const handleAddLesson = async (targetTopicId: string) => {
     const topicLessons = lessons.filter((l) => l.topicId === targetTopicId);
+    const tempId = `lesson-${Date.now()}`;
     const newLesson: Lesson = {
-      id: `lesson-${Date.now()}`,
+      id: tempId,
       topicId: targetTopicId,
       courseId: course.id,
       title: `Lesson ${topicLessons.length + 1}: New Lesson`,
@@ -152,13 +313,22 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    onSaveLesson(newLesson);
     setSelectedType('lesson');
-    setSelectedId(newLesson.id);
+    setSelectedId(tempId);
     setLessonTitle(newLesson.title);
     setLessonDesc(newLesson.description);
     setExpandedTopics((prev) => ({ ...prev, [targetTopicId]: true }));
-    onNotify('success', 'New lesson added under topic.');
+
+    try {
+      const saved = await onSaveLesson(newLesson);
+      if (saved && (saved as Lesson).id) {
+        const realId = (saved as Lesson).id;
+        setSelectedId(realId);
+      }
+      onNotify('success', 'New lesson added under topic.');
+    } catch {
+      // Error notifications handled by onSaveLesson
+    }
   };
 
   // Move topic order
@@ -447,12 +617,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 pb-1">
                             <span>Assessments ({topicAssessments.length})</span>
                             <button
-                              onClick={() =>
-                                onNavigate('assessment_editor', {
-                                  courseId: course.id,
-                                  topicId: t.id,
-                                })
-                              }
+                              onClick={() => handleOpenAssessmentDrawer(t)}
                               className="text-indigo-600 font-semibold hover:underline flex items-center gap-0.5 cursor-pointer lowercase"
                             >
                               <Plus className="w-3 h-3" /> add assessment
@@ -462,12 +627,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                             <div className="py-1.5 px-2 text-[11px] text-[#737D8C] bg-white/60 rounded border border-dashed border-gray-200 flex items-center justify-between">
                               <span>No assessments yet</span>
                               <button
-                                onClick={() =>
-                                  onNavigate('assessment_editor', {
-                                    courseId: course.id,
-                                    topicId: t.id,
-                                  })
-                                }
+                                onClick={() => handleOpenAssessmentDrawer(t)}
                                 className="text-indigo-600 font-semibold hover:underline cursor-pointer"
                               >
                                 + Add quiz
@@ -651,12 +811,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                       variant="outline"
                       size="sm"
                       leftIcon={<Plus className="w-3.5 h-3.5" />}
-                      onClick={() =>
-                        onNavigate('assessment_editor', {
-                          courseId: course.id,
-                          topicId: currentTopic.id,
-                        })
-                      }
+                      onClick={() => handleOpenAssessmentDrawer(currentTopic)}
                     >
                       New assessment
                     </Button>
@@ -712,12 +867,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                       variant="outline"
                       size="sm"
                       leftIcon={<CheckSquare className="w-3.5 h-3.5 text-indigo-600" />}
-                      onClick={() =>
-                        onNavigate('assessment_editor', {
-                          courseId: course.id,
-                          topicId: currentTopic.id,
-                        })
-                      }
+                      onClick={() => handleOpenAssessmentDrawer(currentTopic)}
                     >
                       Add assessment
                     </Button>
@@ -815,19 +965,30 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                     <span className="text-xs font-semibold text-[#1F2937]">
                       Attached Learning Resources ({resources.filter((r) => r.lessonId === currentLesson.id).length})
                     </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onNavigate('resources', {
-                          courseId: course.id,
-                          topicId: currentLesson.topicId,
-                          lessonId: currentLesson.id,
-                        })
-                      }
-                      className="text-xs text-[#3156D3] font-semibold hover:underline cursor-pointer"
-                    >
-                      + Add resource
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenUploadModal(currentLesson)}
+                        className="text-xs text-indigo-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        + Upload from PC
+                      </button>
+                      <span className="text-gray-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onNavigate('resources', {
+                            courseId: course.id,
+                            topicId: currentLesson.topicId,
+                            lessonId: currentLesson.id,
+                          })
+                        }
+                        className="text-xs text-[#3156D3] font-semibold hover:underline cursor-pointer"
+                      >
+                        + Add link/code
+                      </button>
+                    </div>
                   </div>
                   {resources.filter((r) => r.lessonId === currentLesson.id).length === 0 ? (
                     <p className="text-xs text-[#737D8C]">
@@ -899,6 +1060,299 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
         onConfirm={handleDeleteLessonConfirm}
         onCancel={() => setConfirmDeleteLesson(null)}
       />
+
+      {/* Slide-over Assessment Picker Drawer */}
+      {isAssessmentDrawerOpen && drawerTopic && (
+        <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsAssessmentDrawerOpen(false)}
+          />
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+              {/* Drawer Header */}
+              <div className="p-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CheckSquare className="w-4 h-4 text-indigo-600" />
+                    <h3 className="text-sm font-bold text-gray-900">Attach Assessment to Topic</h3>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                    Target: <span className="font-semibold text-gray-800">{drawerTopic.title}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsAssessmentDrawerOpen(false)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Drawer Search & Instructions */}
+              <div className="p-4 border-b border-gray-100 bg-white space-y-2">
+                <p className="text-xs text-gray-600">
+                  Select an assessment for <span className="font-semibold">{course.title}</span> to measure learner mastery in this unit.
+                </p>
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="search"
+                    value={assessmentDrawerSearch}
+                    onChange={(e) => setAssessmentDrawerSearch(e.target.value)}
+                    placeholder="Filter course assessments..."
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-indigo-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Drawer List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+                {assessments.filter((a) => a.courseId === course.id).length === 0 ? (
+                  <div className="text-center py-12 px-4">
+                    <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                    <p className="text-xs font-semibold text-gray-800">No assessments found for this course</p>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Create an assessment for this course to attach it here.
+                    </p>
+                  </div>
+                ) : (
+                  assessments
+                    .filter((a) => a.courseId === course.id)
+                    .filter(
+                      (a) =>
+                        !assessmentDrawerSearch.trim() ||
+                        a.title.toLowerCase().includes(assessmentDrawerSearch.toLowerCase()) ||
+                        a.type.toLowerCase().includes(assessmentDrawerSearch.toLowerCase())
+                    )
+                    .map((a) => {
+                      const isAttachedHere = a.topicId === drawerTopic.id;
+                      const otherTopic =
+                        a.topicId && a.topicId !== drawerTopic.id
+                          ? topics.find((t) => t.id === a.topicId)
+                          : null;
+
+                      return (
+                        <div
+                          key={a.id}
+                          className={`p-3.5 rounded-xl border transition-all ${
+                            isAttachedHere
+                              ? 'bg-indigo-50/40 border-indigo-200 ring-1 ring-indigo-200'
+                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-xs'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-gray-900 line-clamp-1">{a.title}</h4>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                  {a.type}
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  {a.questionIds?.length || 0} questions
+                                </span>
+                                <span
+                                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                                    a.status === 'published'
+                                      ? 'bg-emerald-50 text-emerald-700'
+                                      : 'bg-amber-50 text-amber-700'
+                                  }`}
+                                >
+                                  {a.status}
+                                </span>
+                              </div>
+                              {otherTopic && (
+                                <p className="text-[10px] text-gray-500 mt-1">
+                                  Currently attached to: <span className="font-medium text-gray-700">{otherTopic.title}</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                            {isAttachedHere ? (
+                              <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Attached to this topic
+                              </span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                onClick={() => handleAttachAssessment(a, drawerTopic)}
+                              >
+                                {otherTopic ? 'Reassign to this topic' : 'Attach to topic'}
+                              </Button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsAssessmentDrawerOpen(false);
+                                onNavigate('assessment_editor', { assessmentId: a.id });
+                              }}
+                              className="text-[11px] text-gray-500 hover:text-indigo-600 flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <ExternalLink className="w-3 h-3" /> Edit
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center"
+                  leftIcon={<Plus className="w-3.5 h-3.5" />}
+                  onClick={() => {
+                    setIsAssessmentDrawerOpen(false);
+                    onNavigate('assessment_editor', {
+                      courseId: course.id,
+                      topicId: drawerTopic.id,
+                    });
+                  }}
+                >
+                  Create new assessment in editor
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center text-gray-500"
+                  onClick={() => setIsAssessmentDrawerOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Files from PC Modal */}
+      {isUploadModalOpen && uploadTargetLesson && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+              <div className="flex items-center gap-2">
+                <UploadCloud className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-base font-bold text-gray-900">Upload Resources from Computer</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsUploadModalOpen(false);
+                  setStagedFiles([]);
+                  setUploadError(null);
+                }}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Target lesson: <span className="font-semibold text-gray-800">{uploadTargetLesson.title}</span>
+            </p>
+
+            <div className="mt-4 flex-1 overflow-y-auto space-y-3">
+              {/* Drop area */}
+              <label className="border-2 border-dashed border-gray-300 hover:border-indigo-500 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-gray-50/60 hover:bg-indigo-50/30 transition-colors">
+                <UploadCloud className="w-8 h-8 text-indigo-500 mb-2" />
+                <span className="text-xs font-semibold text-gray-800">
+                  Click or drag files here to upload
+                </span>
+                <span className="text-[11px] text-gray-500 mt-1 max-w-xs">
+                  Allowed formats: Word (.doc, .docx), PowerPoint (.ppt, .pptx), Excel (.xls, .xlsx), Markdown (.md), Plain Text (.txt), and PDF (.pdf).
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx,.md,.txt,.pdf"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </label>
+
+              {uploadError && (
+                <div className="p-3 rounded-lg bg-red-50 text-xs text-red-700 border border-red-200 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              {/* Staged files list */}
+              {stagedFiles.length > 0 && (
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
+                    <span>Selected Files ({stagedFiles.length})</span>
+                    <button
+                      type="button"
+                      onClick={() => setStagedFiles([])}
+                      className="text-red-600 text-[11px] hover:underline cursor-pointer"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {stagedFiles.map((file, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs"
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                          <span className="truncate font-medium text-gray-800">{file.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[10px] text-gray-500 bg-white px-1.5 py-0.5 rounded border border-gray-200">
+                            {formatFileSize(file.size)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveStagedFile(idx)}
+                            className="text-gray-400 hover:text-red-600 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-end gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsUploadModalOpen(false);
+                  setStagedFiles([]);
+                  setUploadError(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={stagedFiles.length === 0}
+                onClick={handleUploadStagedFiles}
+              >
+                Attach {stagedFiles.length} file(s)
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -252,18 +252,6 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
             })}
           </nav>
 
-          {/* Course context widget if course is selected */}
-          {!sidebarCollapsed && selectedCourseTitle && (
-            <div className="mx-3 mb-3 p-2.5 rounded-lg bg-[#F5F7FA] border border-[#D9DEE7] text-xs">
-              <span className="text-[10px] font-semibold uppercase text-[#737D8C] block mb-0.5">
-                Current Course Context
-              </span>
-              <p className="font-semibold text-[#1F2937] truncate" title={selectedCourseTitle}>
-                {selectedCourseTitle}
-              </p>
-            </div>
-          )}
-
           {/* Bottom user utility area */}
           <div className="p-3 border-t border-[#D9DEE7]">
             <div className="relative">

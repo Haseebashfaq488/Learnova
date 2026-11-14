@@ -3,6 +3,8 @@ import {
   Check,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   Save,
   UploadCloud,
   CheckCircle2,
@@ -15,6 +17,9 @@ import {
   X,
   FileCheck,
   Trash2,
+  Search,
+  Filter,
+  Info,
 } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
@@ -64,11 +69,33 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
     initialAssessment?.instructions || ''
   );
 
-  // Step 2: Questions
+  // Step 2: Questions selection and advanced filtering state
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>(
     initialAssessment?.questionIds || []
   );
   const [qSearch, setQSearch] = useState('');
+  const [selectedTopicFilter, setSelectedTopicFilter] = useState<string>('all');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('all');
+  const [selectedDifficultyFilter, setSelectedDifficultyFilter] = useState<string>('all');
+  const [onlySelected, setOnlySelected] = useState<boolean>(false);
+  const [expandedQuestionIds, setExpandedQuestionIds] = useState<Record<string, boolean>>({});
+
+  const toggleExpandQuestion = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setExpandedQuestionIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const expandAllFiltered = () => {
+    const next: Record<string, boolean> = {};
+    availableQuestions.forEach((q) => {
+      next[q.id] = true;
+    });
+    setExpandedQuestionIds(next);
+  };
+
+  const collapseAll = () => {
+    setExpandedQuestionIds({});
+  };
 
   // Step 3: Settings
   const [timeLimit, setTimeLimit] = useState<number>(
@@ -91,15 +118,49 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
 
-  // Filter available questions: only approved questions in this course (or general)
+  // Filter available questions: approved questions in this course with topic/type/difficulty/search filters
   const availableQuestions = questions.filter((q) => {
     const matchesCourse = q.courseId === courseId;
     const matchesApproved = q.status === 'approved';
+    const matchesTopic =
+      selectedTopicFilter === 'all' || q.topicId === selectedTopicFilter;
+    const matchesType =
+      selectedTypeFilter === 'all' || q.type === selectedTypeFilter;
+    const matchesDifficulty =
+      selectedDifficultyFilter === 'all' || q.difficulty === selectedDifficultyFilter;
+    const matchesOnlySelected = !onlySelected || selectedQuestionIds.includes(q.id);
+
+    const searchLower = qSearch.trim().toLowerCase();
     const matchesSearch =
-      q.prompt.toLowerCase().includes(qSearch.toLowerCase()) ||
-      q.type.toLowerCase().includes(qSearch.toLowerCase());
-    return matchesCourse && matchesApproved && matchesSearch;
+      !searchLower ||
+      q.prompt.toLowerCase().includes(searchLower) ||
+      q.type.toLowerCase().includes(searchLower) ||
+      (q.explanation && q.explanation.toLowerCase().includes(searchLower)) ||
+      (q.options && q.options.some((opt) => opt.text.toLowerCase().includes(searchLower)));
+
+    return (
+      matchesCourse &&
+      matchesApproved &&
+      matchesTopic &&
+      matchesType &&
+      matchesDifficulty &&
+      matchesOnlySelected &&
+      matchesSearch
+    );
   });
+
+  const handleSelectAllFiltered = () => {
+    const idsToAdd = availableQuestions.map((q) => q.id);
+    const combined = Array.from(new Set([...selectedQuestionIds, ...idsToAdd]));
+    setSelectedQuestionIds(combined);
+    if (stepErrors.questions) {
+      setStepErrors({ ...stepErrors, questions: '' });
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedQuestionIds([]);
+  };
 
   const selectedQuestions = questions.filter((q) =>
     selectedQuestionIds.includes(q.id)
@@ -437,15 +498,15 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
       {/* Step 2: Questions */}
       {currentStep === 2 && (
         <div className="bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs space-y-5">
-          <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7]">
+          <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[#D9DEE7] gap-3">
             <div>
               <h2 className="text-base font-bold text-[#1F2937]">Step 2: Select Questions</h2>
-              <p className="text-xs text-[#5B6472]">
-                Choose approved items from the question bank for this course.
+              <p className="text-xs text-[#5B6472] mt-0.5">
+                Inspect question prompts, answer choices, and pedagogical explanations to assemble your assessment.
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold bg-[#E8EEFF] text-[#2646B8] px-2.5 py-1 rounded-full">
+              <span className="text-xs font-semibold bg-[#E8EEFF] text-[#2646B8] px-3 py-1 rounded-full border border-indigo-200">
                 {selectedQuestionIds.length} Selected ({totalPoints} Points)
               </span>
             </div>
@@ -458,79 +519,367 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
             </div>
           )}
 
-          {/* Search available questions */}
-          <input
-            type="search"
-            value={qSearch}
-            onChange={(e) => setQSearch(e.target.value)}
-            placeholder="Search approved questions by keyword or type..."
-            className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3.5 py-2 focus:border-[#3156D3] focus:outline-none"
-          />
+          {/* Filtering and Search Controls */}
+          <div className="space-y-3 bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+            {/* Search and Only Selected toggle */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="search"
+                  value={qSearch}
+                  onChange={(e) => setQSearch(e.target.value)}
+                  placeholder="Search questions by prompt, answer choices, or explanation..."
+                  className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg pl-9 pr-3.5 py-2 focus:border-[#3156D3] focus:outline-none"
+                />
+              </div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-lg border border-gray-200">
+                <input
+                  type="checkbox"
+                  checked={onlySelected}
+                  onChange={(e) => setOnlySelected(e.target.checked)}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Only show selected ({selectedQuestionIds.length})</span>
+              </label>
+            </div>
 
+            {/* Filter Dropdowns and Pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div>
+                <label className="text-[11px] font-bold uppercase text-gray-500 block mb-1">Topic</label>
+                <select
+                  value={selectedTopicFilter}
+                  onChange={(e) => setSelectedTopicFilter(e.target.value)}
+                  className="w-full bg-white border border-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                >
+                  <option value="all">All Course Topics</option>
+                  {courseTopics.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase text-gray-500 block mb-1">Question Type</label>
+                <select
+                  value={selectedTypeFilter}
+                  onChange={(e) => setSelectedTypeFilter(e.target.value)}
+                  className="w-full bg-white border border-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none capitalize"
+                >
+                  <option value="all">All Types</option>
+                  <option value="multiple_choice">Multiple Choice</option>
+                  <option value="true_false">True / False</option>
+                  <option value="fill_blank">Fill in Blank</option>
+                  <option value="matching">Matching</option>
+                  <option value="short_answer">Short Answer</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase text-gray-500 block mb-1">Difficulty</label>
+                <select
+                  value={selectedDifficultyFilter}
+                  onChange={(e) => setSelectedDifficultyFilter(e.target.value)}
+                  className="w-full bg-white border border-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none capitalize"
+                >
+                  <option value="all">All Difficulties</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Bulk Action Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 text-xs">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAllFiltered}
+                  className="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
+                >
+                  Select All Filtered ({availableQuestions.length})
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="text-gray-500 hover:text-red-600 font-semibold cursor-pointer"
+                >
+                  Clear Selection
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={expandAllFiltered}
+                  className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
+                >
+                  Expand All Details
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  type="button"
+                  onClick={collapseAll}
+                  className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
+                >
+                  Collapse All
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Question List */}
           {availableQuestions.length === 0 ? (
             <div className="text-center py-12 text-[#5B6472] text-xs">
-              <p className="font-semibold text-[#1F2937]">No approved questions found</p>
+              <p className="font-semibold text-[#1F2937]">No questions match current filters</p>
               <p className="mt-1">
-                You can create questions or generate candidate questions in the Question Bank.
+                Try resetting search, topic, type, or difficulty filters.
               </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-3"
-                onClick={() => onNavigate('question_editor')}
-              >
-                Create new question
-              </Button>
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setQSearch('');
+                    setSelectedTopicFilter('all');
+                    setSelectedTypeFilter('all');
+                    setSelectedDifficultyFilter('all');
+                    setOnlySelected(false);
+                  }}
+                >
+                  Reset all filters
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigate('question_editor')}
+                >
+                  Create new question
+                </Button>
+              </div>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
               {availableQuestions.map((q) => {
                 const isSelected = selectedQuestionIds.includes(q.id);
+                const isExpanded = !!expandedQuestionIds[q.id];
+                const topicName = courseTopics.find((t) => t.id === q.topicId)?.title;
 
                 return (
                   <div
                     key={q.id}
-                    onClick={() => handleToggleQuestion(q.id)}
-                    className={`p-3 rounded-lg my-1 flex items-start gap-3 transition-colors cursor-pointer select-none ${
+                    className={`rounded-xl border p-4 transition-all ${
                       isSelected
-                        ? 'bg-[#E8EEFF] border border-[#3156D3]/40'
-                        : 'hover:bg-gray-50 border border-transparent'
+                        ? 'bg-indigo-50/30 border-indigo-300 ring-1 ring-indigo-200'
+                        : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-xs'
                     }`}
                   >
-                    <div
-                      className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 border ${
-                        isSelected
-                          ? 'bg-[#3156D3] border-[#3156D3] text-white'
-                          : 'border-gray-300 bg-white'
-                      }`}
-                    >
-                      {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                    {/* Top Row: Checkbox, Badges, Expand Toggle */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleQuestion(q.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded capitalize">
+                              {q.type.replace('_', ' ')}
+                            </span>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded capitalize ${
+                                q.difficulty === 'easy'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : q.difficulty === 'medium'
+                                  ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                                  : 'bg-purple-50 text-purple-700 border border-purple-200'
+                              }`}
+                            >
+                              {q.difficulty}
+                            </span>
+                            <span className="text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                              {q.points || 1} pts
+                            </span>
+                            {topicName && (
+                              <span className="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded truncate max-w-xs">
+                                {topicName}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Full Question Prompt */}
+                          <div
+                            onClick={() => handleToggleQuestion(q.id)}
+                            className="mt-2 text-sm font-medium text-gray-900 cursor-pointer select-none leading-relaxed"
+                          >
+                            {q.prompt}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expand / Details Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => toggleExpandQuestion(q.id, e)}
+                        className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 shrink-0 p-1 rounded hover:bg-indigo-50/60 cursor-pointer"
+                      >
+                        <span>{isExpanded ? 'Hide Details' : 'Inspect Details'}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-[#1F2937] capitalize bg-gray-100 px-2 py-0.5 rounded">
-                          {q.type.replace('_', ' ')}
-                        </span>
-                        <span className="text-xs text-[#737D8C]">{q.points || 1} pts</span>
-                        <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
-                          {q.difficulty}
-                        </span>
+                    {/* Expandable Question Inspector Panel */}
+                    {isExpanded && (
+                      <div className="mt-3 pt-3 border-t border-gray-100 pl-7 space-y-3 bg-gray-50/60 p-3.5 rounded-lg border border-gray-200">
+                        {/* Multiple Choice Options */}
+                        {q.type === 'multiple_choice' && q.options && q.options.length > 0 && (
+                          <div className="space-y-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-600 block">
+                              Answer Options {q.isMultipleCorrectAllowed && '(Multiple correct allowed)'}:
+                            </span>
+                            <div className="space-y-1.5">
+                              {q.options.map((opt, optIdx) => {
+                                const letter = String.fromCharCode(65 + optIdx);
+                                return (
+                                  <div
+                                    key={opt.id || optIdx}
+                                    className={`p-2 rounded-lg text-xs flex items-center justify-between border ${
+                                      opt.isCorrect
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-medium'
+                                        : 'bg-white border-gray-200 text-gray-700'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${
+                                          opt.isCorrect
+                                            ? 'bg-emerald-600 text-white'
+                                            : 'bg-gray-200 text-gray-700'
+                                        }`}
+                                      >
+                                        {letter}
+                                      </span>
+                                      <span>{opt.text}</span>
+                                    </div>
+                                    {opt.isCorrect && (
+                                      <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                                        <Check className="w-3 h-3 stroke-[3]" /> Correct Answer
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* True / False */}
+                        {q.type === 'true_false' && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="font-semibold text-gray-600">Correct Answer:</span>
+                            <span
+                              className={`font-bold px-2.5 py-0.5 rounded text-xs ${
+                                q.correctBool
+                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                  : 'bg-rose-100 text-rose-800 border border-rose-300'
+                              }`}
+                            >
+                              {q.correctBool ? 'True' : 'False'}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Fill in Blank */}
+                        {q.type === 'fill_blank' && (
+                          <div className="space-y-1.5 text-xs">
+                            <span className="font-semibold text-gray-600 block">Accepted Answers:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {q.acceptedAnswers && q.acceptedAnswers.length > 0 ? (
+                                q.acceptedAnswers.map((ans, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-mono font-medium"
+                                  >
+                                    "{ans}"
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 italic">No exact answers listed</span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-gray-500 block">
+                              Case sensitive: {q.caseSensitive ? 'Yes' : 'No (case-insensitive)'}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Matching Pairs */}
+                        {q.type === 'matching' && q.matchingPairs && q.matchingPairs.length > 0 && (
+                          <div className="space-y-1.5 text-xs">
+                            <span className="font-semibold text-gray-600 block">Matching Association Pairs:</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {q.matchingPairs.map((pair) => (
+                                <div
+                                  key={pair.id}
+                                  className="p-2 rounded bg-white border border-gray-200 flex items-center justify-between gap-2"
+                                >
+                                  <span className="font-medium text-gray-800 truncate">{pair.left}</span>
+                                  <span className="text-gray-400 shrink-0">➔</span>
+                                  <span className="font-semibold text-indigo-700 truncate">{pair.right}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Short Answer Rubric */}
+                        {q.expectedRubric && (
+                          <div className="text-xs space-y-1">
+                            <span className="font-semibold text-gray-600 block">Evaluation Rubric / Guideline:</span>
+                            <p className="bg-amber-50/70 text-amber-900 border border-amber-200/80 p-2.5 rounded-lg text-xs">
+                              {q.expectedRubric}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Pedagogical Explanation */}
+                        {q.explanation && (
+                          <div className="pt-2 border-t border-gray-200/80 text-xs space-y-1">
+                            <span className="font-semibold text-indigo-700 flex items-center gap-1">
+                              <Info className="w-3.5 h-3.5" /> Pedagogical Explanation:
+                            </span>
+                            <p className="bg-indigo-50/50 text-indigo-950 border border-indigo-100 p-2 rounded-lg text-xs leading-relaxed">
+                              {q.explanation}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs font-medium text-[#1F2937] mt-1 line-clamp-2">
-                        {q.prompt}
-                      </p>
-                    </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           )}
 
-          <div className="pt-4 border-t border-[#D9DEE7] flex justify-between">
+          {/* Sticky Summary & Step Actions */}
+          <div className="pt-4 border-t border-[#D9DEE7] flex flex-wrap items-center justify-between gap-3">
             <Button variant="secondary" onClick={handlePrevStep}>
               Back
             </Button>
+            <div className="text-xs text-gray-600 font-medium">
+              Selected: <span className="font-bold text-gray-900">{selectedQuestionIds.length} questions</span> ({totalPoints} total points)
+            </div>
             <Button variant="primary" rightIcon={<ChevronRight className="w-4 h-4" />} onClick={handleNextStep}>
               Next: Assessment settings
             </Button>
