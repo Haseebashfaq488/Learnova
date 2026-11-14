@@ -326,6 +326,16 @@ class EnrollmentService:
             status="pending",
         )
         db.add(outbox_event)
+        
+        # Synchronously process event so XP and streak are immediately awarded in the database
+        try:
+            from app.services.gamification_service import GamificationService
+            if GamificationService.process_outbox_event(db, outbox_event):
+                outbox_event.status = "published"
+                outbox_event.published_at = datetime.now(timezone.utc)
+        except Exception:
+            pass
+
         db.commit()
 
         _, _, prog = cls.calculate_course_progress(db, student.id, course_id)

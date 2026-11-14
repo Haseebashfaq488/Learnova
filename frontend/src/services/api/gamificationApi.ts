@@ -169,6 +169,32 @@ class GamificationApiClient {
       method: 'GET',
     });
   }
+
+  /**
+   * Directly record a gamification XP event in the backend database.
+   */
+  public async awardXP(payload: {
+    event_type: string;
+    xp_amount: number;
+    description: string;
+    related_id?: string;
+    idempotency_key?: string;
+  }): Promise<{
+    profile: BackendGamificationProfileResponse;
+    xp_awarded: number;
+    is_newly_awarded: boolean;
+    newly_unlocked_badges: string[];
+  }> {
+    return authApi.request<{
+      profile: BackendGamificationProfileResponse;
+      xp_awarded: number;
+      is_newly_awarded: boolean;
+      newly_unlocked_badges: string[];
+    }>('/gamification/events', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
 }
 
 export const gamificationApi = new GamificationApiClient();

@@ -505,9 +505,37 @@ export default function App() {
           );
         }
 
-        setGamificationProfile(storage.getGamificationProfile());
-        setXpEvents(storage.getXPEvents());
-        setLeaderboard(storage.getLeaderboard());
+        // Fetch refreshed gamification state directly from database
+        try {
+          const [updatedProfile, updatedXp, updatedLeaderboard] = await Promise.all([
+            gamificationApi.getProfile().catch(() => null),
+            gamificationApi.getXPHistory().catch(() => null),
+            gamificationApi.getLeaderboard().catch(() => null),
+          ]);
+          if (updatedProfile) {
+            const mapped = mapBackendProfileToProfile(updatedProfile);
+            setGamificationProfile(mapped);
+            storage.saveGamificationProfile(mapped);
+          } else {
+            setGamificationProfile(storage.getGamificationProfile());
+          }
+          if (updatedXp && updatedXp.items) {
+            setXpEvents(updatedXp.items.map(mapBackendXPToXPEvent));
+          } else {
+            setXpEvents(storage.getXPEvents());
+          }
+          const lbItems = updatedLeaderboard?.entries || updatedLeaderboard?.leaderboard;
+          if (lbItems) {
+            setLeaderboard(lbItems.map(mapBackendLeaderboardToLeaderboard));
+          } else {
+            setLeaderboard(storage.getLeaderboard());
+          }
+        } catch {
+          setGamificationProfile(storage.getGamificationProfile());
+          setXpEvents(storage.getXPEvents());
+          setLeaderboard(storage.getLeaderboard());
+        }
+
         notify('success', `Lesson marked complete! +50 XP awarded.`);
         return;
       }
@@ -525,7 +553,7 @@ export default function App() {
     notify('success', `Lesson marked complete! +${xpAwarded} XP awarded.`);
   };
 
-  const handleFinishDiagnostic = (res: {
+  const handleFinishDiagnostic = async (res: {
     assessmentId: string;
     scorePercent: number;
     totalQuestions: number;
@@ -550,11 +578,43 @@ export default function App() {
     });
     setMasteryStates(storage.getMasteryStates());
 
-    // Award XP
+    // Award XP in backend database & local cache
     storage.awardXP('diagnostic_completed', res.xpAwarded, `Completed diagnostic: ${asm?.title || 'Baseline assessment'}`, asm?.id);
-    setGamificationProfile(storage.getGamificationProfile());
-    setXpEvents(storage.getXPEvents());
-    setLeaderboard(storage.getLeaderboard());
+
+    try {
+      if (authApi.getAccessToken()) {
+        const awardRes = await gamificationApi.awardXP({
+          event_type: 'diagnostic_completed',
+          xp_amount: res.xpAwarded,
+          description: `Completed diagnostic: ${asm?.title || 'Baseline assessment'}`,
+          related_id: asm?.id,
+        });
+        if (awardRes?.profile) {
+          const mapped = mapBackendProfileToProfile(awardRes.profile);
+          setGamificationProfile(mapped);
+          storage.saveGamificationProfile(mapped);
+        } else {
+          setGamificationProfile(storage.getGamificationProfile());
+        }
+        const [updatedXp, updatedLeaderboard] = await Promise.all([
+          gamificationApi.getXPHistory().catch(() => null),
+          gamificationApi.getLeaderboard().catch(() => null),
+        ]);
+        if (updatedXp?.items) setXpEvents(updatedXp.items.map(mapBackendXPToXPEvent));
+        else setXpEvents(storage.getXPEvents());
+        const lbItems = updatedLeaderboard?.entries || updatedLeaderboard?.leaderboard;
+        if (lbItems) setLeaderboard(lbItems.map(mapBackendLeaderboardToLeaderboard));
+        else setLeaderboard(storage.getLeaderboard());
+      } else {
+        setGamificationProfile(storage.getGamificationProfile());
+        setXpEvents(storage.getXPEvents());
+        setLeaderboard(storage.getLeaderboard());
+      }
+    } catch {
+      setGamificationProfile(storage.getGamificationProfile());
+      setXpEvents(storage.getXPEvents());
+      setLeaderboard(storage.getLeaderboard());
+    }
 
     const resultObj: StudentAssessmentResult = {
       id: `res-${Date.now()}`,
@@ -585,7 +645,7 @@ export default function App() {
     notify('success', `Diagnostic calibrated! +${res.xpAwarded} XP confirmed.`);
   };
 
-  const handleFinishPractice = (res: {
+  const handleFinishPractice = async (res: {
     assessmentId: string;
     scorePercent: number;
     totalQuestions: number;
@@ -618,9 +678,42 @@ export default function App() {
       setBadges(storage.getBadges());
     }
 
-    setGamificationProfile(storage.getGamificationProfile());
-    setXpEvents(storage.getXPEvents());
-    setLeaderboard(storage.getLeaderboard());
+    try {
+      if (authApi.getAccessToken()) {
+        const awardRes = await gamificationApi.awardXP({
+          event_type: 'practice_completed',
+          xp_amount: res.xpAwarded,
+          description: `Completed adaptive practice: ${asm?.title || 'Topic practice'}`,
+          related_id: asm?.id,
+        });
+        if (awardRes?.profile) {
+          const mapped = mapBackendProfileToProfile(awardRes.profile);
+          setGamificationProfile(mapped);
+          storage.saveGamificationProfile(mapped);
+        } else {
+          setGamificationProfile(storage.getGamificationProfile());
+        }
+        const [updatedXp, updatedBadges, updatedLeaderboard] = await Promise.all([
+          gamificationApi.getXPHistory().catch(() => null),
+          gamificationApi.getBadges().catch(() => null),
+          gamificationApi.getLeaderboard().catch(() => null),
+        ]);
+        if (updatedXp?.items) setXpEvents(updatedXp.items.map(mapBackendXPToXPEvent));
+        else setXpEvents(storage.getXPEvents());
+        if (updatedBadges?.items) setBadges(updatedBadges.items.map(mapBackendBadgeToBadge));
+        const lbItems = updatedLeaderboard?.entries || updatedLeaderboard?.leaderboard;
+        if (lbItems) setLeaderboard(lbItems.map(mapBackendLeaderboardToLeaderboard));
+        else setLeaderboard(storage.getLeaderboard());
+      } else {
+        setGamificationProfile(storage.getGamificationProfile());
+        setXpEvents(storage.getXPEvents());
+        setLeaderboard(storage.getLeaderboard());
+      }
+    } catch {
+      setGamificationProfile(storage.getGamificationProfile());
+      setXpEvents(storage.getXPEvents());
+      setLeaderboard(storage.getLeaderboard());
+    }
 
     const resultObj: StudentAssessmentResult = {
       id: `res-${Date.now()}`,
@@ -652,7 +745,7 @@ export default function App() {
     notify('success', `Adaptive practice complete! Mastery recalibrated.`);
   };
 
-  const handleFinishExam = (res: {
+  const handleFinishExam = async (res: {
     assessmentId: string;
     scorePercent: number;
     totalQuestions: number;
@@ -683,9 +776,42 @@ export default function App() {
       }
     }
 
-    setGamificationProfile(storage.getGamificationProfile());
-    setXpEvents(storage.getXPEvents());
-    setLeaderboard(storage.getLeaderboard());
+    try {
+      if (authApi.getAccessToken()) {
+        const awardRes = await gamificationApi.awardXP({
+          event_type: 'exam_completed',
+          xp_amount: res.xpAwarded,
+          description: `Completed Final Examination: ${asm?.title || 'Course Final'}`,
+          related_id: asm?.id,
+        });
+        if (awardRes?.profile) {
+          const mapped = mapBackendProfileToProfile(awardRes.profile);
+          setGamificationProfile(mapped);
+          storage.saveGamificationProfile(mapped);
+        } else {
+          setGamificationProfile(storage.getGamificationProfile());
+        }
+        const [updatedXp, updatedBadges, updatedLeaderboard] = await Promise.all([
+          gamificationApi.getXPHistory().catch(() => null),
+          gamificationApi.getBadges().catch(() => null),
+          gamificationApi.getLeaderboard().catch(() => null),
+        ]);
+        if (updatedXp?.items) setXpEvents(updatedXp.items.map(mapBackendXPToXPEvent));
+        else setXpEvents(storage.getXPEvents());
+        if (updatedBadges?.items) setBadges(updatedBadges.items.map(mapBackendBadgeToBadge));
+        const lbItems = updatedLeaderboard?.entries || updatedLeaderboard?.leaderboard;
+        if (lbItems) setLeaderboard(lbItems.map(mapBackendLeaderboardToLeaderboard));
+        else setLeaderboard(storage.getLeaderboard());
+      } else {
+        setGamificationProfile(storage.getGamificationProfile());
+        setXpEvents(storage.getXPEvents());
+        setLeaderboard(storage.getLeaderboard());
+      }
+    } catch {
+      setGamificationProfile(storage.getGamificationProfile());
+      setXpEvents(storage.getXPEvents());
+      setLeaderboard(storage.getLeaderboard());
+    }
 
     const resultObj: StudentAssessmentResult = {
       id: `res-${Date.now()}`,
@@ -783,7 +909,9 @@ export default function App() {
       ]);
 
       if (gProfile) {
-        setGamificationProfile(mapBackendProfileToProfile(gProfile));
+        const mapped = mapBackendProfileToProfile(gProfile);
+        setGamificationProfile(mapped);
+        storage.saveGamificationProfile(mapped);
       }
       if (gBadges && gBadges.items) {
         setBadges(gBadges.items.map(mapBackendBadgeToBadge));
