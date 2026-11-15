@@ -21,6 +21,7 @@ export interface CreateCoursePayload {
 export interface UpdateCoursePayload {
   title?: string;
   description?: string;
+  status?: 'draft' | 'published' | 'archived';
 }
 
 export interface CreateTopicPayload {
@@ -129,6 +130,24 @@ class TeacherApiClient {
   public async publishCourse(courseId: string): Promise<BackendCourseResponse> {
     return authApi.request<BackendCourseResponse>(`/courses/${courseId}/publish`, {
       method: 'POST',
+    });
+  }
+
+  public async archiveCourse(courseId: string): Promise<BackendCourseResponse> {
+    return authApi.request<BackendCourseResponse>(`/courses/${courseId}/archive`, {
+      method: 'POST',
+    });
+  }
+
+  public async draftCourse(courseId: string): Promise<BackendCourseResponse> {
+    return authApi.request<BackendCourseResponse>(`/courses/${courseId}/draft`, {
+      method: 'POST',
+    });
+  }
+
+  public async deleteCourse(courseId: string): Promise<void> {
+    await authApi.request<void>(`/courses/${courseId}`, {
+      method: 'DELETE',
     });
   }
 

@@ -80,3 +80,34 @@ def publish_course(
 ):
     """Publish a draft course after validating topic/lesson completeness and prerequisite acyclicity."""
     return CourseService.publish_course(db=db, course_id=course_id, actor=current_user)
+
+
+@router.post("/{course_id}/archive", response_model=CourseResponse)
+def archive_course(
+    course_id: UUID,
+    current_user: User = Depends(require_teacher_assigned_to_course),
+    db: Session = Depends(get_db),
+):
+    """Archive a course, unenroll all active students, and prepare for safe lifecycle archival."""
+    return CourseService.archive_course(db=db, course_id=course_id, actor=current_user)
+
+
+@router.post("/{course_id}/draft", response_model=CourseResponse)
+def draft_course(
+    course_id: UUID,
+    current_user: User = Depends(require_teacher_assigned_to_course),
+    db: Session = Depends(get_db),
+):
+    """Revert a course to draft status for instructional editing."""
+    return CourseService.draft_course(db=db, course_id=course_id, actor=current_user)
+
+
+@router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_course(
+    course_id: UUID,
+    current_user: User = Depends(require_teacher_assigned_to_course),
+    db: Session = Depends(get_db),
+):
+    """Delete course permanently. Safety constraint: course must be archived with no active enrollments."""
+    CourseService.delete_course(db=db, course_id=course_id, actor=current_user)
+    return None

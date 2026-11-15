@@ -944,17 +944,18 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
 
                 <FormField
                   id="lesson-desc-input"
-                  label="Learning objective / Instructional notes"
-                  helperText="Describe what learners should understand upon completing this lesson."
+                  label="Lesson Introduction & Instructional Notes"
+                  helperText="Write the introduction and instructional notes for this lesson. Students will read this when opening the lesson in their workspace."
                 >
                   <textarea
                     id="lesson-desc-input"
-                    rows={3}
+                    rows={5}
                     value={lessonDesc}
                     onChange={(e) => {
                       setLessonDesc(e.target.value);
                       setHasUnsavedChanges(true);
                     }}
+                    placeholder="Enter lesson introduction, architectural notes, or learning objectives..."
                     className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                   />
                 </FormField>
@@ -1065,7 +1066,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
       {isAssessmentDrawerOpen && drawerTopic && (
         <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-900/10 backdrop-blur-sm transition-opacity"
             onClick={() => setIsAssessmentDrawerOpen(false)}
           />
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
@@ -1235,7 +1236,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
       {/* Upload Files from PC Modal */}
       {isUploadModalOpen && uploadTargetLesson && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/10 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
         >

@@ -262,6 +262,31 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
+                          {c.status === 'archived' ? (
+                            <button
+                              onClick={() => setConfirmDeleteId(c.id)}
+                              className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md cursor-pointer transition-colors"
+                              aria-label={`Delete ${c.title}`}
+                              title="Delete archived course"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                onSaveCourse({
+                                  ...c,
+                                  status: 'archived',
+                                  updatedAt: new Date().toISOString(),
+                                });
+                              }}
+                              className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md cursor-pointer transition-colors"
+                              aria-label={`Archive ${c.title}`}
+                              title="Archive course & unenroll students"
+                            >
+                              <Archive className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -321,7 +346,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
       {/* Create / Edit Course Modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/10 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
         >
@@ -413,6 +438,23 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
         confirmLabel="Publish course"
         onConfirm={handlePublishConfirmed}
         onCancel={() => setConfirmPublishCourse(null)}
+      />
+
+      {/* Confirmation Dialog for Deleting Archived Course */}
+      <ConfirmDialog
+        isOpen={!!confirmDeleteId}
+        title="Delete archived course?"
+        targetObject={courses.find((c) => c.id === confirmDeleteId)?.title}
+        consequence="This permanently removes the course, topics, lessons, and learning resources. Only archived courses with zero active enrollments can be deleted."
+        confirmLabel="Delete course"
+        isDestructive
+        onConfirm={() => {
+          if (confirmDeleteId) {
+            onDeleteCourse(confirmDeleteId);
+            setConfirmDeleteId(null);
+          }
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
       />
     </div>
   );

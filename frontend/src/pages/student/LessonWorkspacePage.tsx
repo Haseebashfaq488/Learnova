@@ -150,27 +150,20 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
             {lesson?.title}
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl">
-            {lesson?.description}
-          </p>
         </div>
 
         {/* Learning Content Body */}
-        <div className="prose dark:prose-invert max-w-none pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
-          <p>
-            In this unit, we investigate foundational principles and structural abstractions in <strong>{course?.title}</strong>.
-            Understanding how state variables bind to physical registers and heap references gives you predictive control over application memory.
-          </p>
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 space-y-2">
-            <h4 className="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider">
-              Core Architectural Invariants:
-            </h4>
-            <ul className="list-disc pl-5 text-xs text-gray-700 dark:text-gray-300 space-y-1">
-              <li>Deterministic state evaluation prevents runtime divergence.</li>
-              <li>Prerequisite validation ensures downstream modules receive strictly typed inputs.</li>
-              <li>Immutability safeguards memory references from unexpected shared concurrency mutations.</li>
-            </ul>
-          </div>
+        <div className="prose dark:prose-invert max-w-none pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+            Lesson Introduction &amp; Core Concepts
+          </h3>
+          {lesson?.description ? (
+            <div className="whitespace-pre-wrap leading-relaxed text-sm text-gray-800 dark:text-gray-200 bg-gray-50/50 dark:bg-[#1C212B] p-4 rounded-xl border border-gray-200 dark:border-gray-800">
+              {lesson.description}
+            </div>
+          ) : (
+            <p className="text-gray-500 italic">No introduction notes provided for this lesson yet.</p>
+          )}
         </div>
 
         {/* Published Learning Resources Group */}

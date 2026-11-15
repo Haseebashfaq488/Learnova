@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.course import Course
 from app.models.course_teacher import CourseTeacher
+from app.models.enrollment import Enrollment
 from app.models.lesson import Lesson
 from app.models.resource import LearningResource
 from app.models.security_audit_event import SecurityAuditEvent
@@ -306,6 +307,14 @@ class CourseService:
         if data.description is not None:
             course.description = data.description
 
+        if data.status is not None and data.status != course.status:
+            if data.status == "archived":
+                return CourseService.archive_course(db=db, course_id=course_id, actor=actor)
+            elif data.status == "published":
+                return CourseService.publish_course(db=db, course_id=course_id, actor=actor)
+            elif data.status == "draft":
+                return CourseService.draft_course(db=db, course_id=course_id, actor=actor)
+
         log_audit_event(
             db=db,
             actor_id=actor.id,
@@ -414,3 +423,156 @@ class CourseService:
             created_at=course.created_at,
             updated_at=course.updated_at,
         )
+
+    @staticmethod
+    def archive_course(
+        db: Session,
+        course_id: UUID,
+        actor: User,
+    ) -> CourseResponse:
+        """Archive course and automatically unenroll all active students."""
+        course = db.get(Course, course_id)
+        if not course:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+        # Unenroll all students who are actively enrolled in this course
+        active_enrollments = db.execute(
+            select(Enrollment).where(
+                Enrollment.course_id == course.id,
+                Enrollment.status == "active",
+            )
+        ).scalars().all()
+
+        for enrollment in active_enrollments:
+            enrollment.status = "dropped"
+
+        course.status = "archived"
+
+        log_audit_event(
+            db=db,
+            actor_id=actor.id,
+            actor_email=actor.email,
+            actor_role=actor.role.name,
+            action="course.archive",
+            target_type="course",
+            target_id=str(course.id),
+            outcome="SUCCESS",
+            details={
+                "status": "archived",
+                "unenrolled_students_count": len(active_enrollments),
+            },
+        )
+        db.commit()
+        db.refresh(course)
+
+        topics_count = db.scalar(select(func.count(Topic.id)).where(Topic.course_id == course.id)) or 0
+        lessons_count = db.scalar(
+            select(func.count(Lesson.id))
+            .join(Topic, Topic.id == Lesson.topic_id)
+            .where(Topic.course_id == course.id)
+        ) or 0
+
+        return CourseResponse(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            status=course.status,
+            creator_id=course.creator_id,
+            creator_name=course.creator.full_name if course.creator else None,
+            topics_count=topics_count,
+            lessons_count=lessons_count,
+            created_at=course.created_at,
+            updated_at=course.updated_at,
+        )
+
+    @staticmethod
+    def draft_course(
+        db: Session,
+        course_id: UUID,
+        actor: User,
+    ) -> CourseResponse:
+        """Revert course status to draft."""
+        course = db.get(Course, course_id)
+        if not course:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+        course.status = "draft"
+
+        log_audit_event(
+            db=db,
+            actor_id=actor.id,
+            actor_email=actor.email,
+            actor_role=actor.role.name,
+            action="course.draft",
+            target_type="course",
+            target_id=str(course.id),
+            outcome="SUCCESS",
+            details={"status": "draft"},
+        )
+        db.commit()
+        db.refresh(course)
+
+        topics_count = db.scalar(select(func.count(Topic.id)).where(Topic.course_id == course.id)) or 0
+        lessons_count = db.scalar(
+            select(func.count(Lesson.id))
+            .join(Topic, Topic.id == Lesson.topic_id)
+            .where(Topic.course_id == course.id)
+        ) or 0
+
+        return CourseResponse(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            status=course.status,
+            creator_id=course.creator_id,
+            creator_name=course.creator.full_name if course.creator else None,
+            topics_count=topics_count,
+            lessons_count=lessons_count,
+            created_at=course.created_at,
+            updated_at=course.updated_at,
+        )
+
+    @staticmethod
+    def delete_course(
+        db: Session,
+        course_id: UUID,
+        actor: User,
+    ) -> None:
+        """Delete course with safety gates: course must be archived and have zero active enrollments."""
+        course = db.get(Course, course_id)
+        if not course:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+        if course.status != "archived":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Course cannot be deleted. A course must be archived before it can be deleted.",
+            )
+
+        active_enrollments_count = db.scalar(
+            select(func.count(Enrollment.id)).where(
+                Enrollment.course_id == course.id,
+                Enrollment.status == "active",
+            )
+        ) or 0
+        if active_enrollments_count > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Course cannot be deleted: {active_enrollments_count} students are actively enrolled. Unenroll students or archive first.",
+            )
+
+        course_title = course.title
+        db.delete(course)
+
+        log_audit_event(
+            db=db,
+            actor_id=actor.id,
+            actor_email=actor.email,
+            actor_role=actor.role.name,
+            action="course.delete",
+            target_type="course",
+            target_id=str(course_id),
+            outcome="SUCCESS",
+            details={"title": course_title},
+        )
+        db.commit()

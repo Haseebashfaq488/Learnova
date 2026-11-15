@@ -564,13 +564,13 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                             setMobileMenuOpen(false);
                             onSwitchPortal('student');
                           }}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700"
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
                             <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                             <span>Student Portal</span>
                           </div>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-medium">
                             Student
                           </span>
                         </button>
@@ -582,13 +582,13 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                             setMobileMenuOpen(false);
                             onSwitchToPublic();
                           }}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700"
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
                             <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                            <span>Public Site</span>
+                            <span>Public Overview</span>
                           </div>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-medium">
                             Home
                           </span>
                         </button>

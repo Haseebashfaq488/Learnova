@@ -73,7 +73,12 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart, className
         });
 
         // Clean any stray markdown fences or html entities
-        const cleanChart = chart.trim().replace(/^```mermaid\s*/i, '').replace(/```$/i, '').trim();
+        let cleanChart = chart.trim().replace(/^```mermaid\s*/i, '').replace(/```$/i, '').trim();
+
+        // Sanitize edge labels enclosed in pipes: |"something"| or |"=" (points to)| -> remove quotes inside pipes to prevent syntax errors
+        cleanChart = cleanChart.replace(/\|([^|\r\n]+)\|/g, (_match, inner) => {
+          return `|${inner.replace(/["']/g, '')}|`;
+        });
 
         // Render diagram to SVG
         const renderId = `render-${chartId}`;

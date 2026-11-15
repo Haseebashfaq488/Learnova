@@ -24,6 +24,7 @@ When explaining algorithms, workflows, architectural relationships, data structu
    - **`mindmap`:** For multi-branch topic taxonomies and concept overviews.
 3. **Diagram Formatting Rules:**
    - Enclose node labels with special characters in quotes (e.g., `A["Client (Browser)"] --> B["API Gateway"]`).
+   - In arrow labels inside pipes (`-->|label|`), do NOT use quotes (e.g., use `-->|points to|` or `-->|assigns to|` rather than `-->|"=" (points to)|`).
    - Keep node labels concise, high-contrast, and meaningful.
    - Ensure syntactically valid diagrams that render cleanly on both dark and light UI canvases.
 

@@ -1969,10 +1969,15 @@ export default function App() {
         if (existing && isUuid(c.id)) {
           if (c.status === 'published' && existing.status !== 'published') {
             await teacherApi.publishCourse(c.id);
+          } else if (c.status === 'archived' && existing.status !== 'archived') {
+            await teacherApi.archiveCourse(c.id);
+          } else if (c.status === 'draft' && existing.status !== 'draft') {
+            await teacherApi.draftCourse(c.id);
           }
           const updated = await teacherApi.updateCourse(c.id, {
             title: c.title,
             description: c.description,
+            status: c.status,
           });
           if (updated) {
             savedCourse = {
@@ -2014,10 +2019,18 @@ export default function App() {
     notify('success', `Course "${savedCourse.title}" saved.`);
   };
 
-  const handleDeleteCourse = (id: string) => {
-    storage.deleteCourse(id);
-    setCourses((prev) => prev.filter((c) => c.id !== id));
-    notify('info', 'Course deleted.');
+  const handleDeleteCourse = async (id: string) => {
+    try {
+      if (authApi.getAccessToken() && isUuid(id)) {
+        await teacherApi.deleteCourse(id);
+      }
+      storage.deleteCourse(id);
+      setCourses((prev) => prev.filter((c) => c.id !== id));
+      notify('info', 'Course permanently deleted.');
+    } catch (err: any) {
+      console.error('Delete course error:', err);
+      notify('error', err?.message || 'Failed to delete course. Ensure course is archived before deleting.');
+    }
   };
 
   const handleSaveTopic = async (t: Topic): Promise<Topic> => {
@@ -2458,39 +2471,6 @@ export default function App() {
       toasts={toasts}
       onDismissToast={handleDismissToast}
     >
-      {/* Switch to Student or Admin Portal Banner */}
-      <div className="mb-6 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs font-semibold">
-        <span className="text-indigo-900 dark:text-indigo-200">
-          Teacher Portal Mode active. Switch workspaces:
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setPortalMode('public')}
-            className="px-3 py-1.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-bold transition cursor-pointer"
-          >
-            ← Public Site
-          </button>
-          <button
-            type="button"
-            onClick={() => setPortalMode('student')}
-            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition cursor-pointer"
-          >
-            Switch to Student Portal →
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setPortalMode('admin');
-              refreshAdminData();
-            }}
-            className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition cursor-pointer"
-          >
-            Switch to Admin Portal →
-          </button>
-        </div>
-      </div>
-
       {teacherPage === 'overview' && (
         <TeacherDashboardPage
           courses={courses}

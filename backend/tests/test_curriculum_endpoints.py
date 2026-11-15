@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.security import create_access_token, hash_password
 from app.models.course import Course
 from app.models.course_teacher import CourseTeacher
+from app.models.enrollment import Enrollment
 from app.models.lesson import Lesson
 from app.models.resource import LearningResource
 from app.models.role import Role
@@ -295,3 +296,50 @@ def test_get_student_lesson_completions_endpoint(client_with_db: TestClient, db_
     items2 = res_list2.json()
     assert len(items2) == 1
     assert items2[0]["lesson_id"] == str(lesson.id)
+
+
+def test_course_archive_unenrolls_students_and_lifecycle_delete(
+    client_with_db: TestClient, seed_test_users: dict, db_session: Session
+):
+    """Verify archiving unenrolls students, draft reverts, and course delete requires archived status."""
+    teacher = seed_test_users["teacher1"]
+    student = seed_test_users["student"]
+
+    course = Course(title="Lifecycle Test Course", status="published", creator_id=teacher.id)
+    db_session.add(course)
+    db_session.flush()
+
+    course_id = course.id
+    assign = CourseTeacher(course_id=course.id, teacher_id=teacher.id)
+    enrollment = Enrollment(student_id=student.id, course_id=course.id, status="active")
+    db_session.add_all([assign, enrollment])
+    db_session.commit()
+
+    # Attempt delete while published -> must fail with 400
+    res_del_blocked = client_with_db.delete(
+        f"/api/v1/courses/{course_id}", headers=auth_header(teacher)
+    )
+    assert res_del_blocked.status_code == 400
+    assert "must be archived" in res_del_blocked.json()["detail"]
+
+    # Archive the course
+    res_archive = client_with_db.post(
+        f"/api/v1/courses/{course_id}/archive", headers=auth_header(teacher)
+    )
+    assert res_archive.status_code == 200
+    assert res_archive.json()["status"] == "archived"
+
+    # Verify student is now unenrolled (status == dropped)
+    db_session.refresh(enrollment)
+    assert enrollment.status == "dropped"
+
+    # Delete should now succeed because course is archived and has 0 active enrollments
+    res_del_ok = client_with_db.delete(
+        f"/api/v1/courses/{course_id}", headers=auth_header(teacher)
+    )
+    assert res_del_ok.status_code == 204
+
+    # Verify course is deleted from DB
+    db_session.expire_all()
+    deleted = db_session.query(Course).filter(Course.id == course_id).first()
+    assert deleted is None

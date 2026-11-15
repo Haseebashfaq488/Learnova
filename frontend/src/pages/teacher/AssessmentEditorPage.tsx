@@ -291,7 +291,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               <Button
                 variant="primary"
                 leftIcon={<UploadCloud className="w-4 h-4" />}
-                onClick={() => setPublishModalOpen(true)}
+                onClick={handleConfirmPublish}
               >
                 Publish assessment
               </Button>
@@ -990,7 +990,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               <Button
                 variant="primary"
                 leftIcon={<UploadCloud className="w-4 h-4" />}
-                onClick={() => setPublishModalOpen(true)}
+                onClick={handleConfirmPublish}
               >
                 Publish assessment
               </Button>
@@ -1108,7 +1108,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               <Button
                 variant="primary"
                 leftIcon={<UploadCloud className="w-4 h-4" />}
-                onClick={() => setPublishModalOpen(true)}
+                onClick={handleConfirmPublish}
               >
                 Publish assessment
               </Button>
@@ -1117,16 +1117,6 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
         </div>
       )}
 
-      {/* Confirmation Modal for Publishing */}
-      <ConfirmDialog
-        isOpen={publishModalOpen}
-        title="Publish assessment now?"
-        targetObject={title}
-        consequence={`Once published, enrolled students can start attempts. The test contains ${selectedQuestionIds.length} questions worth ${totalPoints} points.`}
-        confirmLabel="Publish assessment"
-        onConfirm={handleConfirmPublish}
-        onCancel={() => setPublishModalOpen(false)}
-      />
     </div>
   );
 };
