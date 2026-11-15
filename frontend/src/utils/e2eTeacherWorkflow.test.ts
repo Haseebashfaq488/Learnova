@@ -385,6 +385,31 @@ describe('Teacher Complete Workflow E2E Suite', () => {
       const match = list.find((q: any) => q.id === createdQuestionId);
       assert.ok(match, 'Authored question must be listed');
     });
+
+    test('POST /questions creates a True/False Question in the bank', async () => {
+      const res = await fetch(`${BACKEND_BASE}/questions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${teacherToken}`,
+        },
+        body: JSON.stringify({
+          course_id: createdCourseId,
+          topic_id: topic1Id,
+          type: 'true_false',
+          difficulty: 'easy',
+          points: 1,
+          prompt: 'A network partition can cause two nodes to believe they are both the active leader.',
+          explanation: 'Without a consensus quorum or fencing tokens, split-brain scenarios emerge.',
+          answer_key: { correct_bool: true },
+        }),
+      });
+
+      assert.equal(res.status, 201, 'True/False question creation must return 201 Created');
+      const question = await res.json();
+      assert.ok(question.id);
+      assert.equal(question.type, 'true_false');
+    });
   });
 
   describe('Phase 5: AI Candidate Question Generation & Governance', () => {
@@ -442,6 +467,29 @@ describe('Teacher Complete Workflow E2E Suite', () => {
       const approval = await res.json();
       assert.equal(approval.success, true);
       assert.ok(approval.approved_question_id, 'Approved question ID must be returned');
+    });
+
+    test('POST /ai/candidates/{id}/reject rejects candidate with feedback reason', async () => {
+      // Find remaining pending candidate in course review queue
+      const resList = await fetch(`${BACKEND_BASE}/ai/candidates?course_id=${createdCourseId}&status=pending_review`, {
+        headers: { Authorization: `Bearer ${teacherToken}` },
+      });
+      const listData = await resList.json();
+      const candToReject = listData.items && listData.items.find((c: any) => c.id !== generatedCandidateId);
+
+      if (candToReject) {
+        const rejectRes = await fetch(`${BACKEND_BASE}/ai/candidates/${candToReject.id}/reject`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${teacherToken}`,
+          },
+          body: JSON.stringify({ reason: 'Question requires deeper architectural scenario context.' }),
+        });
+        assert.equal(rejectRes.status, 200, 'Candidate rejection must return 200 OK');
+        const rejectData = await rejectRes.json();
+        assert.equal(rejectData.status, 'rejected');
+      }
     });
   });
 

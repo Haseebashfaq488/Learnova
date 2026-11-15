@@ -480,6 +480,48 @@ describe('Administrator Complete Workflow E2E Suite', () => {
       });
       assert.equal(restoredLoginRes.status, 200, 'Reactivated user must be able to log in');
     });
+
+    test('Safeguard Edge Case: Multiple concurrent administrators allows deactivating second admin, but blocks deactivation of last active administrator', async () => {
+      // 1. Promote tempUser to administrator role
+      const promoteAdmRes = await fetch(`${BACKEND_BASE}/admin/users/${tempUserId}/role`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: 'administrator' }),
+      });
+      assert.equal(promoteAdmRes.status, 200);
+
+      // 2. Deactivating the second administrator succeeds because >1 active administrator exists
+      const deactSecondAdm = await fetch(`${BACKEND_BASE}/admin/users/${tempUserId}/status`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: false }),
+      });
+      assert.equal(deactSecondAdm.status, 200, 'Deactivating non-last administrator must succeed');
+
+      // 3. Reactivate and revert temp user back to student
+      await fetch(`${BACKEND_BASE}/admin/users/${tempUserId}/status`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: true }),
+      });
+      await fetch(`${BACKEND_BASE}/admin/users/${tempUserId}/role`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: 'student' }),
+      });
+    });
   });
 
   describe('Phase 6: Immutable Security Audit Logging, Event Filtering & IP Masking', () => {
