@@ -55,7 +55,7 @@ interface AdminLayoutProps {
   onSwitchPortal: (portal: 'student' | 'teacher') => void;
   onSignOut: () => void;
   breadcrumbs?: BreadcrumbItem[];
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({

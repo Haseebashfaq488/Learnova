@@ -11,6 +11,7 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "test": "node --experimental-strip-types --test src/utils/dag.test.ts src/utils/assessment.test.ts src/utils/studentLogic.test.ts src/utils/adminLogic.test.ts src/utils/teacherLogic.test.ts src/utils/authLogic.test.ts src/utils/routerLogic.test.ts src/utils/themeLogic.test.ts && tsx --test src/utils/uiPageRendering.test.ts src/utils/e2eIntegration.test.ts src/utils/publicPages.test.ts",
+    "test:e2e": "tsx --test src/utils/e2eStudentWorkflow.test.ts src/utils/e2eTeacherWorkflow.test.ts src/utils/e2eAdminWorkflow.test.ts",
     "test:ui": "tsx --test src/utils/uiPageRendering.test.ts"
   },
   "dependencies": {

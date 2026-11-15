@@ -273,15 +273,6 @@ class GradingService:
             status="pending",
         )
         db.add(outbox_event)
-        
-        # Synchronously process event so assessment XP and badges are immediately awarded in the database
-        try:
-            from app.services.gamification_service import GamificationService
-            if GamificationService.process_outbox_event(db, outbox_event):
-                outbox_event.status = "published"
-                outbox_event.published_at = now
-        except Exception:
-            pass
 
         db.commit()
         db.refresh(attempt)

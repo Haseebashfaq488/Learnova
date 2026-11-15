@@ -216,9 +216,9 @@ export function filterAuditEvents(
     }
 
     if (q) {
-      const matchActor = ev.actorName.toLowerCase().includes(q) || ev.actorEmail.toLowerCase().includes(q);
-      const matchTarget = ev.targetName.toLowerCase().includes(q) || ev.targetId.toLowerCase().includes(q);
-      const matchCorrelation = ev.correlationId.toLowerCase().includes(q);
+      const matchActor = (ev.actorName || '').toLowerCase().includes(q) || (ev.actorEmail || '').toLowerCase().includes(q);
+      const matchTarget = (ev.targetName || '').toLowerCase().includes(q) || (ev.targetId || '').toLowerCase().includes(q);
+      const matchCorrelation = (ev.correlationId || '').toLowerCase().includes(q);
       const matchReason = ev.reason ? ev.reason.toLowerCase().includes(q) : false;
       if (!matchActor && !matchTarget && !matchCorrelation && !matchReason) {
         return false;

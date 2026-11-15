@@ -66,7 +66,7 @@ interface StudentLayoutProps {
   onSwitchToPublic?: () => void;
   onSignOut?: () => void;
   breadcrumbs?: Array<{ label: string; page?: StudentNavigationPage; params?: Record<string, string> }>;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const StudentLayout: React.FC<StudentLayoutProps> = ({
