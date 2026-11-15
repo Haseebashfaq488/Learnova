@@ -20,10 +20,7 @@ import {
   Palette,
   Sun,
   Moon,
-  ArrowRightLeft,
-  Globe,
 } from 'lucide-react';
-import { CURRENT_TEACHER } from '../../services/storageService';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { DesignStudioWidget } from '../ui/DesignStudioWidget';
 import { AppFooter } from '../ui/AppFooter';
@@ -278,53 +275,6 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
             })}
           </nav>
 
-          {/* Workspace Quick-Switch Actions */}
-          {(onSwitchPortal || onSwitchToPublic) && (
-            <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545] space-y-1.5">
-              {onSwitchPortal && (
-                <button
-                  type="button"
-                  onClick={() => onSwitchPortal('student')}
-                  title="Switch to Student Portal"
-                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
-                    sidebarCollapsed ? 'justify-center px-0' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    {!sidebarCollapsed && <span>Student Portal</span>}
-                  </div>
-                  {!sidebarCollapsed && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
-                      Student
-                    </span>
-                  )}
-                </button>
-              )}
-
-              {onSwitchToPublic && (
-                <button
-                  type="button"
-                  onClick={onSwitchToPublic}
-                  title="Return to Public Site"
-                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
-                    sidebarCollapsed ? 'justify-center px-0' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    {!sidebarCollapsed && <span>Public Overview</span>}
-                  </div>
-                  {!sidebarCollapsed && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
-                      Home
-                    </span>
-                  )}
-                </button>
-              )}
-            </div>
-          )}
-
           {/* Bottom user utility area */}
           <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545]">
             <div className="relative">
@@ -337,15 +287,15 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                 aria-expanded={userMenuOpen}
               >
                 <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs shrink-0 border border-[#2646B8]/20 dark:border-indigo-700/40">
-                  {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'ER'}
+                  {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'T'}
                 </div>
                 {!sidebarCollapsed && (
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-[#1F2937] dark:text-white truncate">
-                      {teacherUser?.name || CURRENT_TEACHER.name}
+                      {teacherUser?.name || 'Faculty Instructor'}
                     </p>
                     <p className="text-[11px] text-[#5B6472] dark:text-gray-400 truncate">
-                      {teacherUser?.department || CURRENT_TEACHER.department}
+                      {teacherUser?.department || 'Department of Computer Science'}
                     </p>
                   </div>
                 )}
@@ -358,8 +308,8 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   }`}
                 >
                   <div className="px-2 py-1.5 border-b border-gray-100 dark:border-gray-800">
-                    <p className="font-semibold text-[#1F2937] dark:text-white">{teacherUser?.name || CURRENT_TEACHER.name}</p>
-                    <p className="text-[#5B6472] dark:text-gray-400 text-[11px]">{teacherUser?.email || CURRENT_TEACHER.email}</p>
+                    <p className="font-semibold text-[#1F2937] dark:text-white">{teacherUser?.name || 'Faculty Instructor'}</p>
+                    <p className="text-[#5B6472] dark:text-gray-400 text-[11px]">{teacherUser?.email || ''}</p>
                     <span className="inline-block mt-1 bg-green-100 dark:bg-green-950/60 text-green-800 dark:text-green-300 text-[10px] px-1.5 py-0.2 rounded font-medium">
                       Role: Instructor
                     </span>
@@ -491,10 +441,10 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs border border-[#2646B8]/20 dark:border-indigo-700/40">
-                  ER
+                  {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'T'}
                 </div>
                 <span className="text-xs font-semibold text-[#1F2937] dark:text-white hidden sm:inline">
-                  {CURRENT_TEACHER.name}
+                  {teacherUser?.name || 'Faculty Instructor'}
                 </span>
               </div>
             </div>
@@ -555,47 +505,6 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                 </nav>
 
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-                  {(onSwitchPortal || onSwitchToPublic) && (
-                    <div className="flex flex-col gap-1.5 mb-3">
-                      {onSwitchPortal && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMobileMenuOpen(false);
-                            onSwitchPortal('student');
-                          }}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700"
-                        >
-                          <div className="flex items-center gap-2">
-                            <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                            <span>Student Portal</span>
-                          </div>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
-                            Student
-                          </span>
-                        </button>
-                      )}
-                      {onSwitchToPublic && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMobileMenuOpen(false);
-                            onSwitchToPublic();
-                          }}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                            <span>Public Site</span>
-                          </div>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
-                            Home
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-
                   <div className="mb-3">
                     <span className="text-[10px] font-semibold uppercase text-[#737D8C] dark:text-[#828B99] block mb-1.5">
                       Theme Mode
@@ -604,11 +513,13 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-[#F5F7FA] dark:bg-[#1C212B] border border-[#D9DEE7] dark:border-[#2D3545] mb-3">
-                    <p className="text-xs font-semibold text-[#1F2937] dark:text-white">{CURRENT_TEACHER.name}</p>
-                    <p className="text-[11px] text-[#5B6472] dark:text-gray-400">{CURRENT_TEACHER.email}</p>
-                    <p className="text-[10px] text-[#3156D3] dark:text-indigo-400 font-medium mt-1">
-                      {CURRENT_TEACHER.department}
-                    </p>
+                    <p className="text-xs font-semibold text-[#1F2937] dark:text-white">{teacherUser?.name || 'Faculty Instructor'}</p>
+                    <p className="text-[11px] text-[#5B6472] dark:text-gray-400">{teacherUser?.email || ''}</p>
+                    {teacherUser?.department && (
+                      <p className="text-[10px] text-[#3156D3] dark:text-indigo-400 font-medium mt-1">
+                        {teacherUser.department}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

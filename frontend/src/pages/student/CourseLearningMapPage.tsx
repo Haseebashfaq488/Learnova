@@ -180,7 +180,7 @@ export const CourseLearningMapPage: React.FC<CourseLearningMapPageProps> = ({
 
               // Prerequisite titles
               const prereqTopics = courseTopics.filter((t) =>
-                serverNode ? serverNode.prerequisite_ids.includes(t.id) : topic.prerequisiteTopicIds.includes(t.id)
+                serverNode ? (serverNode.prerequisite_ids || []).includes(t.id) : (topic.prerequisiteTopicIds || []).includes(t.id)
               );
 
               const completedTopicLessonsCount = topicLessons.filter((l) => completedLessonIds.has(l.id)).length;

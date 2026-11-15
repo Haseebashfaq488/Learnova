@@ -4,6 +4,7 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 
 import { storage, CURRENT_ADMIN, CURRENT_TEACHER, CURRENT_STUDENT } from '../services/storageService.ts';
+import { Course, Topic, Lesson, Assessment } from '../types/index.ts';
 
 // Student Portal Pages
 import { StudentDashboardPage } from '../pages/student/StudentDashboardPage.tsx';
@@ -34,16 +35,54 @@ import { TeacherLayout } from '../components/teacher/TeacherLayout.tsx';
 import { Button } from '../components/ui/Button.tsx';
 
 describe('UI Rendering & Studio-Grade Micro-Interactions Verification', () => {
-  const courses = storage.getCourses();
-  const topics = storage.getTopics();
-  const lessons = storage.getLessons();
+  const mockCourse: Course = {
+    id: '44444444-4444-4444-4444-444444444444',
+    title: 'Introduction to Computer Science & Python',
+    description: 'Foundational programming concepts, algorithmic reasoning, control structures.',
+    status: 'published',
+    createdAt: '2026-09-01T09:00:00Z',
+    updatedAt: '2026-10-18T08:15:00Z',
+  };
+  const mockTopic: Topic = {
+    id: 'a1111111-1111-1111-1111-111111111111',
+    courseId: mockCourse.id,
+    title: 'Syntax, Variables & Data Types',
+    description: 'Core scalar types and arithmetic operators.',
+    order: 1,
+    masteryThreshold: 0.75,
+  };
+  const mockLesson: Lesson = {
+    id: 'b1111111-1111-1111-1111-111111111111',
+    topicId: mockTopic.id,
+    courseId: mockCourse.id,
+    title: 'Variables, Expressions & Statements',
+    description: 'Syntax fundamentals and variable definitions.',
+    order: 1,
+  };
+
+  const mockAssessment: Assessment = {
+    id: 'asm-11111111-1111-1111-1111-111111111111',
+    courseId: mockCourse.id,
+    title: 'Diagnostic Quiz: Pre-Course Python Proficiency',
+    type: 'diagnostic',
+    timeLimitMinutes: 20,
+    passingScorePercent: 70,
+    questionIds: [],
+    status: 'published',
+    createdAt: '2026-10-01T10:00:00Z',
+    updatedAt: '2026-10-01T10:00:00Z',
+  };
+
+  const courses: Course[] = [mockCourse];
+  const topics: Topic[] = [mockTopic];
+  const lessons: Lesson[] = [mockLesson];
   const resources = storage.getResources();
   const enrollments = storage.getEnrollments();
   const masteryStates = storage.getMasteryStates();
   const badges = storage.getBadges();
   const attempts = storage.getAttempts();
   const completions = storage.getLessonCompletions();
-  const assessments = storage.getAssessments();
+  const assessments: Assessment[] = [mockAssessment];
   const users = storage.getUsers();
   const auditEvents = storage.getAuditEvents();
   const serviceHealth = storage.getServiceHealth();
@@ -324,7 +363,7 @@ describe('UI Rendering & Studio-Grade Micro-Interactions Verification', () => {
       assert.ok(html.includes('Teacher Analytics'), 'Must include page heading');
     });
 
-    it('TeacherLayout renders top section breadcrumb routing tree and quick switches', () => {
+    it('TeacherLayout renders top section breadcrumb routing tree and workspace view', () => {
       const html = renderToString(
         React.createElement(
           TeacherLayout,
@@ -338,8 +377,6 @@ describe('UI Rendering & Studio-Grade Micro-Interactions Verification', () => {
             ],
             toasts: [],
             onDismissToast: () => {},
-            onSwitchPortal: () => {},
-            onSwitchToPublic: () => {},
           },
           React.createElement('div', null, 'Curriculum Editor Body')
         )
@@ -351,8 +388,6 @@ describe('UI Rendering & Studio-Grade Micro-Interactions Verification', () => {
       assert.ok(html.includes('Courses'), 'Must include Courses crumb');
       assert.ok(html.includes('Introduction to Computer Science'), 'Must include Course title crumb');
       assert.ok(html.includes('Curriculum Editor'), 'Must include active page crumb');
-      assert.ok(html.includes('Student Portal'), 'Must include Student Portal switcher');
-      assert.ok(html.includes('Public Overview'), 'Must include Public site switcher');
     });
   });
 

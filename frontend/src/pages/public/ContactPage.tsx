@@ -20,7 +20,6 @@ import {
 
 import { StudentUser } from '../../types';
 import { UserResponse } from '../../services/api/authApi';
-import { storage } from '../../services/storageService';
 
 export interface ContactPageProps {
   currentStudent?: StudentUser | null;
@@ -71,27 +70,6 @@ export const ContactPage: React.FC<ContactPageProps> = ({
     if (!formData.name || !formData.email || !formData.message) return;
 
     setIsSubmitting(true);
-    try {
-      storage.logAuditEvent({
-        actorId: effectiveStudent?.id || 'guest-inquiry',
-        actorName: formData.name,
-        actorEmail: formData.email,
-        actorRole: (effectiveStudent?.role as any) || 'student',
-        action: 'CONTACT_SUBMITTED',
-        targetType: 'system',
-        targetId: 'contact-form',
-        targetName: 'Public Inquiry Ledger',
-        outcome: 'success',
-        reason: formData.category,
-        details: {
-          category: formData.category,
-          subject: formData.subject || 'Direct Inquiry',
-          message: formData.message,
-        },
-      });
-    } catch (err) {
-      console.warn('Audit notice:', err);
-    }
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
@@ -176,24 +154,6 @@ export const ContactPage: React.FC<ContactPageProps> = ({
           >
             <span>Contact</span>
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
-          </button>
-
-          <span className="text-white/20">|</span>
-
-          <button
-            type="button"
-            onClick={onSwitchToTeacher}
-            className="hover:text-blue-400 transition-colors cursor-pointer"
-          >
-            Teacher Studio
-          </button>
-
-          <button
-            type="button"
-            onClick={onSwitchToAdmin}
-            className="hover:text-blue-400 transition-colors cursor-pointer"
-          >
-            Governance
           </button>
         </nav>
 
@@ -284,26 +244,6 @@ export const ContactPage: React.FC<ContactPageProps> = ({
                 className="text-left py-2 text-cyan-300 border-b border-white/5"
               >
                 04. Contact Us
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onSwitchToTeacher();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
-              >
-                Teacher Studio
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onSwitchToAdmin();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
-              >
-                Governance & Admin
               </button>
             </div>
           </div>

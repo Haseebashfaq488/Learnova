@@ -424,6 +424,14 @@ def seed_database(db: Optional[Session] = None) -> None:
                     "department": "Platform Governance",
                     "bio": "System administrator with platform governance and security audit oversight.",
                 },
+                {
+                    "email": "haseeb@gmail.com",
+                    "password": "student123",
+                    "full_name": "haseeb",
+                    "role_name": "student",
+                    "department": "Computer Science",
+                    "bio": "Student learner enrolled in adaptive curriculum.",
+                },
             ]
 
             for acc in dev_accounts:

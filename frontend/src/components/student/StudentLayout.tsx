@@ -235,74 +235,8 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
           )}
         </div>
 
-        {/* Sidebar Footer: Portal Switcher & Profile Quick Menu */}
+        {/* Sidebar Footer: Profile Quick Menu */}
         <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545] space-y-2">
-          {/* Portal Switcher Buttons */}
-          <div className="space-y-1">
-            {onSwitchPortal && (
-              <button
-                type="button"
-                onClick={onSwitchPortal}
-                title="Switch to Teacher Portal"
-                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
-                  sidebarCollapsed ? 'justify-center px-0' : ''
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                  {!sidebarCollapsed && <span>Teacher Portal</span>}
-                </div>
-                {!sidebarCollapsed && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium">
-                    Staff
-                  </span>
-                )}
-              </button>
-            )}
-
-            {onSwitchToAdmin && (
-              <button
-                type="button"
-                onClick={onSwitchToAdmin}
-                title="Switch to Administrator Portal"
-                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
-                  sidebarCollapsed ? 'justify-center px-0' : ''
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-                  {!sidebarCollapsed && <span>Admin Portal</span>}
-                </div>
-                {!sidebarCollapsed && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium">
-                    Admin
-                  </span>
-                )}
-              </button>
-            )}
-
-            {onSwitchToPublic && (
-              <button
-                type="button"
-                onClick={onSwitchToPublic}
-                title="Return to Public Site"
-                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
-                  sidebarCollapsed ? 'justify-center px-0' : ''
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                  {!sidebarCollapsed && <span>Public Overview</span>}
-                </div>
-                {!sidebarCollapsed && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
-                    Home
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-
           {/* Student Profile Row */}
           <div
             className={`p-2.5 rounded-xl bg-gray-50/70 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 flex items-center justify-between ${

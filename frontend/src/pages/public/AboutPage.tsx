@@ -116,24 +116,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           >
             <span>Contact</span>
           </button>
-
-          <span className="text-white/20">|</span>
-
-          <button
-            type="button"
-            onClick={onSwitchToTeacher}
-            className="hover:text-blue-400 transition-colors cursor-pointer"
-          >
-            Teacher Studio
-          </button>
-
-          <button
-            type="button"
-            onClick={onSwitchToAdmin}
-            className="hover:text-blue-400 transition-colors cursor-pointer"
-          >
-            Governance
-          </button>
         </nav>
 
         {/* Right CTA */}
@@ -223,26 +205,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                 className="text-left py-2 text-white hover:text-cyan-400 border-b border-white/5"
               >
                 04. Contact Us
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onSwitchToTeacher();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
-              >
-                Teacher Studio
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onSwitchToAdmin();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
-              >
-                Governance & Admin
               </button>
             </div>
           </div>

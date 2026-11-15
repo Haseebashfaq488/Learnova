@@ -17,7 +17,15 @@ import { AboutPage } from '../pages/public/AboutPage.tsx';
 import { ContactPage } from '../pages/public/ContactPage.tsx';
 
 describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => {
-  const courses = storage.getCourses();
+  const mockCourse = {
+    id: '44444444-4444-4444-4444-444444444444',
+    title: 'Introduction to Computer Science & Python',
+    description: 'Foundational programming concepts, algorithmic reasoning, control structures.',
+    status: 'published' as const,
+    createdAt: '2026-09-01T09:00:00Z',
+    updatedAt: '2026-10-18T08:15:00Z',
+  };
+  const courses = [mockCourse];
   const serviceHealth = storage.getServiceHealth();
 
   describe('Journey 1: Public URL Routing & Deep-Linking', () => {

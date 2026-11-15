@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { Course, Topic, Lesson, UserAccount, Enrollment } from '../../types';
 import { Avatar } from '../../components/ui/Avatar';
-import { storage } from '../../services/storageService';
 
 interface CourseOversightPageProps {
   courses: Course[];
@@ -35,11 +34,11 @@ export const CourseOversightPage: React.FC<CourseOversightPageProps> = ({
   enrollments: propEnrollments,
 }) => {
   const users = useMemo(() => {
-    return propUsers && propUsers.length > 0 ? propUsers : storage.getUsers();
+    return propUsers || [];
   }, [propUsers]);
 
   const enrollments = useMemo(() => {
-    return propEnrollments && propEnrollments.length > 0 ? propEnrollments : storage.getEnrollments();
+    return propEnrollments || [];
   }, [propEnrollments]);
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);

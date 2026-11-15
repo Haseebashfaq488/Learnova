@@ -4,7 +4,7 @@ import {
   NavigationPage as TeacherNavigationPage,
   ToastMessage,
 } from './components/teacher/TeacherLayout';
-import { storage, CURRENT_TEACHER } from './services/storageService';
+import { storage } from './services/storageService';
 import {
   parseUrlToRoute,
   pushHistoryState,
@@ -133,6 +133,32 @@ import { LandingPage } from './pages/public/LandingPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { PublicNavigationPage } from './services/routerService';
+
+// Wipe legacy localStorage shadow-database keys so ghost data cannot display
+if (typeof window !== 'undefined' && window.localStorage) {
+  const legacyKeys = [
+    'learnova_courses',
+    'learnova_topics',
+    'learnova_lessons',
+    'learnova_resources',
+    'learnova_questions',
+    'learnova_assessments',
+    'learnova_attempts',
+    'learnova_candidates',
+    'learnova_enrollments',
+    'learnova_users',
+    'learnova_audit_events',
+    'learnova_service_health',
+    'learnova_completions',
+  ];
+  for (const k of legacyKeys) {
+    try {
+      window.localStorage.removeItem(k);
+    } catch {
+      // Ignore restrictive storage access
+    }
+  }
+}
 
 export default function App() {
   // Check if current browser path is the root landing page
@@ -294,24 +320,24 @@ export default function App() {
   const [roleModalUser, setRoleModalUser] = useState<UserAccount | null>(null);
   const [statusModalUser, setStatusModalUser] = useState<UserAccount | null>(null);
 
-  // Shared Data Records
-  const [courses, setCourses] = useState<Course[]>(() => storage.getCourses());
-  const [topics, setTopics] = useState<Topic[]>(() => storage.getTopics());
-  const [lessons, setLessons] = useState<Lesson[]>(() => storage.getLessons());
-  const [resources, setResources] = useState<LearningResource[]>(() => storage.getResources());
-  const [questions, setQuestions] = useState<QuestionData[]>(() => storage.getQuestions());
-  const [candidates, setCandidates] = useState<AICandidateQuestion[]>(() => storage.getCandidates());
-  const [assessments, setAssessments] = useState<Assessment[]>(() => storage.getAssessments());
-  const [attempts, setAttempts] = useState<AssessmentAttempt[]>(() => storage.getAttempts());
+  // Shared Data Records (Strictly populated via Live REST API)
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [resources, setResources] = useState<LearningResource[]>([]);
+  const [questions, setQuestions] = useState<QuestionData[]>([]);
+  const [candidates, setCandidates] = useState<AICandidateQuestion[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [attempts, setAttempts] = useState<AssessmentAttempt[]>([]);
 
   // Student Domain Records
-  const [enrollments, setEnrollments] = useState<Enrollment[]>(() => storage.getEnrollments());
-  const [completions, setCompletions] = useState<LessonCompletion[]>(() => storage.getLessonCompletions());
-  const [masteryStates, setMasteryStates] = useState<MasteryState[]>(() => storage.getMasteryStates());
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [completions, setCompletions] = useState<LessonCompletion[]>([]);
+  const [masteryStates, setMasteryStates] = useState<MasteryState[]>([]);
   const [gamificationProfile, setGamificationProfile] = useState<GamificationProfile>(() => storage.getGamificationProfile());
-  const [badges, setBadges] = useState<Badge[]>(() => storage.getBadges());
-  const [xpEvents, setXpEvents] = useState<XPEvent[]>(() => storage.getXPEvents());
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() => storage.getLeaderboard());
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [xpEvents, setXpEvents] = useState<XPEvent[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
   // Toast Notifications
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -1081,24 +1107,35 @@ export default function App() {
           allResources.push(...parsed.resources);
         }
 
-        if (allTopics.length > 0) setTopics(allTopics);
-        if (allLessons.length > 0) setLessons(allLessons);
-        if (allResources.length > 0) setResources(allResources);
+        setTopics(allTopics);
+        setLessons(allLessons);
+        setResources(allResources);
 
-        const activeCId = teacherNavParams.courseId || backendCourses[0]?.id;
-        if (activeCId) {
-          const [backendQuestions, backendAssessments] = await Promise.all([
-            teacherApi.listQuestions(activeCId).catch(() => null),
-            teacherApi.listAssessments(activeCId).catch(() => null),
-          ]);
+        // Fetch questions and assessments across ALL teacher courses
+        const questionPromises = backendCourses.map((c) =>
+          teacherApi.listQuestions(c.id).catch(() => [])
+        );
+        const assessmentPromises = backendCourses.map((c) =>
+          teacherApi.listAssessments(c.id).catch(() => [])
+        );
 
-          if (backendQuestions && backendQuestions.length > 0) {
-            setQuestions(backendQuestions.map(mapBackendQuestionToQuestionData));
-          }
-          if (backendAssessments && backendAssessments.length > 0) {
-            setAssessments(backendAssessments.map(mapBackendAssessmentToAssessment));
-          }
-        }
+        const [questionsByCourse, assessmentsByCourse] = await Promise.all([
+          Promise.all(questionPromises),
+          Promise.all(assessmentPromises),
+        ]);
+
+        const allQuestions = questionsByCourse.flat().filter(Boolean).map(mapBackendQuestionToQuestionData);
+        const allAssessments = assessmentsByCourse.flat().filter(Boolean).map(mapBackendAssessmentToAssessment);
+
+        setQuestions(allQuestions);
+        setAssessments(allAssessments);
+      } else {
+        setCourses([]);
+        setTopics([]);
+        setLessons([]);
+        setResources([]);
+        setQuestions([]);
+        setAssessments([]);
       }
     } catch (e) {
       console.warn('Failed to hydrate teacher course data from API:', e);
@@ -1132,6 +1169,52 @@ export default function App() {
       }
     } catch (e) {
       console.warn('Failed to hydrate admin data from API:', e);
+    }
+  };
+
+  const refreshPublicData = async () => {
+    try {
+      const [backendCourses, leaderboardRes] = await Promise.all([
+        coursesApi.listCourses().catch(() => null),
+        gamificationApi.getLeaderboard().catch(() => null),
+      ]);
+
+      if (backendCourses && backendCourses.length > 0) {
+        const mappedCourses = backendCourses.map(mapBackendCourseToCourse);
+        setCourses(mappedCourses);
+
+        const detailPromises = backendCourses.map((c) =>
+          coursesApi.getCourseDetail(c.id).catch(() => null)
+        );
+        const details = await Promise.all(detailPromises);
+        const allTopics: Topic[] = [];
+        const allLessons: Lesson[] = [];
+        const allResources: LearningResource[] = [];
+
+        for (const d of details) {
+          if (!d) continue;
+          const parsed = mapBackendCourseDetailToCurriculum(d);
+          allTopics.push(...parsed.topics);
+          allLessons.push(...parsed.lessons);
+          allResources.push(...parsed.resources);
+        }
+
+        setTopics(allTopics);
+        setLessons(allLessons);
+        setResources(allResources);
+      } else {
+        setCourses([]);
+        setTopics([]);
+        setLessons([]);
+        setResources([]);
+      }
+
+      const lbItems = leaderboardRes?.entries || leaderboardRes?.leaderboard;
+      if (lbItems && lbItems.length > 0) {
+        setLeaderboard(lbItems.map(mapBackendLeaderboardToLeaderboard));
+      }
+    } catch (e) {
+      console.warn('Failed to hydrate public course data from API:', e);
     }
   };
 
@@ -1191,6 +1274,7 @@ export default function App() {
           setCurrentStudent(null);
           setCurrentAdmin(null);
           setIsAuthenticated(false);
+          await refreshPublicData();
         }
       } catch (err) {
         console.warn('Session restoration failed:', err);
@@ -1200,6 +1284,7 @@ export default function App() {
         setCurrentStudent(null);
         setCurrentAdmin(null);
         setIsAuthenticated(false);
+        await refreshPublicData();
       } finally {
         if (isMounted) {
           setIsAuthChecking(false);
@@ -1333,6 +1418,7 @@ export default function App() {
     setStudentPage('dashboard');
     replaceHistoryState('student', 'dashboard');
     notify('info', 'You have been signed out.');
+    refreshPublicData();
   };
 
   const handleUpdateStudentProfile = (updated: StudentUser) => {
@@ -1451,12 +1537,24 @@ export default function App() {
           currentUser={currentUserAccount}
           onNavigate={handlePublicActionNavigate}
           onSwitchToTeacher={() => {
-            setPortalMode('teacher');
-            setTeacherPage('overview');
+            if (currentUserAccount && (currentUserAccount.role === 'teacher' || currentUserAccount.role === 'administrator')) {
+              setPortalMode('teacher');
+              setTeacherPage('overview');
+            } else {
+              setPortalMode('student');
+              setStudentPage('sign_in');
+              notify('info', 'Please sign in with your teacher credentials to access the Teacher Portal.');
+            }
           }}
           onSwitchToAdmin={() => {
-            setPortalMode('admin');
-            setAdminPage('dashboard');
+            if (currentUserAccount && currentUserAccount.role === 'administrator') {
+              setPortalMode('admin');
+              setAdminPage('dashboard');
+            } else {
+              setPortalMode('student');
+              setStudentPage('sign_in');
+              notify('info', 'Please sign in with your administrator credentials to access the Administrator Portal.');
+            }
           }}
         />
       );
@@ -1470,12 +1568,24 @@ export default function App() {
           serviceHealth={serviceHealth}
           onNavigate={handlePublicActionNavigate}
           onSwitchToTeacher={() => {
-            setPortalMode('teacher');
-            setTeacherPage('overview');
+            if (currentUserAccount && (currentUserAccount.role === 'teacher' || currentUserAccount.role === 'administrator')) {
+              setPortalMode('teacher');
+              setTeacherPage('overview');
+            } else {
+              setPortalMode('student');
+              setStudentPage('sign_in');
+              notify('info', 'Please sign in with your teacher credentials to access the Teacher Portal.');
+            }
           }}
           onSwitchToAdmin={() => {
-            setPortalMode('admin');
-            setAdminPage('dashboard');
+            if (currentUserAccount && currentUserAccount.role === 'administrator') {
+              setPortalMode('admin');
+              setAdminPage('dashboard');
+            } else {
+              setPortalMode('student');
+              setStudentPage('sign_in');
+              notify('info', 'Please sign in with your administrator credentials to access the Administrator Portal.');
+            }
           }}
         />
       );
@@ -1492,12 +1602,24 @@ export default function App() {
         navParams={publicNavParams}
         onNavigate={handlePublicActionNavigate}
         onSwitchToTeacher={() => {
-          setPortalMode('teacher');
-          setTeacherPage('overview');
+          if (currentUserAccount && (currentUserAccount.role === 'teacher' || currentUserAccount.role === 'administrator')) {
+            setPortalMode('teacher');
+            setTeacherPage('overview');
+          } else {
+            setPortalMode('student');
+            setStudentPage('sign_in');
+            notify('info', 'Please sign in with your teacher credentials to access the Teacher Portal.');
+          }
         }}
         onSwitchToAdmin={() => {
-          setPortalMode('admin');
-          setAdminPage('dashboard');
+          if (currentUserAccount && currentUserAccount.role === 'administrator') {
+            setPortalMode('admin');
+            setAdminPage('dashboard');
+          } else {
+            setPortalMode('student');
+            setStudentPage('sign_in');
+            notify('info', 'Please sign in with your administrator credentials to access the Administrator Portal.');
+          }
         }}
         onEnrollCourse={async (courseId) => {
           if (currentUserAccount) {
@@ -1574,15 +1696,6 @@ export default function App() {
         gamificationProfile={gamificationProfile}
         toasts={toasts}
         onDismissToast={handleDismissToast}
-        onSwitchPortal={() => {
-          setPortalMode('teacher');
-          refreshTeacherCourseData();
-        }}
-        onSwitchToAdmin={() => {
-          setPortalMode('admin');
-          refreshAdminData();
-        }}
-        onSwitchToPublic={() => setPortalMode('public')}
         onSignOut={handleStudentSignOut}
         breadcrumbs={getStudentBreadcrumbs()}
       >
@@ -1763,21 +1876,11 @@ export default function App() {
   // VIEW ROUTING: ADMINISTRATOR PORTAL
   // =========================================================================
   if (portalMode === 'admin') {
-    if (!currentAdmin || adminPage === 'access_denied') {
+    if (!currentUserAccount || currentUserAccount.role !== 'administrator') {
       return (
-        <AccessDeniedPage
-          onSwitchPortal={(portal) => {
-            if (portal === 'admin') {
-              setCurrentAdmin(storage.getAdminUser());
-              setPortalMode('admin', false);
-              setAdminPage('dashboard');
-              pushHistoryState('admin', 'dashboard');
-              refreshAdminData();
-              notify('success', 'Authenticated with Administrator credentials.');
-            } else {
-              setPortalMode(portal);
-            }
-          }}
+        <AuthPage
+          initialMode="signin"
+          onAuthSuccess={handleAuthSuccess}
         />
       );
     }
@@ -1786,10 +1889,19 @@ export default function App() {
       <AdminLayout
         currentPage={adminPage}
         onNavigate={handleAdminNavigate}
-        currentAdmin={currentAdmin}
+        currentAdmin={currentAdmin || {
+          id: currentUserAccount.id,
+          name: currentUserAccount.full_name,
+          email: currentUserAccount.email,
+          role: 'administrator',
+          isActive: currentUserAccount.is_active,
+          createdAt: currentUserAccount.created_at,
+          lastActiveAt: currentUserAccount.created_at,
+          department: currentUserAccount.profile?.department || 'Platform Governance',
+          avatar: currentUserAccount.profile?.avatar_url || undefined,
+        }}
         toasts={toasts}
         onDismissToast={handleDismissToast}
-        onSwitchPortal={(portal) => setPortalMode(portal)}
         onSignOut={handleAdminSignOut}
         breadcrumbs={getAdminBreadcrumbs()}
       >
@@ -1905,7 +2017,7 @@ export default function App() {
     try {
       if (authApi.getAccessToken()) {
         const existing = courses.find((item) => item.id === c.id);
-        if (existing) {
+        if (existing && isUuid(c.id)) {
           if (c.status === 'published' && existing.status !== 'published') {
             await teacherApi.publishCourse(c.id);
           }
@@ -1922,9 +2034,15 @@ export default function App() {
             c.id = created.id;
           }
         }
+        storage.saveCourse(c);
+        await refreshTeacherCourseData();
+        notify('success', `Course "${c.title}" saved.`);
+        return;
       }
     } catch (err: any) {
-      console.warn('Backend course save notice:', err);
+      console.warn('Backend course save error:', err);
+      notify('error', err.message || 'Failed to save course to database.');
+      return;
     }
     storage.saveCourse(c);
     setCourses(storage.getCourses());
@@ -2101,7 +2219,7 @@ export default function App() {
     try {
       if (authApi.getAccessToken()) {
         const existing = questions.find((item) => item.id === q.id);
-        if (existing) {
+        if (existing && isUuid(q.id)) {
           await teacherApi.updateQuestion(q.id, {
             prompt: q.prompt,
             explanation: q.explanation,
@@ -2148,9 +2266,15 @@ export default function App() {
             q.id = created.id;
           }
         }
+        storage.saveQuestion(q);
+        await refreshTeacherCourseData();
+        notify('success', 'Question saved to bank.');
+        return;
       }
     } catch (err: any) {
-      console.warn('Backend question save notice:', err);
+      console.warn('Backend question save error:', err);
+      notify('error', err.message || 'Failed to save question to bank.');
+      return;
     }
     storage.saveQuestion(q);
     setQuestions(storage.getQuestions());
@@ -2159,11 +2283,17 @@ export default function App() {
 
   const handleDeleteQuestion = async (id: string) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(id)) {
         await teacherApi.archiveQuestion(id);
+        storage.deleteQuestion(id);
+        await refreshTeacherCourseData();
+        notify('info', 'Question removed.');
+        return;
       }
     } catch (err: any) {
-      console.warn('Backend question archive notice:', err);
+      console.warn('Backend question archive error:', err);
+      notify('error', err.message || 'Failed to archive question.');
+      return;
     }
     storage.deleteQuestion(id);
     setQuestions(storage.getQuestions());
@@ -2193,7 +2323,7 @@ export default function App() {
     try {
       if (authApi.getAccessToken()) {
         const existing = assessments.find((item) => item.id === a.id);
-        if (existing) {
+        if (existing && isUuid(a.id)) {
           if (a.status === 'published' && existing.status !== 'published') {
             await teacherApi.publishAssessment(a.id);
           }
@@ -2222,18 +2352,28 @@ export default function App() {
             }
           }
         }
+        storage.saveAssessment(a);
+        await refreshTeacherCourseData();
+        notify('success', `Assessment "${a.title}" saved.`);
+        return;
       }
     } catch (err: any) {
-      console.warn('Backend assessment save notice:', err);
+      console.warn('Backend assessment save error:', err);
+      notify('error', err.message || 'Failed to save assessment.');
+      return;
     }
     storage.saveAssessment(a);
     setAssessments(storage.getAssessments());
     notify('success', `Assessment "${a.title}" saved.`);
   };
 
-  const handleDeleteAssessment = (id: string) => {
+  const handleDeleteAssessment = async (id: string) => {
     storage.deleteAssessment(id);
-    setAssessments(storage.getAssessments());
+    if (authApi.getAccessToken()) {
+      await refreshTeacherCourseData();
+    } else {
+      setAssessments(storage.getAssessments());
+    }
     notify('info', 'Assessment deleted.');
   };
 
@@ -2294,64 +2434,32 @@ export default function App() {
     return list;
   };
 
+  // Strictly enforce authentication & teacher role: the only way to enter is by logging in!
+  if (!currentUserAccount || (currentUserAccount.role !== 'teacher' && currentUserAccount.role !== 'administrator')) {
+    return (
+      <AuthPage
+        initialMode="signin"
+        onAuthSuccess={handleAuthSuccess}
+      />
+    );
+  }
+
   return (
     <TeacherLayout
       currentPage={teacherPage}
       onNavigate={handleTeacherNavigate}
       selectedCourseId={activeCourse?.id}
       selectedCourseTitle={activeCourse?.title}
-      teacherUser={
-        currentUserAccount
-          ? {
-              name: currentUserAccount.full_name,
-              email: currentUserAccount.email,
-              department: currentUserAccount.profile?.department || undefined,
-            }
-          : undefined
-      }
-      onSignOut={handleGlobalSignOut}
-      onSwitchPortal={(portal) => {
-        setPortalMode(portal);
-        if (portal === 'admin') refreshAdminData();
-        if (portal === 'student') refreshStudentCourseData();
+      teacherUser={{
+        name: currentUserAccount.full_name,
+        email: currentUserAccount.email,
+        department: currentUserAccount.profile?.department || 'Department of Computer Science',
       }}
-      onSwitchToPublic={() => setPortalMode('public')}
+      onSignOut={handleGlobalSignOut}
       breadcrumbs={getTeacherBreadcrumbs()}
       toasts={toasts}
       onDismissToast={handleDismissToast}
     >
-      {/* Switch to Student or Admin Portal Banner */}
-      <div className="mb-6 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs font-semibold">
-        <span className="text-indigo-900 dark:text-indigo-200">
-          Teacher Portal Mode active. Switch workspaces:
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setPortalMode('public')}
-            className="px-3 py-1.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-bold transition cursor-pointer"
-          >
-            ← Public Site
-          </button>
-          <button
-            type="button"
-            onClick={() => setPortalMode('student')}
-            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition cursor-pointer"
-          >
-            Switch to Student Portal →
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setPortalMode('admin');
-              refreshAdminData();
-            }}
-            className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition cursor-pointer"
-          >
-            Switch to Admin Portal →
-          </button>
-        </div>
-      </div>
 
       {teacherPage === 'overview' && (
         <TeacherDashboardPage

@@ -107,6 +107,13 @@ export const QuestionEditorPage: React.FC<QuestionEditorPageProps> = ({
   // Filter topics for the selected course
   const availableTopics = topics.filter((t) => t.courseId === courseId);
 
+  // When courses load, ensure default courseId is selected
+  useEffect(() => {
+    if (!courseId && courses.length > 0) {
+      setCourseId(courses[0].id);
+    }
+  }, [courses, courseId]);
+
   // When course changes, adjust topic selection if needed
   useEffect(() => {
     if (availableTopics.length > 0 && !availableTopics.some((t) => t.id === topicId)) {

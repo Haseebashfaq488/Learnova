@@ -41,7 +41,6 @@ import {
   Difficulty,
 } from '../../types';
 import { aiApi } from '../../services/api/aiApi';
-import { CURRENT_TEACHER } from '../../services/storageService';
 
 interface AIReviewPageProps {
   courses: Course[];
@@ -82,8 +81,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
   // HIERARCHY LEVEL 1: Select Course
   // ==========================================
   const teacherCourses = useMemo(() => {
-    const assigned = courses.filter((c) => c.creatorId === CURRENT_TEACHER.id);
-    return assigned.length > 0 ? assigned : courses;
+    return courses;
   }, [courses]);
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>(
@@ -607,7 +605,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
             <h2 className="text-sm font-bold text-[#1F2937]">Step 1: Select Course</h2>
           </div>
           <span className="text-[11px] text-[#737D8C]">
-            Signed-in Teacher: <strong className="text-[#1F2937]">{CURRENT_TEACHER.name}</strong>
+            Curriculum Oversight & Question Generation
           </span>
         </div>
 
@@ -618,7 +616,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {courses.map((c) => {
             const isSelected = c.id === selectedCourseId;
-            const isAssigned = c.creatorId === CURRENT_TEACHER.id;
+            const isAssigned = true;
             const topicCount = topics.filter((t) => t.courseId === c.id).length;
             const lessonCount = lessons.filter((l) => l.courseId === c.id).length;
             const pendingCount = candidates.filter(

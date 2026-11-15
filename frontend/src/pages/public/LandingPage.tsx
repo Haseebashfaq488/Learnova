@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Course, Enrollment, StudentUser, LeaderboardEntry } from '../../types';
 import { UserResponse } from '../../services/api/authApi';
-import { storage } from '../../services/storageService';
 import { gamificationApi } from '../../services/api/gamificationApi';
 import {
   ArrowRight,
@@ -112,21 +111,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         topicsMastered: e.earnedBadgesCount || Math.floor((e.xp || 0) / 200),
       }));
     }
-    const local = storage.getLeaderboard();
-    if (local && local.length > 0) {
-      return local.slice(0, 3).map((e, idx) => ({
-        rank: e.rank || idx + 1,
-        name: e.displayName || 'Scholar',
-        xp: e.xp || 0,
-        topicsMastered: e.earnedBadgesCount || Math.floor((e.xp || 0) / 200),
-      }));
-    }
     return [
       { rank: 1, name: 'Sophia Lin', xp: 4850, topicsMastered: 24 },
       { rank: 2, name: 'Marcus Vance', xp: 4210, topicsMastered: 21 },
       { rank: 3, name: 'Elena Rostova', xp: 3980, topicsMastered: 19 },
     ];
   });
+
+  useEffect(() => {
+    if (leaderboard && leaderboard.length > 0) {
+      setTopScholars(
+        leaderboard.slice(0, 3).map((e, idx) => ({
+          rank: e.rank || idx + 1,
+          name: e.displayName || 'Scholar',
+          xp: e.xp || 0,
+          topicsMastered: e.earnedBadgesCount || Math.floor((e.xp || 0) / 200),
+        }))
+      );
+    }
+  }, [leaderboard]);
 
   useEffect(() => {
     gamificationApi.getLeaderboard(undefined, 3).then((res) => {
@@ -339,24 +342,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <span>Contact</span>
           </button>
-
-          <span className="text-white/20">|</span>
-
-          <button
-            type="button"
-            onClick={onSwitchToTeacher}
-            className="hover:text-blue-400 transition-colors cursor-pointer"
-          >
-            Teacher Studio
-          </button>
-
-          <button
-            type="button"
-            onClick={onSwitchToAdmin}
-            className="hover:text-blue-400 transition-colors cursor-pointer"
-          >
-            Governance
-          </button>
         </nav>
 
         {/* Right Auth / Quick Actions */}
@@ -456,26 +441,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="text-left py-2 text-white hover:text-cyan-400 border-b border-white/5"
               >
                 04. Contact Us
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onSwitchToTeacher();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
-              >
-                Teacher Studio
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onSwitchToAdmin();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
-              >
-                Governance & Admin
               </button>
             </div>
           </div>

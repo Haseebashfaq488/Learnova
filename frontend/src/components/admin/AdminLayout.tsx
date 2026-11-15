@@ -282,37 +282,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           )}
         </div>
 
-        {/* Bottom Section: Portal Switcher, Profile, Theme Toggle */}
+        {/* Bottom Section: Profile, Theme Toggle */}
         <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545] space-y-2">
-          {/* Switch Portal Section */}
-          <div className="p-2 rounded-xl bg-gray-50/80 dark:bg-[#12161F] border border-gray-200/80 dark:border-gray-800/80 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1">
-              Switch Workspace
-            </p>
-            <button
-              type="button"
-              onClick={() => onSwitchPortal('teacher')}
-              className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5">
-                <ArrowRightLeft className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                <span>Teacher Portal</span>
-              </div>
-              <span className="text-[10px] text-gray-400">Staff</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchPortal('student')}
-              className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5">
-                <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>Student Portal</span>
-              </div>
-              <span className="text-[10px] text-gray-400">Learner</span>
-            </button>
-          </div>
-
           {/* Admin Profile Row */}
           <div className="p-2 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-800/50 flex items-center justify-between">
             <button

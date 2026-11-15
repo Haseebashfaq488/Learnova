@@ -227,7 +227,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div
-                    onClick={() => onNavigate('curriculum', { courseId: 'course-cs101' })}
+                    onClick={() => onNavigate('curriculum', courses[0]?.id ? { courseId: courses[0].id } : undefined)}
                     className="interactive-card p-3.5 rounded-xl border border-gray-200/80 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-all cursor-pointer flex items-start gap-3"
                   >
                     <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shrink-0">
@@ -235,17 +235,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
-                        Curriculum: OOP &amp; Classes
+                        Curriculum Editor
                       </p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">CS101 • Topic 5</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{courses[0]?.title || 'Active Course'}</p>
                       <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium mt-1 inline-block">
-                        Edit lessons &amp; prerequisites →
+                        Edit lessons &amp; topics →
                       </span>
                     </div>
                   </div>
 
                   <div
-                    onClick={() => onNavigate('assessment_editor', { assessmentId: 'asm-3' })}
+                    onClick={() => onNavigate('questions', courses[0]?.id ? { courseId: courses[0].id } : undefined)}
                     className="interactive-card p-3.5 rounded-xl border border-gray-200/80 dark:border-gray-800 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/30 dark:hover:bg-amber-950/20 transition-all cursor-pointer flex items-start gap-3"
                   >
                     <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 shrink-0">
@@ -253,11 +253,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
-                        Draft Assessment: Formative Lists
+                        Question Bank
                       </p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Requires question selection</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Author &amp; manage questions</p>
                       <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-1 inline-block">
-                        Continue builder →
+                        Open Question Bank →
                       </span>
                     </div>
                   </div>

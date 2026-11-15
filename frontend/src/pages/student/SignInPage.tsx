@@ -149,16 +149,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             </button>
           </form>
 
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">
-              Demo Student Profile Preloaded:
-            </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-300">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Alex Rivera (CS Undergrad)</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Footer Links: Register & Switch to Teacher */}
@@ -173,26 +164,6 @@ export const SignInPage: React.FC<SignInPageProps> = ({
               Create an account
             </button>
           </p>
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs">
-            {onSwitchToTeacher && (
-              <button
-                type="button"
-                onClick={onSwitchToTeacher}
-                className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 underline cursor-pointer"
-              >
-                Teacher Portal
-              </button>
-            )}
-            {onSwitchToAdmin && (
-              <button
-                type="button"
-                onClick={onSwitchToAdmin}
-                className="text-purple-600 hover:text-purple-800 dark:text-purple-400 font-semibold underline cursor-pointer"
-              >
-                Administrator Portal
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </div>

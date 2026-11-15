@@ -28,7 +28,6 @@ import { SearchFilterBar, ActiveChip, FilterOption } from '../../components/ui/S
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { QuestionData, Course, Topic, Lesson, QuestionType, Difficulty } from '../../types';
-import { CURRENT_TEACHER } from '../../services/storageService';
 
 interface QuestionBankPageProps {
   questions: QuestionData[];
@@ -59,13 +58,18 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
   // HIERARCHY LEVEL 1: Select Course
   // ==========================================
   const teacherCourses = useMemo(() => {
-    const assigned = courses.filter((c) => c.creatorId === CURRENT_TEACHER.id);
-    return assigned.length > 0 ? assigned : courses;
+    return courses;
   }, [courses]);
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>(
     initialCourseId || teacherCourses[0]?.id || courses[0]?.id || ''
   );
+
+  useEffect(() => {
+    if (!selectedCourseId && courses.length > 0) {
+      setSelectedCourseId(initialCourseId || courses[0].id);
+    }
+  }, [courses, selectedCourseId, initialCourseId]);
 
   const activeCourse = useMemo(() => {
     return courses.find((c) => c.id === selectedCourseId) || courses[0];
@@ -87,6 +91,14 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
     }
     return courseTopics[0]?.id || 'all';
   });
+
+  useEffect(() => {
+    if ((!selectedTopicId || selectedTopicId === 'all') && courseTopics.length > 0) {
+      if (initialTopicId && courseTopics.some((t) => t.id === initialTopicId)) {
+        setSelectedTopicId(initialTopicId);
+      }
+    }
+  }, [courseTopics, selectedTopicId, initialTopicId]);
 
   // When Course changes, update active topic
   const handleCourseChange = (courseId: string) => {
@@ -317,7 +329,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
             <h2 className="text-sm font-bold text-[#1F2937]">Step 1: Select Course</h2>
           </div>
           <span className="text-[11px] text-[#737D8C]">
-            Signed-in Teacher: <strong className="text-[#1F2937]">{CURRENT_TEACHER.name}</strong>
+            Assessment Repository & Item Registry
           </span>
         </div>
 
@@ -328,7 +340,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {courses.map((c) => {
             const isSelected = c.id === selectedCourseId;
-            const isAssigned = c.creatorId === CURRENT_TEACHER.id;
+            const isAssigned = true;
             const countInCourse = questions.filter((q) => q.courseId === c.id).length;
             const tCount = topics.filter((t) => t.courseId === c.id).length;
             const lCount = lessons.filter((l) => l.courseId === c.id).length;

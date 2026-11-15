@@ -22,13 +22,15 @@ export const DAGVisualizer: React.FC<DAGVisualizerProps> = ({
   lessons,
   onSelectTopic,
 }) => {
-  // Use course-cs101 topics for the visualizer
-  const cs101Topics = topics.filter((t) => t.courseId === 'course-cs101');
+  // Use first available course topics for the visualizer
+  const displayTopics = topics.length > 0
+    ? topics.filter((t) => t.courseId === topics[0].courseId)
+    : [];
   const [selectedTopicId, setSelectedTopicId] = useState<string>(
-    cs101Topics[0]?.id || 'topic-syntax'
+    displayTopics[0]?.id || ''
   );
 
-  const activeTopic = cs101Topics.find((t) => t.id === selectedTopicId) || cs101Topics[0];
+  const activeTopic = displayTopics.find((t) => t.id === selectedTopicId) || displayTopics[0];
   const activeLessons = lessons.filter((l) => l.topicId === activeTopic?.id);
 
   return (
