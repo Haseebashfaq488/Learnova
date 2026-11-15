@@ -13,6 +13,7 @@ interface CoursesPageProps {
   courses: Course[];
   topics: Topic[];
   lessons: Lesson[];
+  currentTeacherId?: string;
   onNavigate: (page: string, params?: Record<string, string>) => void;
   onSaveCourse: (course: Course) => void;
   onDeleteCourse: (id: string) => void;
@@ -22,6 +23,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
   courses,
   topics,
   lessons,
+  currentTeacherId,
   onNavigate,
   onSaveCourse,
   onDeleteCourse,
@@ -93,6 +95,8 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
       title: formTitle.trim(),
       description: formDesc.trim(),
       status: formStatus,
+      creatorId: editingCourse ? editingCourse.creatorId : (currentTeacherId || undefined),
+      creatorName: editingCourse ? editingCourse.creatorName : 'Dr. Elena Rostova',
       updatedAt: new Date().toISOString(),
       createdAt: editingCourse ? editingCourse.createdAt : new Date().toISOString(),
     };

@@ -491,10 +491,10 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs border border-[#2646B8]/20 dark:border-indigo-700/40">
-                  ER
+                  {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'ER'}
                 </div>
                 <span className="text-xs font-semibold text-[#1F2937] dark:text-white hidden sm:inline">
-                  {CURRENT_TEACHER.name}
+                  {teacherUser?.name || CURRENT_TEACHER.name}
                 </span>
               </div>
             </div>
@@ -604,10 +604,10 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-[#F5F7FA] dark:bg-[#1C212B] border border-[#D9DEE7] dark:border-[#2D3545] mb-3">
-                    <p className="text-xs font-semibold text-[#1F2937] dark:text-white">{CURRENT_TEACHER.name}</p>
-                    <p className="text-[11px] text-[#5B6472] dark:text-gray-400">{CURRENT_TEACHER.email}</p>
+                    <p className="text-xs font-semibold text-[#1F2937] dark:text-white">{teacherUser?.name || CURRENT_TEACHER.name}</p>
+                    <p className="text-[11px] text-[#5B6472] dark:text-gray-400">{teacherUser?.email || CURRENT_TEACHER.email}</p>
                     <p className="text-[10px] text-[#3156D3] dark:text-indigo-400 font-medium mt-1">
-                      {CURRENT_TEACHER.department}
+                      {teacherUser?.department || CURRENT_TEACHER.department}
                     </p>
                   </div>
                 </div>

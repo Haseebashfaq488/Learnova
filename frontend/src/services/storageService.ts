@@ -367,28 +367,42 @@ const SEED_SERVICE_HEALTH: ServiceHealthCheck[] = [
   },
 ];
 
+export const CANONICAL_COURSE_IDS = {
+  CS101: '44444444-4444-4444-4444-444444444444',
+  CS201: '55555555-5555-5555-5555-555555555555',
+  CS401: '66666666-6666-6666-6666-666666666666',
+};
+
+export function resolveCanonicalCourseId(id?: string): string {
+  if (!id) return '';
+  if (id === 'course-cs101') return CANONICAL_COURSE_IDS.CS101;
+  if (id === 'course-cs201') return CANONICAL_COURSE_IDS.CS201;
+  if (id === 'course-cs401') return CANONICAL_COURSE_IDS.CS401;
+  return id;
+}
+
 const SEED_COURSES: Course[] = [
   {
-    id: 'course-cs101',
+    id: CANONICAL_COURSE_IDS.CS101,
     title: 'Introduction to Computer Science & Python',
     description: 'Foundational programming concepts, algorithmic reasoning, control structures, and object-oriented principles.',
     status: 'published',
     updatedAt: '2026-10-12T14:30:00Z',
     createdAt: '2026-09-01T09:00:00Z',
-    creatorId: 'teacher-101',
+    creatorId: 'c669ebe0-8bf3-43e7-816d-20a5f9b2c53a',
     creatorName: 'Dr. Elena Rostova',
     creatorEmail: 'e.rostova@learnova.edu',
     creatorDepartment: 'Faculty of Computer Science',
     creatorAvatar: 'ER',
   },
   {
-    id: 'course-cs201',
+    id: CANONICAL_COURSE_IDS.CS201,
     title: 'Data Structures and Algorithm Analysis',
     description: 'Linear and non-linear data structures, trees, graphs, sorting strategies, and Big-O computational complexity.',
     status: 'published',
     updatedAt: '2026-10-14T11:15:00Z',
     createdAt: '2026-09-15T10:00:00Z',
-    creatorId: 'teacher-102',
+    creatorId: 'c669ebe0-8bf3-43e7-816d-20a5f9b2c53a',
     creatorName: 'Prof. Alan Turing',
     creatorEmail: 'a.turing@learnova.edu',
     creatorDepartment: 'Applied Mathematics & Algorithms',
@@ -408,13 +422,13 @@ const SEED_COURSES: Course[] = [
     creatorAvatar: 'AL',
   },
   {
-    id: 'course-cs401',
+    id: CANONICAL_COURSE_IDS.CS401,
     title: 'Distributed Systems & Cloud Architecture',
     description: 'Distributed consensus (Raft/Paxos), fault tolerance, CAP theorem, replication, sharding, and transactional outbox patterns.',
     status: 'published',
     updatedAt: '2026-10-15T18:00:00Z',
     createdAt: '2026-10-05T09:00:00Z',
-    creatorId: 'teacher-104',
+    creatorId: 'c669ebe0-8bf3-43e7-816d-20a5f9b2c53a',
     creatorName: 'Dr. Leslie Lamport',
     creatorEmail: 'l.lamport@learnova.edu',
     creatorDepartment: 'Distributed Systems & Formal Methods',
@@ -1300,8 +1314,18 @@ function getLocalStorageStore(): Storage | null {
 }
 
 class StorageService {
+  private memStore: Map<string, string> = new Map();
+
   private get<T>(key: string, seed: T): T {
     try {
+      if (typeof localStorage === 'undefined') {
+        const data = this.memStore.get(`learnova_${key}`);
+        if (!data) {
+          this.memStore.set(`learnova_${key}`, JSON.stringify(seed));
+          return seed;
+        }
+        return JSON.parse(data);
+      }
       const data = localStorage.getItem(`learnova_${key}`);
       if (!data) {
         localStorage.setItem(`learnova_${key}`, JSON.stringify(seed));
@@ -1315,6 +1339,10 @@ class StorageService {
 
   private set<T>(key: string, val: T): void {
     try {
+      if (typeof localStorage === 'undefined') {
+        this.memStore.set(`learnova_${key}`, JSON.stringify(val));
+        return;
+      }
       localStorage.setItem(`learnova_${key}`, JSON.stringify(val));
     } catch (e) {
       console.warn('Storage set error:', e);
@@ -1325,74 +1353,51 @@ class StorageService {
   getCourses(): Course[] {
     const list = this.get<Course[]>('courses', SEED_COURSES);
     return list.map((c) => {
-      if (!c.creatorName) {
-        if (c.id === 'course-cs101') {
-          return {
-            ...c,
-            creatorId: 'teacher-101',
-            creatorName: 'Dr. Elena Rostova',
-            creatorEmail: 'e.rostova@learnova.edu',
-            creatorDepartment: 'Faculty of Computer Science',
-            creatorAvatar: 'ER',
-          };
-        } else if (c.id === 'course-cs201') {
-          return {
-            ...c,
-            creatorId: 'teacher-102',
-            creatorName: 'Prof. Alan Turing',
-            creatorEmail: 'a.turing@learnova.edu',
-            creatorDepartment: 'Applied Mathematics & Algorithms',
-            creatorAvatar: 'AT',
-          };
-        } else if (c.id === 'course-cs305') {
-          return {
-            ...c,
-            creatorId: 'teacher-103',
-            creatorName: 'Dr. Ada Lovelace',
-            creatorEmail: 'a.lovelace@learnova.edu',
-            creatorDepartment: 'Software Architecture & Engineering',
-            creatorAvatar: 'AL',
-          };
-        } else {
-          return {
-            ...c,
-            creatorId: 'teacher-101',
-            creatorName: 'Dr. Elena Rostova',
-            creatorEmail: 'e.rostova@learnova.edu',
-            creatorDepartment: 'Faculty of Computer Science',
-            creatorAvatar: 'ER',
-          };
-        }
-      }
-      return c;
+      const canonicalId = resolveCanonicalCourseId(c.id);
+      return {
+        ...c,
+        id: canonicalId,
+        creatorName: c.creatorName || 'Dr. Elena Rostova',
+        creatorEmail: c.creatorEmail || 'e.rostova@learnova.edu',
+        creatorDepartment: c.creatorDepartment || 'Faculty of Computer Science',
+      };
     });
   }
 
   getCourse(id: string): Course | undefined {
-    return this.getCourses().find((c) => c.id === id);
+    const target = resolveCanonicalCourseId(id);
+    return this.getCourses().find((c) => resolveCanonicalCourseId(c.id) === target || c.id === id);
   }
 
   saveCourse(course: Course): Course {
+    const canonicalId = resolveCanonicalCourseId(course.id);
+    const normalized = { ...course, id: canonicalId };
     const list = this.getCourses();
-    const idx = list.findIndex((c) => c.id === course.id);
+    const idx = list.findIndex((c) => resolveCanonicalCourseId(c.id) === canonicalId || c.id === course.id);
     if (idx >= 0) {
-      list[idx] = { ...course, updatedAt: new Date().toISOString() };
+      list[idx] = { ...normalized, updatedAt: new Date().toISOString() };
     } else {
-      list.unshift({ ...course, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      list.unshift({ ...normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     }
     this.set('courses', list);
-    return course;
+    return normalized;
   }
 
   deleteCourse(id: string): void {
-    const list = this.getCourses().filter((c) => c.id !== id);
+    const target = resolveCanonicalCourseId(id);
+    const list = this.getCourses().filter((c) => resolveCanonicalCourseId(c.id) !== target && c.id !== id);
     this.set('courses', list);
   }
 
   // Topics
   getTopics(courseId?: string): Topic[] {
-    const all = this.get<Topic[]>('topics', SEED_TOPICS);
-    return courseId ? all.filter((t) => t.courseId === courseId) : all;
+    const all = this.get<Topic[]>('topics', SEED_TOPICS).map((t) => ({
+      ...t,
+      courseId: resolveCanonicalCourseId(t.courseId),
+    }));
+    if (!courseId) return all;
+    const target = resolveCanonicalCourseId(courseId);
+    return all.filter((t) => resolveCanonicalCourseId(t.courseId) === target);
   }
 
   getTopic(id: string): Topic | undefined {
@@ -1400,15 +1405,16 @@ class StorageService {
   }
 
   saveTopic(topic: Topic): Topic {
+    const normalized = { ...topic, courseId: resolveCanonicalCourseId(topic.courseId) };
     const list = this.getTopics();
-    const idx = list.findIndex((t) => t.id === topic.id);
+    const idx = list.findIndex((t) => t.id === normalized.id);
     if (idx >= 0) {
-      list[idx] = { ...topic, updatedAt: new Date().toISOString() };
+      list[idx] = { ...normalized, updatedAt: new Date().toISOString() };
     } else {
-      list.push({ ...topic, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      list.push({ ...normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     }
     this.set('topics', list);
-    return topic;
+    return normalized;
   }
 
   deleteTopic(id: string): void {
@@ -1418,7 +1424,10 @@ class StorageService {
 
   // Lessons
   getLessons(topicId?: string): Lesson[] {
-    const all = this.get<Lesson[]>('lessons', SEED_LESSONS);
+    const all = this.get<Lesson[]>('lessons', SEED_LESSONS).map((l) => ({
+      ...l,
+      courseId: resolveCanonicalCourseId(l.courseId),
+    }));
     return topicId ? all.filter((l) => l.topicId === topicId) : all;
   }
 
@@ -1427,15 +1436,16 @@ class StorageService {
   }
 
   saveLesson(lesson: Lesson): Lesson {
+    const normalized = { ...lesson, courseId: resolveCanonicalCourseId(lesson.courseId) };
     const list = this.getLessons();
-    const idx = list.findIndex((l) => l.id === lesson.id);
+    const idx = list.findIndex((l) => l.id === normalized.id);
     if (idx >= 0) {
-      list[idx] = { ...lesson, updatedAt: new Date().toISOString() };
+      list[idx] = { ...normalized, updatedAt: new Date().toISOString() };
     } else {
-      list.push({ ...lesson, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      list.push({ ...normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     }
     this.set('lessons', list);
-    return lesson;
+    return normalized;
   }
 
   deleteLesson(id: string): void {
@@ -1445,20 +1455,24 @@ class StorageService {
 
   // Learning Resources
   getResources(lessonId?: string): LearningResource[] {
-    const all = this.get<LearningResource[]>('resources', SEED_RESOURCES);
+    const all = this.get<LearningResource[]>('resources', SEED_RESOURCES).map((r) => ({
+      ...r,
+      courseId: resolveCanonicalCourseId(r.courseId),
+    }));
     return lessonId ? all.filter((r) => r.lessonId === lessonId) : all;
   }
 
   saveResource(resource: LearningResource): LearningResource {
+    const normalized = { ...resource, courseId: resolveCanonicalCourseId(resource.courseId) };
     const list = this.getResources();
-    const idx = list.findIndex((r) => r.id === resource.id);
+    const idx = list.findIndex((r) => r.id === normalized.id);
     if (idx >= 0) {
-      list[idx] = { ...resource, updatedAt: new Date().toISOString() };
+      list[idx] = { ...normalized, updatedAt: new Date().toISOString() };
     } else {
-      list.push({ ...resource, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      list.push({ ...normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     }
     this.set('resources', list);
-    return resource;
+    return normalized;
   }
 
   deleteResource(id: string): void {
@@ -1468,8 +1482,13 @@ class StorageService {
 
   // Questions
   getQuestions(courseId?: string): QuestionData[] {
-    const all = this.get<QuestionData[]>('questions', SEED_QUESTIONS);
-    return courseId ? all.filter((q) => q.courseId === courseId) : all;
+    const all = this.get<QuestionData[]>('questions', SEED_QUESTIONS).map((q) => ({
+      ...q,
+      courseId: resolveCanonicalCourseId(q.courseId),
+    }));
+    if (!courseId) return all;
+    const target = resolveCanonicalCourseId(courseId);
+    return all.filter((q) => resolveCanonicalCourseId(q.courseId) === target);
   }
 
   getQuestion(id: string): QuestionData | undefined {
@@ -1477,15 +1496,16 @@ class StorageService {
   }
 
   saveQuestion(question: QuestionData): QuestionData {
+    const normalized = { ...question, courseId: resolveCanonicalCourseId(question.courseId) };
     const list = this.getQuestions();
-    const idx = list.findIndex((q) => q.id === question.id);
+    const idx = list.findIndex((q) => q.id === normalized.id);
     if (idx >= 0) {
-      list[idx] = { ...question, updatedAt: new Date().toISOString() };
+      list[idx] = { ...normalized, updatedAt: new Date().toISOString() };
     } else {
-      list.unshift({ ...question, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      list.unshift({ ...normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     }
     this.set('questions', list);
-    return question;
+    return normalized;
   }
 
   deleteQuestion(id: string): void {
@@ -1495,12 +1515,19 @@ class StorageService {
 
   // AI Candidates
   getCandidates(): AICandidateQuestion[] {
-    return this.get<AICandidateQuestion[]>('candidates', SEED_AI_CANDIDATES);
+    return this.get<AICandidateQuestion[]>('candidates', SEED_AI_CANDIDATES).map((c) => ({
+      ...c,
+      courseId: resolveCanonicalCourseId(c.courseId),
+    }));
   }
 
   saveCandidates(candidates: AICandidateQuestion[]): void {
+    const normalized = candidates.map((c) => ({
+      ...c,
+      courseId: resolveCanonicalCourseId(c.courseId),
+    }));
     const existing = this.getCandidates();
-    const updated = [...candidates, ...existing];
+    const updated = [...normalized, ...existing];
     this.set('candidates', updated);
   }
 
@@ -1516,7 +1543,7 @@ class StorageService {
       if (status === 'approved') {
         const approvedQ: QuestionData = {
           id: `q-approved-${cand.id}`,
-          courseId: cand.courseId,
+          courseId: resolveCanonicalCourseId(cand.courseId),
           topicId: cand.topicId,
           lessonId: cand.lessonId,
           type: cand.type,
@@ -1553,8 +1580,13 @@ class StorageService {
 
   // Assessments
   getAssessments(courseId?: string): Assessment[] {
-    const all = this.get<Assessment[]>('assessments', SEED_ASSESSMENTS);
-    return courseId ? all.filter((a) => a.courseId === courseId) : all;
+    const all = this.get<Assessment[]>('assessments', SEED_ASSESSMENTS).map((a) => ({
+      ...a,
+      courseId: resolveCanonicalCourseId(a.courseId),
+    }));
+    if (!courseId) return all;
+    const target = resolveCanonicalCourseId(courseId);
+    return all.filter((a) => resolveCanonicalCourseId(a.courseId) === target);
   }
 
   getAssessment(id: string): Assessment | undefined {
@@ -1562,15 +1594,16 @@ class StorageService {
   }
 
   saveAssessment(assessment: Assessment): Assessment {
+    const normalized = { ...assessment, courseId: resolveCanonicalCourseId(assessment.courseId) };
     const list = this.getAssessments();
-    const idx = list.findIndex((a) => a.id === assessment.id);
+    const idx = list.findIndex((a) => a.id === normalized.id);
     if (idx >= 0) {
-      list[idx] = { ...assessment, updatedAt: new Date().toISOString() };
+      list[idx] = { ...normalized, updatedAt: new Date().toISOString() };
     } else {
-      list.unshift({ ...assessment, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      list.unshift({ ...normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     }
     this.set('assessments', list);
-    return assessment;
+    return normalized;
   }
 
   deleteAssessment(id: string): void {
@@ -1580,8 +1613,13 @@ class StorageService {
 
   // Attempts
   getAttempts(courseId?: string): AssessmentAttempt[] {
-    const all = this.get<AssessmentAttempt[]>('attempts', SEED_ATTEMPTS);
-    return courseId ? all.filter((a) => a.courseId === courseId) : all;
+    const all = this.get<AssessmentAttempt[]>('attempts', SEED_ATTEMPTS).map((att) => ({
+      ...att,
+      courseId: resolveCanonicalCourseId(att.courseId),
+    }));
+    if (!courseId) return all;
+    const target = resolveCanonicalCourseId(courseId);
+    return all.filter((a) => resolveCanonicalCourseId(a.courseId) === target);
   }
 
   // -------------------------------------------------------------

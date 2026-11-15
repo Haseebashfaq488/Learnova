@@ -38,6 +38,7 @@ import {
   mapBackendQuestionToQuestionData,
   mapBackendAssessmentToAssessment,
 } from './services/api/teacherApi';
+import { aiApi } from './services/api/aiApi';
 import {
   adminApi,
   AdminDashboardResponse,
@@ -1057,6 +1058,34 @@ export default function App() {
     }
   };
 
+  const handleFetchCourseQuestions = async (courseId: string) => {
+    if (!courseId) return;
+    try {
+      if (authApi.getAccessToken() && isUuid(courseId)) {
+        const [backendQuestions, backendAssessments] = await Promise.all([
+          teacherApi.listQuestions(courseId).catch(() => null),
+          teacherApi.listAssessments(courseId).catch(() => null),
+        ]);
+        if (backendQuestions !== null) {
+          const mappedQ = backendQuestions.map(mapBackendQuestionToQuestionData);
+          setQuestions((prev) => {
+            const other = prev.filter((q) => q.courseId !== courseId);
+            return [...other, ...mappedQ];
+          });
+        }
+        if (backendAssessments !== null) {
+          const mappedA = backendAssessments.map(mapBackendAssessmentToAssessment);
+          setAssessments((prev) => {
+            const other = prev.filter((a) => a.courseId !== courseId);
+            return [...other, ...mappedA];
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Error fetching course questions/assessments:', err);
+    }
+  };
+
   const refreshTeacherCourseData = async () => {
     try {
       const backendCourses = await coursesApi.listCourses().catch(() => null);
@@ -1093,11 +1122,42 @@ export default function App() {
           ]);
 
           if (backendQuestions && backendQuestions.length > 0) {
-            setQuestions(backendQuestions.map(mapBackendQuestionToQuestionData));
+            setQuestions((prev) => {
+              const other = prev.filter((q) => q.courseId !== activeCId);
+              return [...other, ...backendQuestions.map(mapBackendQuestionToQuestionData)];
+            });
           }
           if (backendAssessments && backendAssessments.length > 0) {
-            setAssessments(backendAssessments.map(mapBackendAssessmentToAssessment));
+            setAssessments((prev) => {
+              const other = prev.filter((a) => a.courseId !== activeCId);
+              return [...other, ...backendAssessments.map(mapBackendAssessmentToAssessment)];
+            });
           }
+        }
+
+        // Fetch questions for other courses in parallel so all course badges show accurate counts
+        const otherCourses = backendCourses.filter((c) => c.id !== activeCId);
+        if (otherCourses.length > 0) {
+          Promise.all(
+            otherCourses.map(async (c) => {
+              const [qs, asmts] = await Promise.all([
+                teacherApi.listQuestions(c.id).catch(() => []),
+                teacherApi.listAssessments(c.id).catch(() => []),
+              ]);
+              if (qs.length > 0) {
+                setQuestions((prev) => {
+                  const other = prev.filter((q) => q.courseId !== c.id);
+                  return [...other, ...qs.map(mapBackendQuestionToQuestionData)];
+                });
+              }
+              if (asmts.length > 0) {
+                setAssessments((prev) => {
+                  const other = prev.filter((a) => a.courseId !== c.id);
+                  return [...other, ...asmts.map(mapBackendAssessmentToAssessment)];
+                });
+              }
+            })
+          ).catch(() => null);
         }
       }
     } catch (e) {
@@ -1902,38 +1962,61 @@ export default function App() {
   const activeCourse = courses.find((c) => c.id === activeCourseId) || courses[0];
 
   const handleSaveCourse = async (c: Course) => {
+    let savedCourse = { ...c };
     try {
       if (authApi.getAccessToken()) {
         const existing = courses.find((item) => item.id === c.id);
-        if (existing) {
+        if (existing && isUuid(c.id)) {
           if (c.status === 'published' && existing.status !== 'published') {
             await teacherApi.publishCourse(c.id);
           }
-          await teacherApi.updateCourse(c.id, {
+          const updated = await teacherApi.updateCourse(c.id, {
             title: c.title,
             description: c.description,
           });
+          if (updated) {
+            savedCourse = {
+              ...savedCourse,
+              title: updated.title,
+              description: updated.description || '',
+              status: updated.status,
+              updatedAt: updated.updated_at,
+            };
+          }
         } else {
           const created = await teacherApi.createCourse({
             title: c.title,
             description: c.description,
           });
           if (created && created.id) {
-            c.id = created.id;
+            savedCourse.id = created.id;
+            savedCourse.status = created.status || 'draft';
+            savedCourse.creatorId = created.creator_id || currentUserAccount?.id;
+            savedCourse.creatorName = currentUserAccount?.full_name || 'Dr. Elena Rostova';
+            savedCourse.createdAt = created.created_at;
+            savedCourse.updatedAt = created.updated_at;
           }
         }
       }
     } catch (err: any) {
       console.warn('Backend course save notice:', err);
     }
-    storage.saveCourse(c);
-    setCourses(storage.getCourses());
-    notify('success', `Course "${c.title}" saved.`);
+    storage.saveCourse(savedCourse);
+    setCourses((prev) => {
+      const idx = prev.findIndex((item) => item.id === savedCourse.id || item.id === c.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedCourse;
+        return next;
+      }
+      return [savedCourse, ...prev];
+    });
+    notify('success', `Course "${savedCourse.title}" saved.`);
   };
 
   const handleDeleteCourse = (id: string) => {
     storage.deleteCourse(id);
-    setCourses(storage.getCourses());
+    setCourses((prev) => prev.filter((c) => c.id !== id));
     notify('info', 'Course deleted.');
   };
 
@@ -2055,53 +2138,64 @@ export default function App() {
     await refreshTeacherCourseData();
   };
 
-  const handleSaveResource = async (r: LearningResource) => {
+  const handleSaveResource = async (r: LearningResource): Promise<LearningResource> => {
+    let savedResource = { ...r };
     try {
       if (authApi.getAccessToken()) {
         const existing = resources.find((item) => item.id === r.id);
-        if (existing) {
+        if (existing && isUuid(r.id)) {
           await teacherApi.updateResource(r.id, {
             title: r.title,
             type: r.type,
             content_or_url: r.contentOrUrl,
           });
-        } else {
+        } else if (isUuid(r.lessonId)) {
           const created = await teacherApi.createResource(r.lessonId, {
             title: r.title,
             type: r.type,
             content_or_url: r.contentOrUrl,
           });
           if (created && created.id) {
-            r.id = created.id;
+            savedResource.id = created.id;
           }
         }
       }
     } catch (err: any) {
       console.warn('Backend resource save notice:', err);
     }
-    storage.saveResource(r);
-    setResources(storage.getResources());
+    storage.saveResource(savedResource);
+    setResources((prev) => {
+      const idx = prev.findIndex((item) => item.id === savedResource.id || item.id === r.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedResource;
+        return next;
+      }
+      return [savedResource, ...prev];
+    });
     notify('success', 'Resource saved.');
+    return savedResource;
   };
 
   const handleDeleteResource = async (id: string) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(id)) {
         await teacherApi.deleteResource(id);
       }
     } catch (err: any) {
       console.warn('Backend resource delete notice:', err);
     }
     storage.deleteResource(id);
-    setResources(storage.getResources());
+    setResources((prev) => prev.filter((r) => r.id !== id));
     notify('info', 'Resource removed.');
   };
 
   const handleSaveQuestion = async (q: QuestionData) => {
+    let savedQuestion = { ...q };
     try {
       if (authApi.getAccessToken()) {
         const existing = questions.find((item) => item.id === q.id);
-        if (existing) {
+        if (existing && isUuid(q.id)) {
           await teacherApi.updateQuestion(q.id, {
             prompt: q.prompt,
             explanation: q.explanation,
@@ -2121,10 +2215,11 @@ export default function App() {
             })),
             expected_rubric: q.expectedRubric,
           });
-        } else {
+        } else if (isUuid(q.courseId)) {
+          const fallbackTopicId = q.topicId || topics.find((t) => t.courseId === q.courseId)?.id || '';
           const created = await teacherApi.createQuestion({
-            course_id: q.courseId,
-            topic_id: q.topicId,
+            course_id: q.courseId!,
+            topic_id: fallbackTopicId,
             type: q.type,
             difficulty: q.difficulty,
             points: q.points,
@@ -2145,28 +2240,36 @@ export default function App() {
             expected_rubric: q.expectedRubric,
           });
           if (created && created.id) {
-            q.id = created.id;
+            savedQuestion.id = created.id;
           }
         }
       }
     } catch (err: any) {
       console.warn('Backend question save notice:', err);
     }
-    storage.saveQuestion(q);
-    setQuestions(storage.getQuestions());
+    storage.saveQuestion(savedQuestion);
+    setQuestions((prev) => {
+      const idx = prev.findIndex((item) => item.id === savedQuestion.id || item.id === q.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedQuestion;
+        return next;
+      }
+      return [savedQuestion, ...prev];
+    });
     notify('success', 'Question saved to bank.');
   };
 
   const handleDeleteQuestion = async (id: string) => {
     try {
-      if (authApi.getAccessToken()) {
+      if (authApi.getAccessToken() && isUuid(id)) {
         await teacherApi.archiveQuestion(id);
       }
     } catch (err: any) {
       console.warn('Backend question archive notice:', err);
     }
     storage.deleteQuestion(id);
-    setQuestions(storage.getQuestions());
+    setQuestions((prev) => prev.filter((item) => item.id !== id));
     notify('info', 'Question removed.');
   };
 
@@ -2176,10 +2279,36 @@ export default function App() {
     notify('success', `${newCandidates.length} candidate questions generated.`);
   };
 
-  const handleUpdateCandidateStatus = (id: string, status: 'approved' | 'rejected', reason?: string) => {
+  const handleUpdateCandidateStatus = async (id: string, status: 'approved' | 'rejected', reason?: string) => {
+    try {
+      if (authApi.getAccessToken() && isUuid(id)) {
+        if (status === 'approved') {
+          const res = await aiApi.approveCandidate(id).catch(() => null);
+          if (res && res.approved_question_id) {
+            const cand = candidates.find((c) => c.id === id);
+            if (cand && cand.courseId) {
+              await handleFetchCourseQuestions(cand.courseId);
+            }
+          }
+        } else if (status === 'rejected') {
+          await aiApi.rejectCandidate(id, reason).catch(() => null);
+        }
+      }
+    } catch (err: any) {
+      console.warn('Backend candidate status update notice:', err);
+    }
     storage.updateCandidateStatus(id, status, reason);
     setCandidates(storage.getCandidates());
-    setQuestions(storage.getQuestions());
+    const storageQs = storage.getQuestions();
+    setQuestions((prev) => {
+      const map = new Map(prev.map((q) => [q.id, q]));
+      for (const sq of storageQs) {
+        if (!map.has(sq.id)) {
+          map.set(sq.id, sq);
+        }
+      }
+      return Array.from(map.values());
+    });
     notify(status === 'approved' ? 'success' : 'info', `Candidate question ${status}.`);
   };
 
@@ -2190,10 +2319,11 @@ export default function App() {
   };
 
   const handleSaveAssessment = async (a: Assessment) => {
+    let savedAssessment = { ...a };
     try {
       if (authApi.getAccessToken()) {
         const existing = assessments.find((item) => item.id === a.id);
-        if (existing) {
+        if (existing && isUuid(a.id)) {
           if (a.status === 'published' && existing.status !== 'published') {
             await teacherApi.publishAssessment(a.id);
           }
@@ -2204,10 +2334,10 @@ export default function App() {
             passing_score_percent: a.passingScorePercent,
             questions: a.questionIds.map((qid, idx) => ({ question_id: qid, order: idx + 1 })),
           });
-        } else {
+        } else if (isUuid(a.courseId)) {
           const created = await teacherApi.createAssessment({
             course_id: a.courseId,
-            topic_id: a.topicId,
+            topic_id: isUuid(a.topicId) ? a.topicId : undefined,
             title: a.title,
             type: a.type as any,
             instructions: a.instructions,
@@ -2216,7 +2346,7 @@ export default function App() {
             questions: a.questionIds.map((qid, idx) => ({ question_id: qid, order: idx + 1 })),
           });
           if (created && created.id) {
-            a.id = created.id;
+            savedAssessment.id = created.id;
             if (a.status === 'published') {
               await teacherApi.publishAssessment(created.id);
             }
@@ -2226,14 +2356,22 @@ export default function App() {
     } catch (err: any) {
       console.warn('Backend assessment save notice:', err);
     }
-    storage.saveAssessment(a);
-    setAssessments(storage.getAssessments());
-    notify('success', `Assessment "${a.title}" saved.`);
+    storage.saveAssessment(savedAssessment);
+    setAssessments((prev) => {
+      const idx = prev.findIndex((item) => item.id === savedAssessment.id || item.id === a.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedAssessment;
+        return next;
+      }
+      return [savedAssessment, ...prev];
+    });
+    notify('success', `Assessment "${savedAssessment.title}" saved.`);
   };
 
   const handleDeleteAssessment = (id: string) => {
     storage.deleteAssessment(id);
-    setAssessments(storage.getAssessments());
+    setAssessments((prev) => prev.filter((item) => item.id !== id));
     notify('info', 'Assessment deleted.');
   };
 
@@ -2369,6 +2507,7 @@ export default function App() {
           courses={courses}
           topics={topics}
           lessons={lessons}
+          currentTeacherId={currentUserAccount?.id}
           onNavigate={handleTeacherNavigate}
           onSaveCourse={handleSaveCourse}
           onDeleteCourse={handleDeleteCourse}
@@ -2444,6 +2583,8 @@ export default function App() {
           initialCourseId={teacherNavParams.courseId}
           initialTopicId={teacherNavParams.topicId}
           initialLessonId={teacherNavParams.lessonId}
+          currentTeacherId={currentUserAccount?.id}
+          onCourseChange={handleFetchCourseQuestions}
           onNavigate={handleTeacherNavigate}
           onDeleteQuestion={handleDeleteQuestion}
           onNotify={notify}
@@ -2471,6 +2612,8 @@ export default function App() {
           initialCourseId={teacherNavParams.courseId}
           initialTopicId={teacherNavParams.topicId}
           initialLessonId={teacherNavParams.lessonId}
+          currentTeacherId={currentUserAccount?.id}
+          onCourseChange={handleFetchCourseQuestions}
           onNavigate={handleTeacherNavigate}
           onSaveGeneratedCandidates={handleSaveGeneratedCandidates}
           onUpdateCandidateStatus={handleUpdateCandidateStatus}

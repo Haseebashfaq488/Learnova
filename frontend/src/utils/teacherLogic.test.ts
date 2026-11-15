@@ -419,3 +419,37 @@ test('categorizeQuestionsByHierarchy strictly enforces Course -> Topic -> Lesson
 
   assert.equal(generalCourseQuestions.length, 0);
 });
+
+test('canonical course ID resolver ensures backward compatibility and database alignment', async () => {
+  const { resolveCanonicalCourseId, CANONICAL_COURSE_IDS, storage } = await import('../services/storageService.ts');
+  
+  // Canonical ID resolution
+  assert.equal(resolveCanonicalCourseId('course-cs101'), CANONICAL_COURSE_IDS.CS101);
+  assert.equal(resolveCanonicalCourseId('course-cs201'), CANONICAL_COURSE_IDS.CS201);
+  assert.equal(resolveCanonicalCourseId('course-cs401'), CANONICAL_COURSE_IDS.CS401);
+  assert.equal(resolveCanonicalCourseId('custom-uuid-1234'), 'custom-uuid-1234');
+
+  // Both legacy ID and backend canonical UUID query the same question bank questions
+  const qsByLegacy = storage.getQuestions('course-cs101');
+  const qsByUuid = storage.getQuestions(CANONICAL_COURSE_IDS.CS101);
+  assert.ok(qsByLegacy.length > 0, 'Legacy ID must return course questions');
+  assert.equal(qsByLegacy.length, qsByUuid.length, 'Legacy and Canonical UUID must return identical count');
+
+  // Saving a new draft course does not erase existing courses
+  const initialCourses = storage.getCourses();
+  const testDraftCourse = {
+    id: `draft-${Date.now()}`,
+    title: 'Experimental Cloud Systems',
+    description: 'Draft course for persistence verification',
+    status: 'draft' as const,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  storage.saveCourse(testDraftCourse);
+  const updatedCourses = storage.getCourses();
+  assert.equal(updatedCourses.length, initialCourses.length + 1, 'Draft course must append without discarding existing courses');
+  assert.ok(updatedCourses.some((c) => c.id === testDraftCourse.id));
+
+  // Clean up
+  storage.deleteCourse(testDraftCourse.id);
+});

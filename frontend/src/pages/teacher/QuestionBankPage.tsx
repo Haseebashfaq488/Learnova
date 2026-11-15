@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ListChecks,
   Plus,
@@ -38,6 +38,8 @@ interface QuestionBankPageProps {
   initialCourseId?: string;
   initialTopicId?: string;
   initialLessonId?: string;
+  currentTeacherId?: string;
+  onCourseChange?: (courseId: string) => void;
   onNavigate: (page: string, params?: Record<string, string>) => void;
   onDeleteQuestion: (id: string) => void;
   onNotify: (type: 'success' | 'error' | 'info', msg: string) => void;
@@ -51,6 +53,8 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
   initialCourseId,
   initialTopicId,
   initialLessonId,
+  currentTeacherId,
+  onCourseChange,
   onNavigate,
   onDeleteQuestion,
   onNotify,
@@ -59,13 +63,18 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
   // HIERARCHY LEVEL 1: Select Course
   // ==========================================
   const teacherCourses = useMemo(() => {
-    const assigned = courses.filter((c) => c.creatorId === CURRENT_TEACHER.id);
-    return assigned.length > 0 ? assigned : courses;
+    return courses;
   }, [courses]);
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>(
-    initialCourseId || teacherCourses[0]?.id || courses[0]?.id || ''
+    initialCourseId || courses[0]?.id || ''
   );
+
+  useEffect(() => {
+    if (selectedCourseId && onCourseChange) {
+      onCourseChange(selectedCourseId);
+    }
+  }, [selectedCourseId]);
 
   const activeCourse = useMemo(() => {
     return courses.find((c) => c.id === selectedCourseId) || courses[0];
@@ -91,6 +100,9 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
   // When Course changes, update active topic
   const handleCourseChange = (courseId: string) => {
     setSelectedCourseId(courseId);
+    if (onCourseChange) {
+      onCourseChange(courseId);
+    }
     const newTopics = topics
       .filter((t) => t.courseId === courseId)
       .sort((a, b) => a.order - b.order);
@@ -328,7 +340,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {courses.map((c) => {
             const isSelected = c.id === selectedCourseId;
-            const isAssigned = c.creatorId === CURRENT_TEACHER.id;
+            const isAssigned = !c.creatorId || c.creatorId === currentTeacherId || c.creatorId === CURRENT_TEACHER.id || c.creatorId === 'c669ebe0-8bf3-43e7-816d-20a5f9b2c53a';
             const countInCourse = questions.filter((q) => q.courseId === c.id).length;
             const tCount = topics.filter((t) => t.courseId === c.id).length;
             const lCount = lessons.filter((l) => l.courseId === c.id).length;

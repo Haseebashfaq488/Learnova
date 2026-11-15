@@ -25,9 +25,7 @@ import { Course, Topic, Lesson, LearningResource } from '../types';
 const mockCourse: Course = {
   id: 'c-cs101',
   title: 'Advanced Computer Systems',
-  code: 'CS101',
   description: 'In-depth exploration of system architectures, memory models, and concurrency invariants.',
-  category: 'Computer Science',
   status: 'published',
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
@@ -47,6 +45,7 @@ const mockTopic: Topic = {
 
 const mockLesson: Lesson = {
   id: 'l-stack-heap',
+  courseId: 'c-cs101',
   topicId: 't-memory',
   title: 'Stack vs Heap Allocation Mechanics',
   description: 'Deterministic stack frame allocation versus dynamic heap lifetime management.',
@@ -58,19 +57,23 @@ const mockLesson: Lesson = {
 const mockResources: LearningResource[] = [
   {
     id: 'res-memory-notes',
+    courseId: 'c-cs101',
     lessonId: 'l-stack-heap',
     title: 'Memory Frame Invariants Guide',
     type: 'markdown',
     contentOrUrl: '# Invariants\n- Stack frames are strictly scoped.\n- Heaps require deterministic lifetime bounds.',
     createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
   },
   {
     id: 'res-sample-allocator',
+    courseId: 'c-cs101',
     lessonId: 'l-stack-heap',
     title: 'Stack Allocator Implementation',
     type: 'code',
     contentOrUrl: 'def allocate_frame(size: int):\n    return {"frame_id": 1, "bytes": size}',
     createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
   },
 ];
 
@@ -307,7 +310,7 @@ describe('AI Simplification Studio & Visual Diagram Suite (e2e-testing-patterns)
   describe('Journey 4: Deterministic Fallback Invariants & 5-Layer Mastery Format', () => {
     test('backend adapter produces valid Mermaid flowchart for diagram mode', async () => {
       // Test direct API schema contracts
-      const { AIService } = await import('../../backend/app/services/ai_service.py').catch(() => ({ AIService: null }));
+      const AIService = null;
       // In node environment, test simulated deterministic generator
       const req = {
         lesson_title: 'Stack Memory',

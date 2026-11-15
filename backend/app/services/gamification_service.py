@@ -81,7 +81,7 @@ class GamificationService:
                 level=1,
                 streak_days=0,
                 last_active_date=None,
-                is_opted_in_leaderboard=False,
+                is_opted_in_leaderboard=True,
             )
             db.add(profile)
             db.flush()
