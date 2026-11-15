@@ -128,10 +128,7 @@ import {
 } from './types';
 
 // Public Marketing & Exploration Pages
-import { PublicLayout } from './components/public/PublicLayout';
 import { LandingPage } from './pages/public/LandingPage';
-import { CoursesExplorerPage } from './pages/public/CoursesExplorerPage';
-import { CourseDetailPage } from './pages/public/CourseDetailPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { PublicNavigationPage } from './services/routerService';
@@ -191,6 +188,45 @@ export default function App() {
     }
     if (pushHistory) {
       pushHistoryState('public', page, params);
+    }
+  };
+
+  const handlePublicActionNavigate = (
+    targetPage: string,
+    params?: Record<string, string>
+  ) => {
+    if (targetPage === 'about') {
+      handlePublicNavigate('about', params);
+    } else if (targetPage === 'contact') {
+      handlePublicNavigate('contact', params);
+    } else if (targetPage === 'landing') {
+      handlePublicNavigate('landing', params);
+    } else if (targetPage === 'courses' || targetPage === 'catalog') {
+      if (publicPage === 'landing') {
+        const el = document.getElementById('curriculum-grid');
+        el?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        handlePublicNavigate('landing', { scrollTo: 'curriculum-grid', ...(params || {}) });
+      }
+    } else if (targetPage === 'sign_in' || targetPage === 'register') {
+      setPortalMode('student');
+      setStudentPage(targetPage as StudentNavigationPage);
+    } else if (
+      targetPage === 'dashboard' ||
+      targetPage === 'my_learning' ||
+      targetPage === 'course_map' ||
+      targetPage === 'progress' ||
+      targetPage === 'leaderboard' ||
+      targetPage === 'achievements' ||
+      targetPage === 'profile'
+    ) {
+      setPortalMode('student');
+      setStudentPage(targetPage as StudentNavigationPage);
+      if (params) {
+        setStudentNavParams(params);
+      }
+    } else {
+      handlePublicNavigate('landing', params);
     }
   };
 
@@ -1381,108 +1417,83 @@ export default function App() {
   }
 
   // =========================================================================
-  // VIEW ROUTING: PUBLIC SITE (LANDING, COURSES, ABOUT, CONTACT)
+  // VIEW ROUTING: PUBLIC SITE (LANDING, ABOUT, CONTACT)
   // =========================================================================
   if (portalMode === 'public') {
+    const studentUser = currentUserAccount?.role === 'student'
+      ? {
+          id: currentUserAccount.id,
+          name: currentUserAccount.full_name || currentUserAccount.email,
+          email: currentUserAccount.email,
+          role: 'student' as const,
+          joinDate: currentUserAccount.created_at || '',
+          preferences: { theme: 'dark' as const, leaderboardOptIn: true, emailNotifications: true },
+        }
+      : null;
+
+    if (publicPage === 'about') {
+      return (
+        <AboutPage
+          currentStudent={studentUser}
+          currentUser={currentUserAccount}
+          onNavigate={handlePublicActionNavigate}
+          onSwitchToTeacher={() => {
+            setPortalMode('teacher');
+            setTeacherPage('overview');
+          }}
+          onSwitchToAdmin={() => {
+            setPortalMode('admin');
+            setAdminPage('dashboard');
+          }}
+        />
+      );
+    }
+
+    if (publicPage === 'contact') {
+      return (
+        <ContactPage
+          currentStudent={studentUser}
+          currentUser={currentUserAccount}
+          serviceHealth={serviceHealth}
+          onNavigate={handlePublicActionNavigate}
+          onSwitchToTeacher={() => {
+            setPortalMode('teacher');
+            setTeacherPage('overview');
+          }}
+          onSwitchToAdmin={() => {
+            setPortalMode('admin');
+            setAdminPage('dashboard');
+          }}
+        />
+      );
+    }
+
+    // Default to Landing Page
     return (
-      <PublicLayout
-        currentPage={publicPage}
-        onNavigate={handlePublicNavigate}
-        onEnterPortal={() => {
+      <LandingPage
+        courses={courses}
+        enrollments={enrollments}
+        currentStudent={studentUser}
+        currentUser={currentUserAccount}
+        navParams={publicNavParams}
+        onNavigate={handlePublicActionNavigate}
+        onSwitchToTeacher={() => {
+          setPortalMode('teacher');
+          setTeacherPage('overview');
+        }}
+        onSwitchToAdmin={() => {
+          setPortalMode('admin');
+          setAdminPage('dashboard');
+        }}
+        onEnrollCourse={async (courseId) => {
           if (currentUserAccount) {
-            setPortalMode(
-              currentUserAccount.role === 'teacher'
-                ? 'teacher'
-                : currentUserAccount.role === 'administrator'
-                ? 'admin'
-                : 'student'
-            );
+            await handleEnrollCourse(courseId);
           } else {
             setPortalMode('student');
+            setStudentPage('sign_in');
           }
         }}
-        courses={courses}
-        topics={topics}
-        currentUser={currentUserAccount}
-      >
-        {publicPage === 'landing' && (
-          <LandingPage
-            courses={courses}
-            topics={topics}
-            lessons={lessons}
-            enrollments={enrollments}
-            currentUser={currentUserAccount}
-            onNavigate={handlePublicNavigate}
-            onEnterPortal={() => {
-              if (currentUserAccount) {
-                setPortalMode(
-                  currentUserAccount.role === 'teacher'
-                    ? 'teacher'
-                    : currentUserAccount.role === 'administrator'
-                    ? 'admin'
-                    : 'student'
-                );
-              } else {
-                setPortalMode('student');
-              }
-            }}
-          />
-        )}
-
-        {publicPage === 'courses' && (
-          <CoursesExplorerPage
-            courses={courses}
-            topics={topics}
-            lessons={lessons}
-            enrollments={enrollments}
-            currentUser={currentUserAccount}
-            onSelectCourse={(courseId) => handlePublicNavigate('course_details', { courseId })}
-            onEnrollCourse={(courseId) => {
-              handleEnrollCourse(courseId);
-              setPortalMode('student');
-            }}
-            onContinueLearning={(courseId) => {
-              setPortalMode('student');
-              handleStudentNavigate('course_map', { courseId });
-            }}
-            onNavigate={handlePublicNavigate}
-          />
-        )}
-
-        {publicPage === 'course_details' && (
-          <CourseDetailPage
-            courseId={publicNavParams.courseId || courses[0]?.id || ''}
-            courses={courses}
-            topics={topics}
-            lessons={lessons}
-            resources={resources}
-            enrollments={enrollments}
-            currentUser={currentUserAccount}
-            onEnroll={async (courseId) => {
-              await handleEnrollCourse(courseId);
-            }}
-            onContinueLearning={(courseId) => {
-              setPortalMode('student');
-              handleStudentNavigate('course_map', { courseId });
-            }}
-            onNavigate={handlePublicNavigate}
-          />
-        )}
-
-        {publicPage === 'about' && (
-          <AboutPage
-            onNavigate={handlePublicNavigate}
-            onEnterPortal={() => setPortalMode('student')}
-          />
-        )}
-
-        {publicPage === 'contact' && (
-          <ContactPage
-            serviceHealth={serviceHealth}
-            onNavigate={handlePublicNavigate}
-          />
-        )}
-      </PublicLayout>
+      />
     );
   }
 

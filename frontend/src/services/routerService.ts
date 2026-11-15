@@ -7,7 +7,7 @@
 
 export type PortalMode = 'student' | 'teacher' | 'admin' | 'public';
 
-export type PublicNavigationPage = 'landing' | 'courses' | 'course_details' | 'about' | 'contact';
+export type PublicNavigationPage = 'landing' | 'about' | 'contact';
 
 export interface AppRouteState {
   portal: PortalMode;
@@ -24,8 +24,6 @@ export const DEFAULT_PAGE_BY_PORTAL: Record<PortalMode, string> = {
 
 export const VALID_PUBLIC_PAGES = new Set([
   'landing',
-  'courses',
-  'course_details',
   'about',
   'contact',
 ]);
@@ -164,7 +162,16 @@ export function parseUrlToRoute(pathname: string, search = ''): AppRouteState | 
     };
   }
 
-  // Direct public routes: /courses, /course_details, /about, /contact
+  // Redirect removed separate course pages to landing curriculum grid
+  if (rawPortal === 'courses' || rawPortal === 'course_details') {
+    return {
+      portal: 'public',
+      page: 'landing',
+      params: { scrollTo: 'curriculum-grid', ...params },
+    };
+  }
+
+  // Direct public routes: /about, /contact
   if (VALID_PUBLIC_PAGES.has(rawPortal)) {
     return {
       portal: 'public',

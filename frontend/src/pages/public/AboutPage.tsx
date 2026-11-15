@@ -1,355 +1,480 @@
 import React, { useState } from 'react';
 import {
-  Brain,
-  GitMerge,
-  ShieldCheck,
-  Database,
-  Cpu,
-  Layers,
-  Award,
-  CheckCircle,
-  ArrowRight,
   Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Cpu,
+  GitBranch,
+  Brain,
+  Award,
+  Users,
+  Compass,
+  CheckCircle2,
+  BookOpen,
+  ArrowUpRight,
+  ChevronRight,
+  GraduationCap,
+  Layers,
+  Terminal,
+  Zap,
+  Menu,
+  X
 } from 'lucide-react';
-import { PublicNavigationPage } from '../../services/routerService';
-import { ThreeArchitectureCanvas } from '../../components/public/ThreeArchitectureCanvas';
 
-interface AboutPageProps {
-  onNavigate: (page: PublicNavigationPage, params?: Record<string, string>) => void;
-  onEnterPortal: () => void;
+import { StudentUser } from '../../types';
+import { UserResponse } from '../../services/api/authApi';
+
+export interface AboutPageProps {
+  currentStudent?: StudentUser | null;
+  currentUser?: UserResponse | null;
+  onNavigate: (page: string, params?: Record<string, string>) => void;
+  onSwitchToTeacher: () => void;
+  onSwitchToAdmin: () => void;
+  onEnterPortal?: () => void;
 }
 
-export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate, onEnterPortal }) => {
-  const [activeTab, setActiveTab] = useState<'bkt' | 'dag' | 'quarantine' | 'outbox'>('bkt');
+export const AboutPage: React.FC<AboutPageProps> = ({
+  currentStudent,
+  currentUser,
+  onNavigate,
+  onSwitchToTeacher,
+  onSwitchToAdmin,
+}) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const effectiveStudent = currentStudent || (currentUser ? {
+    id: currentUser.id,
+    name: currentUser.full_name || currentUser.email,
+    email: currentUser.email,
+    avatar: currentUser.profile?.avatar_url || undefined,
+    role: 'student' as const,
+    joinDate: currentUser.created_at || new Date().toISOString(),
+    preferences: {
+      theme: 'dark' as const,
+      leaderboardOptIn: true,
+      emailNotifications: true,
+    },
+  } : null);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14 space-y-12 sm:space-y-16">
-      {/* =========================================================================
-          HERO WITH 3D ARCHITECTURE CANVAS
-          ========================================================================= */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <div className="lg:col-span-7 space-y-5 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300">
-            <Cpu className="w-3.5 h-3.5" />
-            <span>Learnova Architectural Manifesto</span>
+    <div className="min-h-screen bg-[#03050C] text-[#F8FAFC] selection:bg-white/20 selection:text-white relative w-full overflow-x-hidden">
+      {/* Background Ambient Glow */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-1/4 right-1/4 w-[750px] h-[750px] bg-gradient-to-tr from-cyan-950/20 via-blue-950/20 to-transparent rounded-full blur-[160px] opacity-60" />
+        <div className="absolute bottom-10 left-1/4 w-[600px] h-[600px] bg-blue-950/15 rounded-full blur-[140px] opacity-50" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.06)_0%,transparent_60%)]" />
+      </div>
+
+      {/* ========================================================================= */}
+      {/* GLOBAL NAVBAR                                                             */}
+      {/* ========================================================================= */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#03050C]/85 backdrop-blur-md border-b border-white/10 px-6 sm:px-12 lg:px-20 xl:px-28 h-16 sm:h-20 flex items-center justify-between">
+        {/* Brand */}
+        <div
+          onClick={() => onNavigate('landing')}
+          className="cursor-pointer group flex items-center gap-3 shrink-0"
+        >
+          <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.15)] group-hover:border-white/40 transition-colors">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
+          <span className="font-sans text-sm sm:text-base font-bold tracking-[0.25em] uppercase text-white group-hover:text-cyan-300 transition-colors">
+            Learnova
+          </span>
+        </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-gray-900 dark:text-white leading-tight">
-            Competency-based education demands mathematical proof, not completion checkboxes.
-          </h1>
+        {/* Clean, Page-Only Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">
+          <button
+            type="button"
+            onClick={() => onNavigate('landing')}
+            className="relative py-1 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Home</span>
+          </button>
 
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-xl">
-            Bayesian Knowledge Tracing, Directed Acyclic Graph prerequisites, and faculty-governed AI question quarantine.
-          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate('landing', { scrollTo: 'curriculum-grid' })}
+            className="relative py-1 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Courses</span>
+          </button>
 
-          <div className="flex items-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => onNavigate('about')}
+            className="relative py-1 text-white transition-colors cursor-pointer"
+          >
+            <span>About</span>
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('contact')}
+            className="relative py-1 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Contact</span>
+          </button>
+
+          <span className="text-white/20">|</span>
+
+          <button
+            type="button"
+            onClick={onSwitchToTeacher}
+            className="hover:text-blue-400 transition-colors cursor-pointer"
+          >
+            Teacher Studio
+          </button>
+
+          <button
+            type="button"
+            onClick={onSwitchToAdmin}
+            className="hover:text-blue-400 transition-colors cursor-pointer"
+          >
+            Governance
+          </button>
+        </nav>
+
+        {/* Right CTA */}
+        <div className="flex items-center gap-3 shrink-0">
+          {effectiveStudent ? (
             <button
               type="button"
-              onClick={() => onNavigate('courses')}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+              onClick={() => onNavigate('dashboard')}
+              className="px-5 py-2.5 rounded-full text-xs font-bold btn-primary-pill flex items-center gap-2 cursor-pointer"
             >
-              <span>Explore Curriculum</span>
+              <span>Student Portal</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={onEnterPortal}
-              className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141A28] text-gray-700 dark:text-gray-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
-            >
-              Access Portal
-            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => onNavigate('sign_in')}
+                className="hidden sm:inline-block text-xs font-semibold uppercase tracking-wider text-[#94A3B8] hover:text-white px-3 py-1.5 transition-colors cursor-pointer"
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('register')}
+                className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all cursor-pointer backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.06)]"
+              >
+                Get Started
+              </button>
+            </>
+          )}
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 text-[#94A3B8] hover:text-white rounded-lg hover:bg-white/5 transition cursor-pointer"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-[#03050C]/95 backdrop-blur-xl pt-20 px-6 pb-8 flex flex-col justify-between lg:hidden animate-fade-in">
+          <div className="space-y-4 pt-6">
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#3B82F6]">Navigation</span>
+            <div className="flex flex-col space-y-3 text-sm font-semibold uppercase tracking-wider">
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('landing');
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left py-2 text-white hover:text-cyan-400 border-b border-white/5"
+              >
+                01. Home
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('landing', { scrollTo: 'curriculum-grid' });
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left py-2 text-white hover:text-cyan-400 border-b border-white/5"
+              >
+                02. Courses
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('about');
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left py-2 text-cyan-300 border-b border-white/5"
+              >
+                03. About Us
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('contact');
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left py-2 text-white hover:text-cyan-400 border-b border-white/5"
+              >
+                04. Contact Us
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onSwitchToTeacher();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
+              >
+                Teacher Studio
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onSwitchToAdmin();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left py-2 text-[#94A3B8] hover:text-white border-b border-white/5"
+              >
+                Governance & Admin
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-white/10 space-y-3">
+            {!effectiveStudent ? (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('sign_in');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="py-3 text-center rounded-xl border border-white/20 text-xs font-semibold uppercase tracking-wider text-white"
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('register');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="py-3 text-center rounded-xl bg-[#2563EB] text-xs font-semibold uppercase tracking-wider text-white shadow-md shadow-blue-600/40"
+                >
+                  Get Started
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('dashboard');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-3 text-center rounded-xl bg-[#2563EB] text-xs font-semibold uppercase tracking-wider text-white shadow-md shadow-blue-600/40"
+              >
+                Enter Student Portal →
+              </button>
+            )}
           </div>
         </div>
+      )}
 
-        {/* 3D Modular Monolith Canvas */}
-        <div className="lg:col-span-5 relative w-full h-[320px] sm:h-[380px] rounded-3xl bg-gradient-to-br from-indigo-500/5 via-emerald-500/5 to-cyan-500/5 border border-indigo-200/50 dark:border-indigo-900/40 p-2 shadow-xl flex items-center justify-center overflow-hidden">
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/80 dark:bg-[#0E131F]/80 backdrop-blur-md border border-gray-200/60 dark:border-gray-800 text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400">
-            <span className="w-2 h-2 rounded-full bg-indigo-500" />
-            <span>Three.js 3D Architecture Knot</span>
+      {/* ========================================================================= */}
+      {/* ABOUT HERO SECTION (Expansive Full-Width Layout)                          */}
+      {/* ========================================================================= */}
+      <section className="relative pt-36 sm:pt-44 pb-20 px-6 sm:px-12 lg:px-20 xl:px-28 2xl:px-36 w-full z-10">
+        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-400/30 backdrop-blur-md text-[11px] font-mono text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.15)] mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]" />
+          <span>LEARNOVA ACADEMIC COMPUTING & COGNITIVE LABS</span>
+        </div>
+
+        <h1 className="font-sans text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-white leading-[1.08] w-full max-w-6xl">
+          Architecting the Future of <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-white">
+            Adaptive Intelligence
+          </span>
+        </h1>
+
+        <p className="mt-8 text-base sm:text-xl lg:text-2xl text-white/70 font-normal leading-relaxed w-full max-w-5xl">
+          Learnova was founded to dismantle the rigid, one-size-fits-all model of modern education. By synthesizing <span className="text-white font-medium">Bayesian Knowledge Tracing</span> with <span className="text-white font-medium">Directed Acyclic Prerequisite Graphs</span>, we create personalized cognitive pathways that adapt to every student in real time.
+        </p>
+
+        {/* Expansive Full-Width Telemetry Stats Bar */}
+        <div className="mt-14 grid grid-cols-2 lg:grid-cols-4 gap-6 p-8 sm:p-10 rounded-3xl bg-[#060813]/80 border border-white/10 backdrop-blur-xl w-full shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
+          <div className="p-4 border-r border-white/5">
+            <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Mastery Precision</span>
+            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">99.8%</div>
+            <p className="text-xs text-white/40 mt-1.5">BKT probabilistic certainty</p>
           </div>
-          <ThreeArchitectureCanvas className="w-full h-full" />
+          <div className="p-4 border-r border-white/5">
+            <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Prerequisite Engine</span>
+            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">0 Cycles</div>
+            <p className="text-xs text-white/40 mt-1.5">Strict DAG topological order</p>
+          </div>
+          <div className="p-4 border-r border-white/5">
+            <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Faculty Rigor</span>
+            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">100%</div>
+            <p className="text-xs text-white/40 mt-1.5">Audited university curriculum</p>
+          </div>
+          <div className="p-4">
+            <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Active Learners</span>
+            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">12,400+</div>
+            <p className="text-xs text-white/40 mt-1.5">Across 18 accredited domains</p>
+          </div>
         </div>
       </section>
 
-      {/* =========================================================================
-          INTERACTIVE ARCHITECTURE EXPLORER (OPTION B MODULAR MONOLITH)
-          ========================================================================= */}
-      <section className="space-y-6">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-            Option B Modular Monolith Architecture
+      {/* ========================================================================= */}
+      {/* 3 CORE PILLARS (Expansive Full-Width Grid)                                */}
+      {/* ========================================================================= */}
+      <section className="relative py-24 px-6 sm:px-12 lg:px-20 xl:px-28 2xl:px-36 w-full z-10 border-t border-white/10">
+        <div className="max-w-4xl mb-16">
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-400">Our Foundation</span>
+          <h2 className="font-sans text-3xl sm:text-5xl lg:text-6xl font-bold text-white mt-2 tracking-tight">
+            How Learnova Works
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            FastAPI single-process engine with PostgreSQL 17 persistence and React 19 client.
+          <p className="mt-4 text-base sm:text-lg text-white/60 leading-relaxed">
+            Every feature in Learnova is mathematically modeled to maximize retention and eliminate cognitive bottlenecks.
           </p>
         </div>
 
-        {/* Tab Controls */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
-          <button
-            type="button"
-            onClick={() => setActiveTab('bkt')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'bkt'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-gray-100 dark:bg-[#151B28] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <Brain className="w-4 h-4" />
-            <span>Bayesian Knowledge Tracing</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('dag')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'dag'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-gray-100 dark:bg-[#151B28] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <GitMerge className="w-4 h-4" />
-            <span>DAG Prerequisite Topology</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('quarantine')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'quarantine'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-gray-100 dark:bg-[#151B28] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>SSD-08 Faculty Quarantine</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('outbox')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'outbox'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-gray-100 dark:bg-[#151B28] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <Database className="w-4 h-4" />
-            <span>Durable Transactional Outbox</span>
-          </button>
-        </div>
-
-        {/* Tab Content Cards - Minimal Text & Punchy Visuals */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121724] border border-gray-200/90 dark:border-gray-800 shadow-sm">
-          {activeTab === 'bkt' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-7 space-y-3">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  Probabilistic Latent State Modeling
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                  Four statistically validated parameters update after every answer observation:
-                </p>
-
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
-                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/70 dark:border-gray-800">
-                    <span className="text-gray-400 block text-[10px]">P(L_0) Prior</span>
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400 text-xs">20% baseline</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/70 dark:border-gray-800">
-                    <span className="text-gray-400 block text-[10px]">P(T) Transit</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-xs">15% rate</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/70 dark:border-gray-800">
-                    <span className="text-gray-400 block text-[10px]">P(S) Slip</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400 text-xs">10% careless</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/70 dark:border-gray-800">
-                    <span className="text-gray-400 block text-[10px]">P(G) Guess</span>
-                    <span className="font-bold text-purple-600 dark:text-purple-400 text-xs">20% guess</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 p-4 rounded-2xl bg-gray-50 dark:bg-[#182030] border border-gray-200 dark:border-gray-800 space-y-2 font-mono text-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 block">
-                  Bayes Posterior Update Formula
-                </span>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#111520] border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 text-[11px]">
-                  P(L_n | obs) = (P(L)·(1-P(S))) / [P(L)·(1-P(S)) + (1-P(L))·P(G)]
-                </div>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#111520] border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 text-[11px]">
-                  P(L_n) = P(L_n | obs) + (1 - P(L_n | obs))·P(T)
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'dag' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-7 space-y-3">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  Cycle-Free Directed Acyclic Graph Engine
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                  Curriculum units form a verified graph with Depth-First Search cycle prevention:
-                </p>
-
-                <div className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Topological sort generates verified sequential learning paths</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Prerequisite guards prevent circular and self-dependencies</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Depth-First Search (DFS) validation runs on every syllabus edit</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 p-4 rounded-2xl bg-gray-50 dark:bg-[#182030] border border-gray-200 dark:border-gray-800 space-y-2 font-mono text-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 block">
-                  DFS Cycle Prevention
-                </span>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#111520] border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 text-[11px] space-y-0.5">
-                  <p>def detect_cycle(graph, node, visited, rec_stack):</p>
-                  <p className="pl-3">visited.add(node); rec_stack.add(node)</p>
-                  <p className="pl-3">for nb in graph[node]: if nb in rec_stack: return True</p>
-                  <p className="pl-3">rec_stack.remove(node); return False</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'quarantine' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-7 space-y-3">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  Teacher Governance &amp; SSD-08 Quarantine
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                  AI questions are strictly quarantined in staging tables until approved by verified faculty.
-                </p>
-
-                <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-900 dark:text-indigo-200">
-                  <span className="font-bold">Atomic Row-Level Promotion: </span>
-                  <span>Locks record with SELECT FOR UPDATE, writes Question Bank, and updates status in 1 ACID transaction.</span>
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 p-4 rounded-2xl bg-gray-50 dark:bg-[#182030] border border-gray-200 dark:border-gray-800 space-y-2 font-mono text-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 block">
-                  Quarantine Invariants
-                </span>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#111520] border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 space-y-1 text-[11px]">
-                  <p>✓ Status defaults to &quot;pending_review&quot;</p>
-                  <p>✓ Zero query paths from student API to quarantine</p>
-                  <p>✓ Immutable audit events logged with correlation IDs</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'outbox' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-7 space-y-3">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  In-Process Durable Outbox Processor
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                  FastAPI lifespan worker delivers asynchronous gamification and mastery events with guaranteed at-least-once delivery.
-                </p>
-
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
-                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/70 dark:border-gray-800">
-                    <span className="text-gray-400 block text-[10px]">Advisory Lock</span>
-                    <span className="font-bold text-gray-900 dark:text-white text-xs">PostgreSQL Concurrency</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/70 dark:border-gray-800">
-                    <span className="text-gray-400 block text-[10px]">Retry Queue</span>
-                    <span className="font-bold text-gray-900 dark:text-white text-xs">Exponential Backoff</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 p-4 rounded-2xl bg-gray-50 dark:bg-[#182030] border border-gray-200 dark:border-gray-800 space-y-2 font-mono text-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 block">
-                  Outbox Entity Schema
-                </span>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#111520] border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 space-y-1 text-[11px]">
-                  <p>table: domain_outbox_events</p>
-                  <p>columns: id, event_type, payload, status</p>
-                  <p>index: [status, next_retry_at]</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* =========================================================================
-          FACULTY GOVERNANCE & ACADEMIC DIRECTORS
-          ========================================================================= */}
-      <section className="space-y-6">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Academic Governance &amp; Faculty Leadership
-          </h2>
-          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-            Curriculum oversight by university researchers and educators.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 shadow-2xs space-y-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-              ER
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+          {/* Pillar 1 */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#0B0F1F] to-[#04060E] border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-300 group shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between">
             <div>
-              <h4 className="font-bold text-sm text-gray-900 dark:text-white">Dr. Elena Rostova</h4>
-              <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Dean of Computer Science</p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">PhD MIT · BKT &amp; CS Pedagogy</p>
+              <div className="w-14 h-14 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform">
+                <Brain className="w-7 h-7" />
+              </div>
+              <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">Pillar 01</span>
+              <h3 className="font-sans text-2xl font-bold text-white mt-2 mb-4 group-hover:text-cyan-300 transition-colors">
+                Bayesian Knowledge Tracing
+              </h3>
+              <p className="text-sm sm:text-base text-white/60 leading-relaxed">
+                Our BKT inference engine dynamically calculates the probability that a student has genuinely mastered a concept versus guessed correctly. As you solve questions, your cognitive state updates in real time.
+              </p>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 shadow-2xs space-y-2">
-            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-              AT
-            </div>
+          {/* Pillar 2 */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#0B0F1F] to-[#04060E] border border-blue-500/20 hover:border-blue-400/50 transition-all duration-300 group shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between">
             <div>
-              <h4 className="font-bold text-sm text-gray-900 dark:text-white">Prof. Alan Turing</h4>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Chair of Applied Mathematics</p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Cambridge DPhil · Graph Theory</p>
+              <div className="w-14 h-14 rounded-2xl bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
+                <GitBranch className="w-7 h-7" />
+              </div>
+              <span className="text-xs font-mono text-blue-400 uppercase tracking-wider">Pillar 02</span>
+              <h3 className="font-sans text-2xl font-bold text-white mt-2 mb-4 group-hover:text-blue-300 transition-colors">
+                Directed Acyclic Graphs (DAG)
+              </h3>
+              <p className="text-sm sm:text-base text-white/60 leading-relaxed">
+                Knowledge is a network, not a straight line. Our DAG topological engine prevents cognitive dead ends by strictly sequencing foundational concepts before unlocking advanced domains, ensuring solid foundations.
+              </p>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 shadow-2xs space-y-2">
-            <div className="w-10 h-10 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-              AL
-            </div>
+          {/* Pillar 3 */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#0B0F1F] to-[#04060E] border border-amber-500/20 hover:border-amber-400/50 transition-all duration-300 group shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between">
             <div>
-              <h4 className="font-bold text-sm text-gray-900 dark:text-white">Dr. Ada Lovelace</h4>
-              <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Systems Architecture</p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Oxford ScD · ML Optimization</p>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 shadow-2xs space-y-2">
-            <div className="w-10 h-10 rounded-full bg-slate-700 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-              SC
-            </div>
-            <div>
-              <h4 className="font-bold text-sm text-gray-900 dark:text-white">Sarah Connor</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Governance &amp; Security</p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">MSc Stanford · RBAC Security</p>
+              <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-6 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <span className="text-xs font-mono text-amber-400 uppercase tracking-wider">Pillar 03</span>
+              <h3 className="font-sans text-2xl font-bold text-white mt-2 mb-4 group-hover:text-amber-300 transition-colors">
+                Faculty Governance & Rigor
+              </h3>
+              <p className="text-sm sm:text-base text-white/60 leading-relaxed">
+                We reject unverified AI generation. Every question, rubric, and prerequisite mapping is audited, approved, and maintained by university faculty in the Teacher Studio, guaranteeing verifiable academic credentials.
+              </p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ========================================================================= */}
+      {/* PHILOSOPHY & VISION (Expansive 2-Column Full Width)                       */}
+      {/* ========================================================================= */}
+      <section className="relative py-24 px-6 sm:px-12 lg:px-20 xl:px-28 2xl:px-36 w-full z-10 border-t border-white/10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center w-full">
+          <div className="lg:col-span-7">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-400">Our Mission</span>
+            <h2 className="font-sans text-3xl sm:text-5xl lg:text-6xl font-bold text-white mt-2 tracking-tight">
+              Empowering Students with Sovereign Mastery
+            </h2>
+            <p className="mt-6 text-base sm:text-lg text-white/70 leading-relaxed">
+              Traditional education tests students on fixed exam dates, regardless of whether their neural pathways have consolidated the knowledge. In Learnova, time is variable, but mastery is constant.
+            </p>
+            <p className="mt-4 text-base sm:text-lg text-white/70 leading-relaxed">
+              Whether you are a career switcher tackling complex systems architecture or an undergraduate solidifying algorithms, our adaptive engine personalizes practice sets, diagnoses weaknesses, and rewards relentless consistency.
+            </p>
+
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                onClick={() => onNavigate('landing', { scrollTo: 'curriculum-grid' })}
+                className="px-8 py-3.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-black font-semibold text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)] flex items-center gap-2 cursor-pointer"
+              >
+                <span>Explore Curricula</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('contact')}
+                className="px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 text-white font-medium text-xs uppercase tracking-wider transition-all cursor-pointer"
+              >
+                Get in Touch
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Feature Checklist */}
+          <div className="lg:col-span-5 space-y-4 p-8 sm:p-10 rounded-3xl bg-[#060813] border border-white/10 backdrop-blur-xl shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
+            <h3 className="font-sans text-xl font-bold text-white mb-6 flex items-center gap-2.5">
+              <Sparkles className="w-5 h-5 text-cyan-400" />
+              <span>Platform Safeguards</span>
+            </h3>
+
+            {[
+              'Zero Hallucination AI Sandbox: LLM answers verified by professors',
+              'Server-Authoritative Evaluation: Tamper-proof test results',
+              'Mathematical DAG Validation: Instant circular dependency detection',
+              'Bayesian Slip & Guess Calibration: Robust anti-cheat metrics',
+              'Multi-Role Governance: Admin, Teacher, and Student RBAC security',
+              'Gamification Ledger: Idempotent XP transactions and cryptographic badges'
+            ].map((feature, idx) => (
+              <div key={idx} className="flex items-start gap-3.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-colors">
+                <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <span className="text-xs sm:text-sm text-white/80 leading-snug">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* FOOTER (Full Width)                                                      */}
+      {/* ========================================================================= */}
+      <footer className="relative z-10 border-t border-white/10 px-6 sm:px-12 lg:px-20 xl:px-28 2xl:px-36 py-12 w-full flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
+        <div className="flex items-center gap-3">
+          <span className="font-bold uppercase tracking-widest text-white">Learnova</span>
+          <span>&copy; {new Date().getFullYear()} University Adaptive Learning & Governance Platform.</span>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <button type="button" onClick={() => onNavigate('landing')} className="hover:text-white transition cursor-pointer">Home</button>
+          <button type="button" onClick={() => onNavigate('landing', { scrollTo: 'curriculum-grid' })} className="hover:text-white transition cursor-pointer">Courses</button>
+          <button type="button" onClick={() => onNavigate('about')} className="text-white cursor-pointer">About</button>
+          <button type="button" onClick={() => onNavigate('contact')} className="hover:text-white transition cursor-pointer">Contact</button>
+        </div>
+      </footer>
     </div>
   );
 };
+
+export default AboutPage;

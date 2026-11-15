@@ -11,46 +11,23 @@ import {
   VALID_PUBLIC_PAGES,
 } from '../services/routerService.ts';
 
-// Public Components and Pages
-import { PublicHeader } from '../components/public/PublicHeader.tsx';
-import { CourseCarousel } from '../components/public/CourseCarousel.tsx';
-import { BKTSimulator } from '../components/public/BKTSimulator.tsx';
-import { DAGVisualizer } from '../components/public/DAGVisualizer.tsx';
-import { SearchModal } from '../components/public/SearchModal.tsx';
-import { PublicLayout } from '../components/public/PublicLayout.tsx';
+// Public Pages
 import { LandingPage } from '../pages/public/LandingPage.tsx';
-import { CoursesExplorerPage } from '../pages/public/CoursesExplorerPage.tsx';
-import { CourseDetailPage } from '../pages/public/CourseDetailPage.tsx';
 import { AboutPage } from '../pages/public/AboutPage.tsx';
 import { ContactPage } from '../pages/public/ContactPage.tsx';
 
 describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => {
   const courses = storage.getCourses();
-  const topics = storage.getTopics();
-  const lessons = storage.getLessons();
-  const resources = storage.getResources();
   const serviceHealth = storage.getServiceHealth();
 
   describe('Journey 1: Public URL Routing & Deep-Linking', () => {
     it('serializeRouteToUrl produces clean semantic URLs for public routes', () => {
       assert.equal(serializeRouteToUrl('public', 'landing'), '/');
-      assert.equal(serializeRouteToUrl('public', 'courses'), '/courses');
       assert.equal(serializeRouteToUrl('public', 'about'), '/about');
       assert.equal(serializeRouteToUrl('public', 'contact'), '/contact');
-      assert.equal(
-        serializeRouteToUrl('public', 'course_details', { courseId: 'course-cs101' }),
-        '/course_details?courseId=course-cs101'
-      );
     });
 
     it('parseUrlToRoute correctly deserializes direct public routes', () => {
-      const coursesRoute = parseUrlToRoute('/courses');
-      assert.deepEqual(coursesRoute, {
-        portal: 'public',
-        page: 'courses',
-        params: {},
-      });
-
       const aboutRoute = parseUrlToRoute('/about');
       assert.deepEqual(aboutRoute, {
         portal: 'public',
@@ -65,18 +42,19 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
         params: {},
       });
 
+      // Old /courses or /course_details URLs automatically redirect to landing curriculum-grid
+      const coursesRoute = parseUrlToRoute('/courses');
+      assert.deepEqual(coursesRoute, {
+        portal: 'public',
+        page: 'landing',
+        params: { scrollTo: 'curriculum-grid' },
+      });
+
       const detailRoute = parseUrlToRoute('/course_details', '?courseId=course-cs101');
       assert.deepEqual(detailRoute, {
         portal: 'public',
-        page: 'course_details',
-        params: { courseId: 'course-cs101' },
-      });
-
-      const explicitPublic = parseUrlToRoute('/public/courses');
-      assert.deepEqual(explicitPublic, {
-        portal: 'public',
-        page: 'courses',
-        params: {},
+        page: 'landing',
+        params: { scrollTo: 'curriculum-grid', courseId: 'course-cs101' },
       });
     });
 
@@ -86,217 +64,127 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
     });
   });
 
-  describe('Journey 2: Landing Page & Micro-Interactions Rendering', () => {
-    it('LandingPage renders unique hero banner, telemetries, and BKT simulator', () => {
+  describe('Journey 2: Landing Page & 3D Holographic Cortex Rendering', () => {
+    it('LandingPage renders hero headline, 3D particle brain cortex container, curriculum registry, and rankings', () => {
       const html = renderToString(
         React.createElement(LandingPage, {
           courses,
-          topics,
-          lessons,
           onNavigate: () => {},
-          onEnterPortal: () => {},
+          onSwitchToTeacher: () => {},
+          onSwitchToAdmin: () => {},
         })
       );
 
-      assert.ok(
-        html.includes('Where Cognitive Science Meets Computational Mastery'),
-        'Must contain hero headline'
-      );
-      assert.ok(html.includes('Bayesian Knowledge Tracing'), 'Must mention BKT');
-      assert.ok(html.includes('Interactive Bayesian Knowledge Tracing'), 'Must include BKT simulator');
-      assert.ok(html.includes('REST API 18ms'), 'Must show live telemetry');
-      assert.ok(html.includes('Canonical Academic Curriculum'), 'Must contain courses carousel section');
-      assert.ok(html.includes('SSD-08 Faculty Quarantine Protocol'), 'Must contain AI quarantine section');
-      assert.ok(html.includes('Dr. Elena Rostova'), 'Must feature real faculty Dean');
-      assert.ok(html.includes('Three.js 3D Knowledge Network'), 'Must feature Three.js 3D network badge');
+      assert.ok(html.includes('Revolutionize Your'), 'Must contain hero headline');
+      assert.ok(html.includes('Learning'), 'Must contain hero headline gradient');
+      assert.ok(html.includes('NEURAL ENGINE ACTIVE'), 'Must show cyber telemetry badge');
+      assert.ok(html.includes('Verified University Curriculum'), 'Must contain curriculum registry section');
+      assert.ok(html.includes('Curriculum Registry'), 'Must contain curriculum title badge');
+      assert.ok(html.includes('Top University Scholars'), 'Must contain global rankings preview');
+      assert.ok(html.includes('A Platform Engineered for Verifiable Competence'), 'Must contain architectural pillars');
+      assert.ok(html.includes('Teacher Studio'), 'Must contain teacher studio button');
+      assert.ok(html.includes('Governance'), 'Must contain governance button');
     });
 
-    it('CourseCarousel renders smooth navigation and canonical course cards', () => {
+    it('LandingPage renders verified course cards with Module badges, Enroll Now and Syllabus actions', () => {
       const html = renderToString(
-        React.createElement(CourseCarousel, {
+        React.createElement(LandingPage, {
           courses,
-          topics,
-          lessons,
-          onSelectCourse: () => {},
-        })
-      );
-
-      assert.ok(html.includes('Canonical Academic Curriculum'), 'Must include carousel title');
-      assert.ok(html.includes('Introduction to Computer Science &amp; Python') || html.includes('Introduction to Computer Science & Python'), 'Must include CS101');
-      assert.ok(html.includes('Data Structures and Algorithm Analysis'), 'Must include CS201');
-      assert.ok(html.includes('Inspect Course Syllabus'), 'Must have syllabus CTA button');
-      assert.ok(html.includes('lg:w-1/3'), 'Must format into 3-cards per row grid on desktop');
-      assert.ok(html.includes('Topics'), 'Must display topics visual pill');
-      assert.ok(html.includes('BKT Goal'), 'Must display BKT goal visual pill');
-    });
-
-    it('BKTSimulator displays initial 20% prior probability and 80% threshold', () => {
-      const html = renderToString(React.createElement(BKTSimulator));
-
-      assert.ok(html.includes('20%'), 'Must display initial prior 20%');
-      assert.ok(html.includes('Target: 80% for DAG Unlock'), 'Must indicate 80% target');
-      assert.ok(html.includes('Evaluate as TRUE'), 'Must have evaluation buttons');
-      assert.ok(html.includes('Evaluate as FALSE'), 'Must have evaluation buttons');
-    });
-
-    it('DAGVisualizer displays 5 ordered nodes and cycle-free topological indicator', () => {
-      const html = renderToString(
-        React.createElement(DAGVisualizer, {
-          topics,
-          lessons,
-        })
-      );
-
-      assert.ok(html.includes('Directed Acyclic Graph (DAG) Prerequisite Topology'), 'Header check');
-      assert.ok(html.includes('Cycle-Free DFS Enforced') || html.includes('Depth-First Search (DFS)'), 'Cycle check');
-      assert.ok(html.includes('Syntax, Variables &amp; Data Types') || html.includes('Syntax, Variables & Data Types'), 'Node check');
-      assert.ok(html.includes('Conditional Logic &amp; Control Flow') || html.includes('Conditional Logic & Control Flow'), 'Node check');
-    });
-  });
-
-  describe('Journey 3: Courses Explorer & Detailed Course View', () => {
-    it('CoursesExplorerPage renders search filter bar, department chips, and course cards', () => {
-      const html = renderToString(
-        React.createElement(CoursesExplorerPage, {
-          courses,
-          topics,
-          lessons,
-          onSelectCourse: () => {},
           onNavigate: () => {},
+          onSwitchToTeacher: () => {},
+          onSwitchToAdmin: () => {},
         })
       );
 
-      assert.ok(html.includes('University Computing Curriculum'), 'Heading check');
-      assert.ok(html.includes('Filter courses by title, instructor, or topic'), 'Search input check');
-      assert.ok(html.includes('All Disciplines'), 'Filter chips check');
-      assert.ok(html.includes('Inspect Syllabus'), 'Card action check');
-      assert.ok(html.includes('Interactive Curriculum Explorer'), 'Three.js 3D wave banner check');
+      assert.ok(html.includes('MODULE 01'), 'Must display module index');
+      assert.ok(html.includes('Verified'), 'Must display verified status pill');
+      assert.ok(html.includes('Enroll Now'), 'Must provide Enroll Now CTA');
+      assert.ok(html.includes('Syllabus'), 'Must provide Syllabus CTA');
     });
 
-    it('CourseDetailPage renders deep syllabus, DAG prerequisite badges, and BKT rubric', () => {
-      const html = renderToString(
-        React.createElement(CourseDetailPage, {
-          courseId: 'course-cs101',
-          courses,
-          topics,
-          lessons,
-          resources,
-          onEnroll: () => {},
-          onNavigate: () => {},
-        })
-      );
-
-      assert.ok(html.includes('Introduction to Computer Science &amp; Python') || html.includes('Introduction to Computer Science & Python'), 'Title check');
-      assert.ok(html.includes('Dr. Elena Rostova'), 'Instructor check');
-      assert.ok(html.includes('Enroll in Course &amp; Start Learning') || html.includes('Enroll in Course & Start Learning'), 'CTA check');
-      assert.ok(html.includes('Bayesian Knowledge Tracing (BKT) Criteria'), 'BKT rubric check');
-      assert.ok(html.includes('Diagnostic Entrance Exam'), 'Assessment sequence check');
-    });
-
-    it('CourseDetailPage reflects enrolled student session with "Already Enrolled" and "Continue Learning"', () => {
+    it('LandingPage reflects enrolled student session with "Active" badge and "Open Map"', () => {
       const mockEnrollments = [
         {
-          id: 'enr-101',
+          id: 'enr-demo-1',
           studentId: 'student-101',
-          courseId: 'course-cs101',
+          courseId: courses[0]?.id || 'course-1',
           status: 'active' as const,
-          progressPercent: 42,
-          enrolledAt: '2026-10-01T00:00:00Z',
+          enrolledAt: new Date().toISOString(),
+          progressPercent: 45,
         },
       ];
 
-      const mockStudentUser = {
-        id: 'student-101',
-        email: 'alex.rivera@learnova.edu',
-        full_name: 'Alex Rivera',
-        name: 'Alex Rivera',
-        role: 'student' as const,
-        is_active: true,
-        isActive: true,
-        created_at: '2026-09-01T00:00:00Z',
-        createdAt: '2026-09-01T00:00:00Z',
-        updatedAt: '2026-10-20T00:00:00Z',
-      };
-
       const html = renderToString(
-        React.createElement(CourseDetailPage, {
-          courseId: 'course-cs101',
+        React.createElement(LandingPage, {
           courses,
-          topics,
-          lessons,
-          resources,
           enrollments: mockEnrollments,
-          currentUser: mockStudentUser,
-          onEnroll: () => {},
-          onContinueLearning: () => {},
+          currentStudent: {
+            id: 'student-101',
+            name: 'Alex Rivera',
+            email: 'alex@learnova.edu',
+            role: 'student',
+            joinDate: '2026-09-01T00:00:00Z',
+            preferences: { theme: 'dark', leaderboardOptIn: true, emailNotifications: true },
+          },
           onNavigate: () => {},
+          onSwitchToTeacher: () => {},
+          onSwitchToAdmin: () => {},
         })
       );
 
-      assert.ok(html.includes('Already Enrolled'), 'Must display Already Enrolled status');
-      assert.ok(html.includes('Continue Learning'), 'Must provide Continue Learning action');
-      assert.ok(html.includes('42%'), 'Must reflect active 42% progress percent');
-      assert.ok(html.includes('Alex Rivera') && html.includes('Session'), 'Must identify active student session');
+      assert.ok(html.includes('Active'), 'Must display Active status pill for enrolled course');
+      assert.ok(html.includes('Open Map'), 'Must display Open Map button for enrolled course');
+      assert.ok(html.includes('Student Portal'), 'Must show Student Portal button in navbar when logged in');
     });
   });
 
-  describe('Journey 4: About Us & Contact Us Pages', () => {
-    it('AboutPage renders Option B architecture, BKT/DAG/Quarantine tabs, and leadership team', () => {
+  describe('Journey 3: About Us Full-Width Academic Experience', () => {
+    it('AboutPage renders full-width layout, telemetry stats bar, 3 core pillars, and mission', () => {
       const html = renderToString(
         React.createElement(AboutPage, {
           onNavigate: () => {},
-          onEnterPortal: () => {},
+          onSwitchToTeacher: () => {},
+          onSwitchToAdmin: () => {},
         })
       );
 
-      assert.ok(
-        html.includes('Competency-based education demands mathematical proof'),
-        'Manifesto check'
-      );
-      assert.ok(html.includes('Option B Modular Monolith Architecture'), 'Architecture check');
-      assert.ok(html.includes('Bayesian Knowledge Tracing'), 'Tabs check');
-      assert.ok(html.includes('Dr. Elena Rostova'), 'Faculty check');
-      assert.ok(html.includes('Prof. Alan Turing'), 'Faculty check');
-      assert.ok(html.includes('Three.js 3D Architecture Knot'), '3D architecture canvas check');
+      assert.ok(html.includes('Architecting the Future of'), 'Manifesto headline check');
+      assert.ok(html.includes('Adaptive Intelligence'), 'Headline gradient check');
+      assert.ok(html.includes('Mastery Precision'), 'Telemetry stat 1 check');
+      assert.ok(html.includes('99.8%'), 'Mastery precision value check');
+      assert.ok(html.includes('Prerequisite Engine'), 'Telemetry stat 2 check');
+      assert.ok(html.includes('0 Cycles'), 'DAG cycles value check');
+      assert.ok(html.includes('How Learnova Works'), '3 Pillars section check');
+      assert.ok(html.includes('Bayesian Knowledge Tracing'), 'Pillar 1 check');
+      assert.ok(html.includes('Directed Acyclic Graphs (DAG)'), 'Pillar 2 check');
+      assert.ok(html.includes('Faculty Governance &amp; Rigor') || html.includes('Faculty Governance & Rigor'), 'Pillar 3 check');
+      assert.ok(html.includes('Empowering Students with Sovereign Mastery'), 'Mission section check');
+      assert.ok(html.includes('Platform Safeguards'), 'Platform safeguards checklist check');
+      assert.ok(html.includes('w-full'), 'Full width container check');
     });
+  });
 
-    it('ContactPage renders inquiry form, live health telemetry, and campus locations', () => {
+  describe('Journey 4: Contact Us Full-Width Operations Gateway', () => {
+    it('ContactPage renders full-width layout, departmental channel cards, transmission form, and 2-column FAQs', () => {
       const html = renderToString(
         React.createElement(ContactPage, {
           serviceHealth,
           onNavigate: () => {},
+          onSwitchToTeacher: () => {},
+          onSwitchToAdmin: () => {},
         })
       );
 
-      assert.ok(
-        html.includes('Institutional Contact &amp; Campus Operations') || html.includes('Institutional Contact & Campus Operations'),
-        'Heading check'
-      );
-      assert.ok(html.includes('Initiate Institutional Inquiry'), 'Form check');
-      assert.ok(html.includes('Live Infrastructure Telemetry'), 'Telemetry check');
-      assert.ok(html.includes('Cambridge Academic Hub'), 'Campus check');
-      assert.ok(html.includes('Frequently Asked Questions'), 'FAQ check');
-    });
-
-    it('PublicHeader renders sticky nav with left logo, center menu, and right actions', () => {
-      const html = renderToString(
-        React.createElement(PublicHeader, {
-          currentPage: 'landing',
-          onNavigate: () => {},
-          onOpenSearch: () => {},
-          onOpenDesignStudio: () => {},
-          onEnterPortal: () => {},
-        })
-      );
-
-      assert.ok(html.includes('Learnova'), 'Brand logo check');
-      assert.ok(html.includes('ACADEMIC'), 'Academic badge check');
-      assert.ok(html.includes('Overview'), 'Menu check');
-      assert.ok(html.includes('Courses'), 'Menu check');
-      assert.ok(html.includes('About Us'), 'Menu check');
-      assert.ok(html.includes('Contact Us'), 'Menu check');
-      assert.ok(html.includes('Search...'), 'Search button check');
-      assert.ok(html.includes('Portal'), 'Portal CTA check');
+      assert.ok(html.includes('Get in Touch with'), 'Heading check');
+      assert.ok(html.includes('Academic Operations'), 'Heading gradient check');
+      assert.ok(html.includes('Admissions &amp; Learning Advisory') || html.includes('Admissions & Learning Advisory'), 'Card 1 check');
+      assert.ok(html.includes('Faculty Studio &amp; Curriculum Research') || html.includes('Faculty Studio & Curriculum Research'), 'Card 2 check');
+      assert.ok(html.includes('Institutional Licensing &amp; Security') || html.includes('Institutional Licensing & Security'), 'Card 3 check');
+      assert.ok(html.includes('Direct Departmental Transmission'), 'Form header check');
+      assert.ok(html.includes('Transmit Message'), 'Submit button check');
+      assert.ok(html.includes('Frequently Addressed Queries'), 'FAQ section check');
+      assert.ok(html.includes('How does Learnova verify my topic mastery?'), 'FAQ 1 question check');
+      assert.ok(html.includes('w-full'), 'Full width layout check');
     });
   });
 
