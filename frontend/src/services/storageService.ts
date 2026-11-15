@@ -407,6 +407,19 @@ const SEED_COURSES: Course[] = [
     creatorDepartment: 'Software Architecture & Engineering',
     creatorAvatar: 'AL',
   },
+  {
+    id: 'course-cs401',
+    title: 'Distributed Systems & Cloud Architecture',
+    description: 'Distributed consensus (Raft/Paxos), fault tolerance, CAP theorem, replication, sharding, and transactional outbox patterns.',
+    status: 'published',
+    updatedAt: '2026-10-15T18:00:00Z',
+    createdAt: '2026-10-05T09:00:00Z',
+    creatorId: 'teacher-104',
+    creatorName: 'Dr. Leslie Lamport',
+    creatorEmail: 'l.lamport@learnova.edu',
+    creatorDepartment: 'Distributed Systems & Formal Methods',
+    creatorAvatar: 'LL',
+  },
 ];
 
 const SEED_TOPICS: Topic[] = [
@@ -465,6 +478,39 @@ const SEED_TOPICS: Topic[] = [
     updatedAt: '2026-10-14T09:00:00Z',
     createdAt: '2026-09-18T13:00:00Z',
   },
+  {
+    id: 'topic-dist-foundations',
+    courseId: 'course-cs401',
+    title: 'Distributed Foundations & Network Models',
+    description: 'Synchronous vs asynchronous network timing models, failure detectors, and network partitions.',
+    order: 1,
+    prerequisiteTopicIds: [],
+    masteryThreshold: 80,
+    updatedAt: '2026-10-15T18:00:00Z',
+    createdAt: '2026-10-05T09:00:00Z',
+  },
+  {
+    id: 'topic-dist-consensus',
+    courseId: 'course-cs401',
+    title: 'Consensus Protocols: Paxos & Raft',
+    description: 'Leader election, log replication, safety guarantees, and split-brain resolution.',
+    order: 2,
+    prerequisiteTopicIds: ['topic-dist-foundations'],
+    masteryThreshold: 85,
+    updatedAt: '2026-10-16T10:00:00Z',
+    createdAt: '2026-10-06T10:00:00Z',
+  },
+  {
+    id: 'topic-dist-outbox',
+    courseId: 'course-cs401',
+    title: 'Transactional Outbox & Event Sourcing',
+    description: 'Durable event sourcing, idempotency keys, PostgreSQL advisory locking, and dead-letter queues.',
+    order: 3,
+    prerequisiteTopicIds: ['topic-dist-consensus'],
+    masteryThreshold: 90,
+    updatedAt: '2026-10-17T12:00:00Z',
+    createdAt: '2026-10-07T12:00:00Z',
+  },
 ];
 
 const SEED_LESSONS: Lesson[] = [
@@ -517,6 +563,36 @@ const SEED_LESSONS: Lesson[] = [
     order: 1,
     updatedAt: '2026-10-10T10:00:00Z',
     createdAt: '2026-09-10T10:00:00Z',
+  },
+  {
+    id: 'lesson-dist-1',
+    topicId: 'topic-dist-foundations',
+    courseId: 'course-cs401',
+    title: 'Network Partitions, Latency & Failure Modes',
+    description: 'Byzantine vs crash-stop failures, partial partitions, and TCP timeout behavior.',
+    order: 1,
+    updatedAt: '2026-10-05T09:00:00Z',
+    createdAt: '2026-10-05T09:00:00Z',
+  },
+  {
+    id: 'lesson-dist-2',
+    topicId: 'topic-dist-consensus',
+    courseId: 'course-cs401',
+    title: 'Raft Leader Election and Heartbeat Rhythms',
+    description: 'Term numbers, randomized election timeouts, and candidate state transitions.',
+    order: 1,
+    updatedAt: '2026-10-06T10:00:00Z',
+    createdAt: '2026-10-06T10:00:00Z',
+  },
+  {
+    id: 'lesson-dist-3',
+    topicId: 'topic-dist-outbox',
+    courseId: 'course-cs401',
+    title: 'Durable Outbox Event Dispatching in FastAPI',
+    description: 'In-process background processors, transactional consistency, and advisory locking.',
+    order: 1,
+    updatedAt: '2026-10-07T12:00:00Z',
+    createdAt: '2026-10-07T12:00:00Z',
   },
 ];
 
@@ -2038,11 +2114,11 @@ class StorageService {
     return updated;
   }
 
-  getPersistedPortalMode(): 'student' | 'teacher' | 'admin' | null {
-    return this.get<'student' | 'teacher' | 'admin' | null>('portal_mode', null);
+  getPersistedPortalMode(): 'student' | 'teacher' | 'admin' | 'public' | null {
+    return this.get<'student' | 'teacher' | 'admin' | 'public' | null>('portal_mode', null);
   }
 
-  setPersistedPortalMode(mode: 'student' | 'teacher' | 'admin' | null): void {
+  setPersistedPortalMode(mode: 'student' | 'teacher' | 'admin' | 'public' | null): void {
     if (mode) {
       this.set('portal_mode', mode);
     } else {

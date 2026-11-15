@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   Sparkles,
   Palette,
+  Globe,
 } from 'lucide-react';
 import { StudentUser, GamificationProfile } from '../../types';
 import { DesignStudioWidget } from '../ui/DesignStudioWidget';
@@ -62,6 +63,7 @@ interface StudentLayoutProps {
   onDismissToast?: (id: string) => void;
   onSwitchPortal?: () => void;
   onSwitchToAdmin?: () => void;
+  onSwitchToPublic?: () => void;
   onSignOut?: () => void;
   breadcrumbs?: Array<{ label: string; page?: StudentNavigationPage; params?: Record<string, string> }>;
   children: React.ReactNode;
@@ -76,6 +78,7 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
   onDismissToast,
   onSwitchPortal,
   onSwitchToAdmin,
+  onSwitchToPublic,
   onSignOut,
   breadcrumbs = [],
   children,
@@ -272,6 +275,27 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
                 {!sidebarCollapsed && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium">
                     Admin
+                  </span>
+                )}
+              </button>
+            )}
+
+            {onSwitchToPublic && (
+              <button
+                type="button"
+                onClick={onSwitchToPublic}
+                title="Return to Public Site"
+                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
+                  sidebarCollapsed ? 'justify-center px-0' : ''
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  {!sidebarCollapsed && <span>Public Overview</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
+                    Home
                   </span>
                 )}
               </button>

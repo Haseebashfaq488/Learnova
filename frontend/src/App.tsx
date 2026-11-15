@@ -127,6 +127,15 @@ import {
   ServiceHealthCheck,
 } from './types';
 
+// Public Marketing & Exploration Pages
+import { PublicLayout } from './components/public/PublicLayout';
+import { LandingPage } from './pages/public/LandingPage';
+import { CoursesExplorerPage } from './pages/public/CoursesExplorerPage';
+import { CourseDetailPage } from './pages/public/CourseDetailPage';
+import { AboutPage } from './pages/public/AboutPage';
+import { ContactPage } from './pages/public/ContactPage';
+import { PublicNavigationPage } from './services/routerService';
+
 export default function App() {
   // Parse initial route from browser URL
   const [initialRoute] = useState<AppRouteState | null>(() => {
@@ -143,17 +152,58 @@ export default function App() {
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
   // Portal Mode: parsed from URL, or persisted to localStorage to survive browser reloads
-  const [portalMode, setPortalModeState] = useState<'student' | 'teacher' | 'admin'>(() => {
+  const [portalMode, setPortalModeState] = useState<'public' | 'student' | 'teacher' | 'admin'>(() => {
     if (initialRoute?.portal) return initialRoute.portal;
-    return storage.getPersistedPortalMode() || 'student';
+    return storage.getPersistedPortalMode() || 'public';
   });
 
-  const setPortalMode = (mode: 'student' | 'teacher' | 'admin', pushHistory = true) => {
+  // Public Marketing & Exploration State
+  const [publicPage, setPublicPage] = useState<PublicNavigationPage>(() => {
+    if (initialRoute?.portal === 'public') return initialRoute.page as PublicNavigationPage;
+    return 'landing';
+  });
+  const [publicNavParams, setPublicNavParams] = useState<Record<string, string>>(() => {
+    if (initialRoute?.portal === 'public') return initialRoute.params || {};
+    return {};
+  });
+
+  const handlePublicNavigate = (
+    page: PublicNavigationPage,
+    params?: Record<string, string>,
+    pushHistory = true
+  ) => {
+    setPublicPage(page);
+    setPortalModeState('public');
+    if (params) {
+      setPublicNavParams(params);
+    } else {
+      setPublicNavParams({});
+    }
+    if (pushHistory) {
+      pushHistoryState('public', page, params);
+    }
+  };
+
+  const setPortalMode = (mode: 'public' | 'student' | 'teacher' | 'admin', pushHistory = true) => {
     setPortalModeState(mode);
     storage.setPersistedPortalMode(mode);
     if (pushHistory) {
-      const targetPage = mode === 'student' ? studentPage : mode === 'teacher' ? teacherPage : adminPage;
-      const targetParams = mode === 'student' ? studentNavParams : mode === 'teacher' ? teacherNavParams : adminNavParams;
+      const targetPage =
+        mode === 'public'
+          ? publicPage
+          : mode === 'student'
+          ? studentPage
+          : mode === 'teacher'
+          ? teacherPage
+          : adminPage;
+      const targetParams =
+        mode === 'public'
+          ? publicNavParams
+          : mode === 'student'
+          ? studentNavParams
+          : mode === 'teacher'
+          ? teacherNavParams
+          : adminNavParams;
       pushHistoryState(mode, targetPage, targetParams);
     }
   };
@@ -1120,7 +1170,10 @@ export default function App() {
       setPortalModeState(routeState.portal);
       storage.setPersistedPortalMode(routeState.portal);
 
-      if (routeState.portal === 'student') {
+      if (routeState.portal === 'public') {
+        setPublicPage(routeState.page as PublicNavigationPage);
+        setPublicNavParams(routeState.params || {});
+      } else if (routeState.portal === 'student') {
         setStudentPage(routeState.page as StudentNavigationPage);
         setStudentNavParams(routeState.params || {});
       } else if (routeState.portal === 'teacher') {
@@ -1139,8 +1192,22 @@ export default function App() {
     // Initial URL synchronization: Ensure the browser URL accurately reflects active portal and page
     if (typeof window !== 'undefined') {
       const activePortal = initialRoute?.portal || portalMode;
-      const activePage = activePortal === 'student' ? studentPage : activePortal === 'teacher' ? teacherPage : adminPage;
-      const activeParams = activePortal === 'student' ? studentNavParams : activePortal === 'teacher' ? teacherNavParams : adminNavParams;
+      const activePage =
+        activePortal === 'public'
+          ? publicPage
+          : activePortal === 'student'
+          ? studentPage
+          : activePortal === 'teacher'
+          ? teacherPage
+          : adminPage;
+      const activeParams =
+        activePortal === 'public'
+          ? publicNavParams
+          : activePortal === 'student'
+          ? studentNavParams
+          : activePortal === 'teacher'
+          ? teacherNavParams
+          : adminNavParams;
       replaceHistoryState(activePortal, activePage, activeParams);
     }
 
@@ -1295,6 +1362,99 @@ export default function App() {
     );
   }
 
+  // =========================================================================
+  // VIEW ROUTING: PUBLIC SITE (LANDING, COURSES, ABOUT, CONTACT)
+  // =========================================================================
+  if (portalMode === 'public') {
+    return (
+      <PublicLayout
+        currentPage={publicPage}
+        onNavigate={handlePublicNavigate}
+        onEnterPortal={() => {
+          if (currentUserAccount) {
+            setPortalMode(
+              currentUserAccount.role === 'teacher'
+                ? 'teacher'
+                : currentUserAccount.role === 'administrator'
+                ? 'admin'
+                : 'student'
+            );
+          } else {
+            setPortalMode('student');
+          }
+        }}
+        courses={courses}
+        topics={topics}
+        currentUser={currentUserAccount}
+      >
+        {publicPage === 'landing' && (
+          <LandingPage
+            courses={courses}
+            topics={topics}
+            lessons={lessons}
+            onNavigate={handlePublicNavigate}
+            onEnterPortal={() => {
+              if (currentUserAccount) {
+                setPortalMode(
+                  currentUserAccount.role === 'teacher'
+                    ? 'teacher'
+                    : currentUserAccount.role === 'administrator'
+                    ? 'admin'
+                    : 'student'
+                );
+              } else {
+                setPortalMode('student');
+              }
+            }}
+          />
+        )}
+
+        {publicPage === 'courses' && (
+          <CoursesExplorerPage
+            courses={courses}
+            topics={topics}
+            lessons={lessons}
+            onSelectCourse={(courseId) => handlePublicNavigate('course_details', { courseId })}
+            onEnrollCourse={(courseId) => {
+              handleEnrollCourse(courseId);
+              setPortalMode('student');
+            }}
+            onNavigate={handlePublicNavigate}
+          />
+        )}
+
+        {publicPage === 'course_details' && (
+          <CourseDetailPage
+            courseId={publicNavParams.courseId || courses[0]?.id || ''}
+            courses={courses}
+            topics={topics}
+            lessons={lessons}
+            resources={resources}
+            onEnroll={(courseId) => {
+              handleEnrollCourse(courseId);
+              setPortalMode('student');
+            }}
+            onNavigate={handlePublicNavigate}
+          />
+        )}
+
+        {publicPage === 'about' && (
+          <AboutPage
+            onNavigate={handlePublicNavigate}
+            onEnterPortal={() => setPortalMode('student')}
+          />
+        )}
+
+        {publicPage === 'contact' && (
+          <ContactPage
+            serviceHealth={serviceHealth}
+            onNavigate={handlePublicNavigate}
+          />
+        )}
+      </PublicLayout>
+    );
+  }
+
   if (!isAuthenticated) {
     return <AuthPage onAuthSuccess={handleAuthSuccess} />;
   }
@@ -1366,6 +1526,7 @@ export default function App() {
           setPortalMode('admin');
           refreshAdminData();
         }}
+        onSwitchToPublic={() => setPortalMode('public')}
         onSignOut={handleStudentSignOut}
         breadcrumbs={getStudentBreadcrumbs()}
       >
@@ -2034,6 +2195,13 @@ export default function App() {
           Teacher Portal Mode active. Switch workspaces:
         </span>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPortalMode('public')}
+            className="px-3 py-1.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-bold transition cursor-pointer"
+          >
+            ← Public Site
+          </button>
           <button
             type="button"
             onClick={() => setPortalMode('student')}

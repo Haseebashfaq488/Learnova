@@ -1,11 +1,13 @@
 /**
  * Browser History & URL Routing Synchronization Service.
  * Translates between application state (portalMode, activePage, navParams)
- * and semantic browser URLs (/portal/page?params).
+ * and semantic browser URLs (/portal/page?params, /courses, /about, etc.).
  * Enables native Chrome Back/Forward button navigation and direct URL deep-linking.
  */
 
-export type PortalMode = 'student' | 'teacher' | 'admin';
+export type PortalMode = 'student' | 'teacher' | 'admin' | 'public';
+
+export type PublicNavigationPage = 'landing' | 'courses' | 'course_details' | 'about' | 'contact';
 
 export interface AppRouteState {
   portal: PortalMode;
@@ -17,7 +19,16 @@ export const DEFAULT_PAGE_BY_PORTAL: Record<PortalMode, string> = {
   student: 'dashboard',
   teacher: 'overview',
   admin: 'dashboard',
+  public: 'landing',
 };
+
+export const VALID_PUBLIC_PAGES = new Set([
+  'landing',
+  'courses',
+  'course_details',
+  'about',
+  'contact',
+]);
 
 const VALID_STUDENT_PAGES = new Set([
   'dashboard',
@@ -86,6 +97,13 @@ export function serializeRouteToUrl(portal: PortalMode, page: string, params?: R
   const queryString = searchParams.toString();
   const querySuffix = queryString ? `?${queryString}` : '';
 
+  if (portal === 'public') {
+    if (cleanPage === 'landing') {
+      return `/${querySuffix}`;
+    }
+    return `/${cleanPage}${querySuffix}`;
+  }
+
   return `/${portal}/${cleanPage}${querySuffix}`;
 }
 
@@ -133,6 +151,24 @@ export function parseUrlToRoute(pathname: string, search = ''): AppRouteState | 
     return {
       portal: 'admin',
       page: VALID_ADMIN_PAGES.has(page) ? page : DEFAULT_PAGE_BY_PORTAL.admin,
+      params,
+    };
+  }
+
+  if (rawPortal === 'public') {
+    const page = segments[1]?.toLowerCase() || DEFAULT_PAGE_BY_PORTAL.public;
+    return {
+      portal: 'public',
+      page: VALID_PUBLIC_PAGES.has(page) ? page : DEFAULT_PAGE_BY_PORTAL.public,
+      params,
+    };
+  }
+
+  // Direct public routes: /courses, /course_details, /about, /contact
+  if (VALID_PUBLIC_PAGES.has(rawPortal)) {
+    return {
+      portal: 'public',
+      page: rawPortal,
       params,
     };
   }
