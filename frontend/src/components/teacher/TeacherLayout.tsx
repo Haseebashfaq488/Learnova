@@ -67,7 +67,7 @@ interface TeacherLayoutProps {
   breadcrumbs?: BreadcrumbItem[];
   toasts: ToastMessage[];
   onDismissToast: (id: string) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const TeacherLayout: React.FC<TeacherLayoutProps> = ({

@@ -1410,6 +1410,8 @@ export default function App() {
             courses={courses}
             topics={topics}
             lessons={lessons}
+            enrollments={enrollments}
+            currentUser={currentUserAccount}
             onNavigate={handlePublicNavigate}
             onEnterPortal={() => {
               if (currentUserAccount) {
@@ -1432,10 +1434,16 @@ export default function App() {
             courses={courses}
             topics={topics}
             lessons={lessons}
+            enrollments={enrollments}
+            currentUser={currentUserAccount}
             onSelectCourse={(courseId) => handlePublicNavigate('course_details', { courseId })}
             onEnrollCourse={(courseId) => {
               handleEnrollCourse(courseId);
               setPortalMode('student');
+            }}
+            onContinueLearning={(courseId) => {
+              setPortalMode('student');
+              handleStudentNavigate('course_map', { courseId });
             }}
             onNavigate={handlePublicNavigate}
           />
@@ -1448,9 +1456,14 @@ export default function App() {
             topics={topics}
             lessons={lessons}
             resources={resources}
-            onEnroll={(courseId) => {
-              handleEnrollCourse(courseId);
+            enrollments={enrollments}
+            currentUser={currentUserAccount}
+            onEnroll={async (courseId) => {
+              await handleEnrollCourse(courseId);
+            }}
+            onContinueLearning={(courseId) => {
               setPortalMode('student');
+              handleStudentNavigate('course_map', { courseId });
             }}
             onNavigate={handlePublicNavigate}
           />

@@ -12,15 +12,24 @@ import {
   User,
   GraduationCap,
 } from 'lucide-react';
-import { Course, Topic, Lesson } from '../../types';
+import { Course, Topic, Lesson, Enrollment, UserAccount } from '../../types';
+import { UserResponse } from '../../services/api/authApi';
 import { PublicNavigationPage } from '../../services/routerService';
+
+export type ExplorerSessionUser =
+  | UserResponse
+  | UserAccount
+  | { name?: string; full_name?: string; email: string; role: string; [key: string]: any };
 
 interface CoursesExplorerPageProps {
   courses: Course[];
   topics: Topic[];
   lessons: Lesson[];
+  enrollments?: Enrollment[];
+  currentUser?: ExplorerSessionUser | null;
   onSelectCourse: (courseId: string) => void;
   onEnrollCourse?: (courseId: string) => void;
+  onContinueLearning?: (courseId: string) => void;
   onNavigate: (page: PublicNavigationPage, params?: Record<string, string>) => void;
 }
 
@@ -28,8 +37,11 @@ export const CoursesExplorerPage: React.FC<CoursesExplorerPageProps> = ({
   courses,
   topics,
   lessons,
+  enrollments = [],
+  currentUser,
   onSelectCourse,
   onEnrollCourse,
+  onContinueLearning,
   onNavigate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -222,6 +234,8 @@ export const CoursesExplorerPage: React.FC<CoursesExplorerPageProps> = ({
                   )
                 : 80;
 
+            const isEnrolled = enrollments.some((e) => e.courseId === course.id);
+
             return (
               <div
                 key={course.id}
@@ -232,9 +246,15 @@ export const CoursesExplorerPage: React.FC<CoursesExplorerPageProps> = ({
                     <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/50">
                       {course.id.replace('course-', '').toUpperCase()}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                      {course.creatorDepartment}
-                    </span>
+                    {isEnrolled ? (
+                      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-800/50">
+                        Enrolled
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        {course.creatorDepartment}
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-snug">

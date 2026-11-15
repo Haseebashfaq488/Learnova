@@ -14,9 +14,17 @@ import {
   GraduationCap,
   Sparkles,
   ArrowRight,
+  CheckCircle,
+  BarChart3,
 } from 'lucide-react';
-import { Course, Topic, Lesson, LearningResource } from '../../types';
+import { Course, Topic, Lesson, LearningResource, Enrollment, UserAccount } from '../../types';
+import { UserResponse } from '../../services/api/authApi';
 import { PublicNavigationPage } from '../../services/routerService';
+
+export type SessionUser =
+  | UserResponse
+  | UserAccount
+  | { name?: string; full_name?: string; email: string; role: string; [key: string]: any };
 
 interface CourseDetailPageProps {
   courseId: string;
@@ -24,7 +32,10 @@ interface CourseDetailPageProps {
   topics: Topic[];
   lessons: Lesson[];
   resources: LearningResource[];
-  onEnroll: (courseId: string) => void;
+  enrollments?: Enrollment[];
+  currentUser?: SessionUser | null;
+  onEnroll: (courseId: string) => Promise<void> | void;
+  onContinueLearning?: (courseId: string) => void;
   onNavigate: (page: PublicNavigationPage, params?: Record<string, string>) => void;
 }
 
@@ -34,9 +45,14 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
   topics,
   lessons,
   resources,
+  enrollments = [],
+  currentUser,
   onEnroll,
+  onContinueLearning,
   onNavigate,
 }) => {
+  const [isEnrolling, setIsEnrolling] = useState(false);
+
   const course = courses.find((c) => c.id === courseId) || courses[0];
   const courseTopics = topics.filter((t) => t.courseId === course?.id);
   const courseLessons = lessons.filter((l) => l.courseId === course?.id);
@@ -45,6 +61,18 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(
     courseTopics[0]?.id || null
   );
+
+  const userName = currentUser
+    ? ('full_name' in currentUser && (currentUser as any).full_name
+        ? (currentUser as any).full_name
+        : 'name' in currentUser && (currentUser as any).name
+        ? (currentUser as any).name
+        : currentUser.email)
+    : '';
+
+  const isEnrolled = enrollments.some((e) => e.courseId === course?.id);
+  const enrollment = enrollments.find((e) => e.courseId === course?.id);
+  const progressPercent = enrollment?.progressPercent ?? 0;
 
   if (!course) {
     return (
@@ -65,22 +93,53 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
     setExpandedTopicId((prev) => (prev === tId ? null : tId));
   };
 
+  const handleEnrollClick = async () => {
+    if (isEnrolled || isEnrolling) return;
+    setIsEnrolling(true);
+    try {
+      await onEnroll(course.id);
+    } catch (err) {
+      console.error('Enrollment error:', err);
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
+  const handleContinueClick = () => {
+    if (onContinueLearning) {
+      onContinueLearning(course.id);
+    } else {
+      onNavigate('courses');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
       {/* Back button & Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-        <button
-          type="button"
-          onClick={() => onNavigate('courses')}
-          className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Curriculum Catalog</span>
-        </button>
-        <span>/</span>
-        <span className="font-mono text-gray-700 dark:text-gray-300">
-          {course.id.replace('course-', '').toUpperCase()}
-        </span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <button
+            type="button"
+            onClick={() => onNavigate('courses')}
+            className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Curriculum Catalog</span>
+          </button>
+          <span>/</span>
+          <span className="font-mono text-gray-700 dark:text-gray-300">
+            {course.id.replace('course-', '').toUpperCase()}
+          </span>
+        </div>
+
+        {/* Live Session Status Pill */}
+        {currentUser && (
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{`Session: ${userName}`}</span>
+            <span className="text-gray-400">({currentUser.role})</span>
+          </div>
+        )}
       </div>
 
       {/* Course Hero Banner */}
@@ -95,10 +154,17 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
                 {course.creatorDepartment}
               </span>
               <span className="text-gray-300 dark:text-gray-700">·</span>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Published &amp; Authoritative
-              </span>
+              {isEnrolled ? (
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/60">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Already Enrolled ({progressPercent}% Mastered)
+                </span>
+              ) : (
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Published &amp; Authoritative
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-gray-900 dark:text-white leading-tight">
@@ -130,8 +196,8 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
             </div>
           </div>
 
-          {/* Instructor & Action Card */}
-          <div className="lg:col-span-4 p-5 rounded-2xl bg-gray-50 dark:bg-[#171E2D] border border-gray-200/70 dark:border-gray-800 space-y-5">
+          {/* Instructor & Session Enrollment Action Card */}
+          <div className="lg:col-span-4 p-6 rounded-2xl bg-gray-50 dark:bg-[#171E2D] border border-gray-200/70 dark:border-gray-800 space-y-5">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 block mb-2">
                 Faculty Director
@@ -154,19 +220,77 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
               </div>
             </div>
 
+            {/* Enrollment Status Indicator */}
+            <div className="p-3.5 rounded-xl bg-white dark:bg-[#121724] border border-gray-200/60 dark:border-gray-800 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500 dark:text-gray-400 font-medium">Session Status</span>
+                {isEnrolled ? (
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Already Enrolled
+                  </span>
+                ) : (
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                    Available to Enroll
+                  </span>
+                )}
+              </div>
+
+              {isEnrolled && (
+                <div className="space-y-1.5 pt-1 border-t border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-gray-500 dark:text-gray-400">Student Progress</span>
+                    <span className="font-mono font-bold text-gray-900 dark:text-white">
+                      {progressPercent}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.max(5, progressPercent)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Primary Action Button Connected to Database Session */}
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700/60 space-y-3">
-              <button
-                type="button"
-                onClick={() => onEnroll(course.id)}
-                className="w-full group flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-xs font-bold shadow-md shadow-indigo-600/20 active:scale-95 transition-all cursor-pointer"
-              >
-                <GraduationCap className="w-4 h-4" />
-                <span>Enroll in Course &amp; Start Learning</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </button>
+              {isEnrolled ? (
+                <button
+                  type="button"
+                  onClick={handleContinueClick}
+                  className="w-full group flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Continue Learning →</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleEnrollClick}
+                  disabled={isEnrolling}
+                  className="w-full group flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-xs font-bold shadow-md shadow-indigo-600/20 active:scale-95 transition-all cursor-pointer disabled:opacity-70"
+                >
+                  {isEnrolling ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Connecting Database...</span>
+                    </>
+                  ) : (
+                    <>
+                      <GraduationCap className="w-4 h-4" />
+                      <span>Enroll in Course &amp; Start Learning</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </>
+                  )}
+                </button>
+              )}
 
               <p className="text-[11px] text-center text-gray-400 dark:text-gray-500">
-                Includes diagnostic exam, adaptive practice sessions &amp; final certification.
+                {isEnrolled
+                  ? 'Your progress is synchronized with the live PostgreSQL 17 database.'
+                  : 'Includes diagnostic exam, adaptive practice sessions & final certification.'}
               </p>
             </div>
           </div>

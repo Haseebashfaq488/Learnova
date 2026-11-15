@@ -108,6 +108,7 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
       assert.ok(html.includes('Canonical Academic Curriculum'), 'Must contain courses carousel section');
       assert.ok(html.includes('SSD-08 Faculty Quarantine Protocol'), 'Must contain AI quarantine section');
       assert.ok(html.includes('Dr. Elena Rostova'), 'Must feature real faculty Dean');
+      assert.ok(html.includes('Three.js 3D Knowledge Network'), 'Must feature Three.js 3D network badge');
     });
 
     it('CourseCarousel renders smooth navigation and canonical course cards', () => {
@@ -124,6 +125,9 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
       assert.ok(html.includes('Introduction to Computer Science &amp; Python') || html.includes('Introduction to Computer Science & Python'), 'Must include CS101');
       assert.ok(html.includes('Data Structures and Algorithm Analysis'), 'Must include CS201');
       assert.ok(html.includes('Inspect Course Syllabus'), 'Must have syllabus CTA button');
+      assert.ok(html.includes('lg:w-1/3'), 'Must format into 3-cards per row grid on desktop');
+      assert.ok(html.includes('Topics'), 'Must display topics visual pill');
+      assert.ok(html.includes('BKT Goal'), 'Must display BKT goal visual pill');
     });
 
     it('BKTSimulator displays initial 20% prior probability and 80% threshold', () => {
@@ -186,6 +190,52 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
       assert.ok(html.includes('Enroll in Course &amp; Start Learning') || html.includes('Enroll in Course & Start Learning'), 'CTA check');
       assert.ok(html.includes('Bayesian Knowledge Tracing (BKT) Criteria'), 'BKT rubric check');
       assert.ok(html.includes('Diagnostic Entrance Exam'), 'Assessment sequence check');
+    });
+
+    it('CourseDetailPage reflects enrolled student session with "Already Enrolled" and "Continue Learning"', () => {
+      const mockEnrollments = [
+        {
+          id: 'enr-101',
+          studentId: 'student-101',
+          courseId: 'course-cs101',
+          status: 'active' as const,
+          progressPercent: 42,
+          enrolledAt: '2026-10-01T00:00:00Z',
+        },
+      ];
+
+      const mockStudentUser = {
+        id: 'student-101',
+        email: 'alex.rivera@learnova.edu',
+        full_name: 'Alex Rivera',
+        name: 'Alex Rivera',
+        role: 'student' as const,
+        is_active: true,
+        isActive: true,
+        created_at: '2026-09-01T00:00:00Z',
+        createdAt: '2026-09-01T00:00:00Z',
+        updatedAt: '2026-10-20T00:00:00Z',
+      };
+
+      const html = renderToString(
+        React.createElement(CourseDetailPage, {
+          courseId: 'course-cs101',
+          courses,
+          topics,
+          lessons,
+          resources,
+          enrollments: mockEnrollments,
+          currentUser: mockStudentUser,
+          onEnroll: () => {},
+          onContinueLearning: () => {},
+          onNavigate: () => {},
+        })
+      );
+
+      assert.ok(html.includes('Already Enrolled'), 'Must display Already Enrolled status');
+      assert.ok(html.includes('Continue Learning'), 'Must provide Continue Learning action');
+      assert.ok(html.includes('42%'), 'Must reflect active 42% progress percent');
+      assert.ok(html.includes('Alex Rivera') && html.includes('Session'), 'Must identify active student session');
     });
   });
 
