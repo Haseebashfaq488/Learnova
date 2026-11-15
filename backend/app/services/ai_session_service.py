@@ -308,17 +308,50 @@ class AISessionService:
                 )
             else:
                 lesson_title = session.context_snapshot.get("lesson_title", "Lesson")
-                if req.mode == "analogy":
+                topic_title = session.context_snapshot.get("topic_title", "Topic")
+                if req.mode == "diagram":
                     response_text = (
-                        f"### Real-World Analogy: {lesson_title}\n\n"
-                        f"Think of **{lesson_title}** like a modern shipping distribution hub. "
+                        f"### 🗺️ Visual Architecture Diagram: {lesson_title}\n\n"
+                        "Below is the architectural flow illustrating state transitions and execution flow in this unit:\n\n"
+                        "```mermaid\n"
+                        "flowchart TD\n"
+                        f'    A["Inbound Data State"] --> B["{lesson_title} Contract Check"]\n'
+                        '    B --> C{"Preconditions Valid?"}\n'
+                        f'    C -->|"Yes"| D["Core Module: {topic_title}"]\n'
+                        '    C -->|"No"| E["Fault Quarantine"]\n'
+                        '    D --> F["Deterministic Target State"]\n'
+                        "```\n\n"
+                        "#### Architectural Flow:\n"
+                        f"- **Contract Check:** Strict verification of prerequisite bounds for {lesson_title}.\n"
+                        "- **Core Module:** Side-effect-free execution and state transformation.\n"
+                        "- **Target State:** Output safely bound and ready for downstream components."
+                    )
+                elif req.mode == "analogy":
+                    response_text = (
+                        f"### 💡 Real-World Analogy: {lesson_title}\n\n"
+                        f"Think of **{lesson_title}** like an **automated shipping distribution hub**:\n\n"
+                        "```mermaid\n"
+                        "flowchart LR\n"
+                        '    A["Incoming Packages"] --> B["Barcode Scanner"]\n'
+                        '    B --> C["Sorting Belts"]\n'
+                        '    C --> D["Delivery Fleet"]\n'
+                        "```\n\n"
                         "Incoming packages (data inputs) are inspected against standard barcodes (prerequisites). "
                         "Once verified, each item is sorted into designated conveyor belts (registers) without collisions, "
                         "ensuring every delivery arrives at the exact right address in deterministic order."
                     )
                 elif req.mode == "example":
                     response_text = (
-                        f"### Worked Example: {lesson_title}\n\n"
+                        f"### ⚙️ Worked Example: {lesson_title}\n\n"
+                        "```mermaid\n"
+                        "sequenceDiagram\n"
+                        '    participant Client as Application Logic\n'
+                        f'    participant Unit as {lesson_title} Pipeline\n'
+                        '    Client->>Unit: process_unit(items)\n'
+                        '    Note over Unit: Validate non-empty payload\n'
+                        '    Unit->>Unit: Compute deterministic state\n'
+                        '    Unit-->>Client: Return immutable result dict\n'
+                        "```\n\n"
                         f"Here is a concrete step-by-step implementation demonstrating **{lesson_title}**:\n\n"
                         "```python\n"
                         "# Step 1: Initialize structured inputs\n"
@@ -335,9 +368,16 @@ class AISessionService:
                     )
                 else:
                     response_text = (
-                        f"### Key Concepts: {lesson_title}\n\n"
-                        f"In this unit on **{lesson_title}**, we study how structured invariants ensure system reliability. "
-                        f"When working with this topic, remember:\n\n"
+                        f"### 🎯 5-Second Mental Model: {lesson_title}\n\n"
+                        f"In this unit on **{lesson_title}**, we study how structured invariants ensure system reliability.\n\n"
+                        "### 🗺️ Visual Architecture Diagram\n\n"
+                        "```mermaid\n"
+                        "flowchart TD\n"
+                        f'    A["Incoming State"] --> B["{lesson_title} Invariant Validation"]\n'
+                        f'    B --> C["Isolated Processing Scope"]\n'
+                        '    C --> D["Deterministic Return"]\n'
+                        "```\n\n"
+                        "#### Core Takeaways to Remember:\n"
                         "- **Predictability:** Consistent data structures prevent runtime errors.\n"
                         "- **Isolation:** Modules operate independently without polluting outer scopes.\n"
                         "- **Verification:** Always validate inputs before committing state mutations.\n\n"

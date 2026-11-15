@@ -9,7 +9,7 @@ export interface AISimplifyLessonRequest {
   topicTitle?: string;
   courseTitle?: string;
   lessonContent?: string;
-  mode: 'simplify' | 'analogy' | 'example' | 'custom';
+  mode: 'simplify' | 'analogy' | 'example' | 'diagram' | 'custom';
   customPrompt?: string;
   lessonId?: string;
 }
@@ -113,7 +113,7 @@ export interface AISessionMessageItem {
 
 export interface AISendSessionMessageRequest {
   content: string;
-  mode?: 'simplify' | 'analogy' | 'example' | 'custom' | 'refine_questions';
+  mode?: 'simplify' | 'analogy' | 'example' | 'diagram' | 'custom' | 'refine_questions';
   attachments?: AIAttachmentItem[];
 }
 

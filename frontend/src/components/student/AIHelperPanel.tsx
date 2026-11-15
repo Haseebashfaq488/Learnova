@@ -15,13 +15,17 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Maximize2,
+  Eye,
 } from 'lucide-react';
 import { aiApi, AISessionMessageItem, AIAttachmentItem } from '../../services/api/aiApi';
 import { LearningResource } from '../../types';
+import { RichMarkdownRenderer } from '../common/RichMarkdownRenderer';
 
 interface AIHelperPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenFullStudio?: () => void;
   lessonTitle: string;
   topicTitle: string;
   courseTitle: string;
@@ -35,6 +39,7 @@ interface AIHelperPanelProps {
 export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
   isOpen,
   onClose,
+  onOpenFullStudio,
   lessonTitle,
   topicTitle,
   courseTitle,
@@ -128,7 +133,7 @@ export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
 
   const handleSendMessage = async (
     text: string,
-    mode: 'simplify' | 'analogy' | 'example' | 'custom' = 'custom'
+    mode: 'simplify' | 'analogy' | 'example' | 'diagram' | 'custom' = 'custom'
   ) => {
     if (!text.trim() || isLoading) return;
 
@@ -188,9 +193,11 @@ export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
     }
   };
 
-  const handleQuickAction = (mode: 'simplify' | 'analogy' | 'example') => {
+  const handleQuickAction = (mode: 'simplify' | 'analogy' | 'example' | 'diagram') => {
     if (mode === 'simplify') {
       handleSendMessage(`Please simplify the core concepts in "${lessonTitle}" into plain, intuitive language.`, 'simplify');
+    } else if (mode === 'diagram') {
+      handleSendMessage(`Generate a visual architecture diagram (Mermaid.js flowchart or sequence diagram) explaining the flow and invariants of "${lessonTitle}".`, 'diagram');
     } else if (mode === 'analogy') {
       handleSendMessage(`Can you give me a memorable real-world analogy to understand "${lessonTitle}"?`, 'analogy');
     } else if (mode === 'example') {
@@ -200,12 +207,19 @@ export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-xs flex justify-end"
+      className="fixed inset-0 z-50 overflow-hidden bg-transparent pointer-events-none flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-label="AI Lesson Helper"
     >
-      <div className="w-full max-w-lg bg-white dark:bg-[#181C24] h-full shadow-2xl flex flex-col border-l border-[#D9DEE7] dark:border-[#2D3545] animate-in slide-in-from-right duration-200">
+      {/* Invisible non-blocking click-away layer (no black overlay or dark tint) */}
+      <div
+        className="absolute inset-0 bg-transparent pointer-events-auto"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <div className="pointer-events-auto relative w-full max-w-lg bg-white dark:bg-[#181C24] h-full shadow-2xl flex flex-col border-l border-[#D9DEE7] dark:border-[#2D3545] animate-in slide-in-from-right duration-200">
         {/* Panel Header */}
         <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-[#1C212B]">
           <div className="flex items-center gap-2.5">
@@ -221,26 +235,42 @@ export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
                   Persistent
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[260px]">
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[240px]">
                 {lessonTitle} • {courseTitle}
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-            aria-label="Close AI helper"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {onOpenFullStudio && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenFullStudio();
+                }}
+                className="p-1.5 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                title="Expand to Full-Page Simplification Studio"
+                aria-label="Expand to Full Simplification Studio"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              aria-label="Close AI helper"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Instant Action Chips Bar */}
         <div className="px-4 py-2.5 bg-gray-50/70 dark:bg-[#151921] border-b border-gray-200 dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider shrink-0">
-              Quick Actions:
+              Actions:
             </span>
             <button
               type="button"
@@ -250,6 +280,15 @@ export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
             >
               <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
               <span>Simplify</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickAction('diagram')}
+              disabled={isLoading || isInitializing}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1C212B] text-xs font-semibold text-gray-700 dark:text-gray-300 hover:border-purple-500 dark:hover:border-purple-400 hover:text-purple-600 transition shrink-0 cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-purple-500" />
+              <span>Visual Diagram</span>
             </button>
             <button
               type="button"
@@ -329,7 +368,11 @@ export const AIHelperPanel: React.FC<AIHelperPanelProps> = ({
                   </div>
                 )}
 
-                <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
+                {msg.sender === 'user' ? (
+                  <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
+                ) : (
+                  <RichMarkdownRenderer content={msg.content} />
+                )}
 
                 {/* Footer metadata */}
                 <div

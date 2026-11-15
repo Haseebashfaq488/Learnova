@@ -73,11 +73,21 @@ export const ContactPage: React.FC<ContactPageProps> = ({
     setIsSubmitting(true);
     try {
       storage.logAuditEvent({
-        actorId: effectiveStudent?.id || 'guest',
+        actorId: effectiveStudent?.id || 'guest-inquiry',
         actorName: formData.name,
-        action: 'contact_transmission',
-        details: `[${formData.category.toUpperCase()}] ${formData.subject || 'Direct Inquiry'}: ${formData.message}`,
-        status: 'SUCCESS',
+        actorEmail: formData.email,
+        actorRole: (effectiveStudent?.role as any) || 'student',
+        action: 'CONTACT_SUBMITTED',
+        targetType: 'system',
+        targetId: 'contact-form',
+        targetName: 'Public Inquiry Ledger',
+        outcome: 'success',
+        reason: formData.category,
+        details: {
+          category: formData.category,
+          subject: formData.subject || 'Direct Inquiry',
+          message: formData.message,
+        },
       });
     } catch (err) {
       console.warn('Audit notice:', err);

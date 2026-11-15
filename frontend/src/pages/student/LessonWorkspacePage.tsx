@@ -18,6 +18,7 @@ import {
   Check,
   BookOpen,
   Download,
+  Maximize2,
 } from 'lucide-react';
 import { StudentNavigationPage } from '../../components/student/StudentLayout';
 import { AIHelperPanel } from '../../components/student/AIHelperPanel';
@@ -93,14 +94,30 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
           <span>Back to Course Learning Map</span>
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => setIsAIOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition shadow-2xs cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Simplify with AI</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              onNavigate('simplification_studio', {
+                courseId: course.id,
+                topicId: topic.id,
+                lessonId: lesson.id,
+              })
+            }
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold text-xs transition shadow-2xs cursor-pointer"
+            title="Open dedicated ChatGPT-grade Simplification Studio"
+          >
+            <Maximize2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>Full Studio</span>
           </button>
 
           <button
@@ -298,10 +315,18 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
         )}
       </div>
 
-      {/* Attached AI Helper Drawer */}
+      {/* Attached AI Helper Drawer (with glitch-free transparent backdrop) */}
       <AIHelperPanel
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
+        onOpenFullStudio={() => {
+          setIsAIOpen(false);
+          onNavigate('simplification_studio', {
+            courseId: course.id,
+            topicId: topic.id,
+            lessonId: lesson.id,
+          });
+        }}
         lessonId={lesson?.id || lessonId}
         lessonTitle={lesson?.title || 'Current Lesson'}
         topicTitle={topic?.title || 'Topic'}

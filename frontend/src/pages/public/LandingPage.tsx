@@ -107,18 +107,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     if (leaderboard && leaderboard.length > 0) {
       return leaderboard.slice(0, 3).map((e, idx) => ({
         rank: e.rank || idx + 1,
-        name: e.name || 'Scholar',
+        name: e.displayName || 'Scholar',
         xp: e.xp || 0,
-        topicsMastered: e.masteredTopicIds?.length || Math.floor((e.xp || 0) / 200),
+        topicsMastered: e.earnedBadgesCount || Math.floor((e.xp || 0) / 200),
       }));
     }
     const local = storage.getLeaderboard();
     if (local && local.length > 0) {
       return local.slice(0, 3).map((e, idx) => ({
         rank: e.rank || idx + 1,
-        name: e.name || 'Scholar',
+        name: e.displayName || 'Scholar',
         xp: e.xp || 0,
-        topicsMastered: e.masteredTopicIds?.length || Math.floor((e.xp || 0) / 200),
+        topicsMastered: e.earnedBadgesCount || Math.floor((e.xp || 0) / 200),
       }));
     }
     return [

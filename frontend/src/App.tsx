@@ -93,6 +93,7 @@ import { CourseDetailsPage } from './pages/student/CourseDetailsPage';
 import { MyLearningPage } from './pages/student/MyLearningPage';
 import { CourseLearningMapPage } from './pages/student/CourseLearningMapPage';
 import { LessonWorkspacePage } from './pages/student/LessonWorkspacePage';
+import { SimplificationStudioPage } from './pages/student/SimplificationStudioPage';
 import { DiagnosticIntroPage } from './pages/student/DiagnosticIntroPage';
 import { DiagnosticPlayerPage } from './pages/student/DiagnosticPlayerPage';
 import { AdaptivePracticePlayerPage } from './pages/student/AdaptivePracticePlayerPage';
@@ -1373,6 +1374,18 @@ export default function App() {
       const lsn = lessons.find((l) => l.id === studentNavParams.lessonId);
       list.push({ label: crs?.title || 'Course', page: 'course_map', params: { courseId: crs?.id || '' } });
       list.push({ label: lsn?.title || 'Lesson Workspace' });
+    } else if (studentPage === 'simplification_studio') {
+      const crs = courses.find((c) => c.id === studentNavParams.courseId);
+      const lsn = lessons.find((l) => l.id === studentNavParams.lessonId);
+      list.push({ label: crs?.title || 'Course', page: 'course_map', params: { courseId: crs?.id || '' } });
+      if (lsn) {
+        list.push({
+          label: lsn.title,
+          page: 'lesson',
+          params: { courseId: crs?.id || '', topicId: studentNavParams.topicId || '', lessonId: lsn.id },
+        });
+      }
+      list.push({ label: 'AI Simplification Studio' });
     } else if (studentPage === 'diagnostic_intro') {
       list.push({ label: 'Course Learning Map', page: 'course_map' });
       list.push({ label: 'Diagnostic Assessment Introduction' });
@@ -1651,6 +1664,20 @@ export default function App() {
             resources={resources}
             isCompleted={completions.some((c) => c.lessonId === (studentNavParams.lessonId || lessons[0]?.id))}
             onMarkComplete={handleMarkLessonComplete}
+            onNavigate={handleStudentNavigate}
+          />
+        )}
+
+        {/* STU-08b: Dedicated AI Simplification Studio */}
+        {studentPage === 'simplification_studio' && (
+          <SimplificationStudioPage
+            courseId={studentNavParams.courseId || courses[0]?.id || ''}
+            topicId={studentNavParams.topicId || topics[0]?.id || ''}
+            lessonId={studentNavParams.lessonId || lessons[0]?.id || ''}
+            courses={courses}
+            topics={topics}
+            lessons={lessons}
+            resources={resources}
             onNavigate={handleStudentNavigate}
           />
         )}

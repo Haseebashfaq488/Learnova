@@ -10,7 +10,7 @@ class AISimplifyLessonRequest(BaseModel):
     """Request schema for student/teacher lesson tutoring and explanation."""
 
     lesson_id: uuid.UUID = Field(..., description="Required persisted lesson ID")
-    mode: str = Field(default="simplify", pattern="^(simplify|analogy|example|custom)$")
+    mode: str = Field(default="simplify", pattern="^(simplify|analogy|example|diagram|custom)$")
     custom_prompt: Optional[str] = Field(default=None, max_length=500)
     course_title: Optional[str] = None
     topic_title: Optional[str] = None
@@ -173,6 +173,6 @@ class AISendSessionMessageRequest(BaseModel):
     """Student or Teacher sending a message / follow-up into a persistent session."""
 
     content: str = Field(..., min_length=1, max_length=5000)
-    mode: Optional[str] = Field(default="custom", pattern="^(simplify|analogy|example|custom|refine_questions)$")
+    mode: Optional[str] = Field(default="custom", pattern="^(simplify|analogy|example|diagram|custom|refine_questions)$")
     attachments: Optional[List[AIAttachmentItem]] = Field(default_factory=list)
 

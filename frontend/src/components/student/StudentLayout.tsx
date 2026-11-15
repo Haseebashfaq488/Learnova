@@ -37,6 +37,7 @@ export type StudentNavigationPage =
   | 'my_learning'
   | 'course_map'
   | 'lesson'
+  | 'simplification_studio'
   | 'diagnostic_intro'
   | 'diagnostic_player'
   | 'practice_player'

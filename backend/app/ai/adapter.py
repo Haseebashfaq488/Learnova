@@ -571,25 +571,57 @@ def _normalize_candidates_helper(
 
 
 def _deterministic_simplify_helper(req: AISimplifyRequest) -> AISimplifyResult:
-    """Deterministic academic tutor fallback mirroring proven pedagogical templates."""
+    """Deterministic academic tutor fallback mirroring proven pedagogical templates with Mermaid diagrams."""
     lesson_title = req.lesson_title or "Lesson"
     topic_title = req.topic_title or "Topic"
     course_title = req.course_title or "Course"
     custom_prompt = (req.custom_prompt or "").strip()
 
-    if req.mode == "analogy":
+    if req.mode == "diagram":
         explanation = (
-            f"### Real-World Analogy for {lesson_title}\n\n"
+            f"### 🗺️ Visual Architecture Diagram: {lesson_title}\n\n"
+            "Below is the architectural flow illustrating how data and state transitions operate in this unit:\n\n"
+            "```mermaid\n"
+            "flowchart TD\n"
+            f'    A["Inbound Data / Prerequisite Context"] --> B["{lesson_title} Validation Gate"]\n'
+            '    B --> C{"Input Invariants Satisfied?"}\n'
+            f'    C -->|"Yes (Valid)"| D["Core Transformation Engine: {topic_title}"]\n'
+            '    C -->|"No (Invalid)"| E["Safe Error Quarantine / Fallback"]\n'
+            f'    D --> F["Deterministic Output State in {course_title}"]\n'
+            "```\n\n"
+            "#### Architectural Pipeline Stages:\n"
+            f"- **Validation Gate:** Ensures incoming parameters strictly match the contract for {lesson_title}.\n"
+            "- **Transformation Engine:** Executes pure, side-effect-free calculations.\n"
+            "- **Deterministic Output:** Guaranteed state transition delivered to downstream consumers."
+        )
+    elif req.mode == "analogy":
+        explanation = (
+            f"### 💡 Real-World Analogy for {lesson_title}\n\n"
             f"Think of **{lesson_title}** like an **organized postal sorting station**:\n\n"
+            "```mermaid\n"
+            "flowchart LR\n"
+            '    A["Incoming Mail (Inputs)"] --> B["Conveyor Scanner (Validation)"]\n'
+            '    B --> C["Automated Sorter (Processing)"]\n'
+            '    C --> D["Delivery Truck (Output)"]\n'
+            "```\n\n"
             f"- **Data & Inputs:** Letters arriving with specific recipient addresses (variables and inputs).\n"
             f"- **Operations & Rules:** The sorting conveyor belts that route mail based on size, priority, and destination (control logic and functions).\n"
             f"- **Outputs & State:** Mail bags loaded onto trucks for delivery (returns and modified state).\n\n"
-            f"Just like a mail center ensures no letter is lost by applying consistent routing rules, **{lesson_title}** ensures deterministic execution in {course_title}."
+            f"> *Key Insight:* Just like a mail center ensures no letter is lost by applying consistent routing rules, **{lesson_title}** ensures deterministic execution in {course_title}."
         )
     elif req.mode == "example":
         explanation = (
-            f"### Step-by-Step Worked Example: {lesson_title}\n\n"
-            f"Here is a concrete walk-through illustrating how **{lesson_title}** works in practice:\n\n"
+            f"### ⚙️ Step-by-Step Worked Example: {lesson_title}\n\n"
+            "```mermaid\n"
+            "sequenceDiagram\n"
+            '    participant Caller as Application Context\n'
+            f'    participant Unit as {lesson_title} Worker\n'
+            '    Caller->>Unit: process_unit(items)\n'
+            '    Note over Unit: Validate non-empty payload\n'
+            '    Unit->>Unit: Compute deterministic state\n'
+            '    Unit-->>Caller: Return immutable result dict\n'
+            "```\n\n"
+            "Here is a concrete walk-through illustrating how **{lesson_title}** works in practice:\n\n"
             "```python\n"
             f"# 1. Initialize state for {topic_title}\n"
             "def process_item(value: int) -> dict:\n"
@@ -611,8 +643,14 @@ def _deterministic_simplify_helper(req: AISimplifyRequest) -> AISimplifyResult:
         )
     elif req.mode == "custom" and custom_prompt:
         explanation = (
-            "### Contextual Clarification\n\n"
+            f"### 🎯 Contextual Clarification: {lesson_title}\n\n"
             f'Regarding your question: *"**{custom_prompt}**"*\n\n'
+            "```mermaid\n"
+            "flowchart TD\n"
+            f'    A["Student Inquiry: {custom_prompt[:35]}"] --> B["Curriculum Grounding: {topic_title}"]\n'
+            f'    B --> C["Core Invariant in {lesson_title}"]\n'
+            '    C --> D["Mastery Outcome"]\n'
+            "```\n\n"
             f"In **{lesson_title}** ({topic_title}), this concept connects directly to how operations are orchestrated in {course_title}:\n\n"
             "- **Core Principle:** Each module maintains its own local scope and passes data explicitly.\n"
             "- **Key Takeaway:** By keeping inputs predictable, you prevent unexpected side effects across your program.\n"
@@ -620,8 +658,15 @@ def _deterministic_simplify_helper(req: AISimplifyRequest) -> AISimplifyResult:
         )
     else:
         explanation = (
-            f"### Simplified Explanation: {lesson_title}\n\n"
+            f"### 🎯 5-Second Mental Model: {lesson_title}\n\n"
             f"**{lesson_title}** is a core building block in **{topic_title}** that helps organize and execute logic cleanly.\n\n"
+            "### 🗺️ Visual Architecture Diagram\n\n"
+            "```mermaid\n"
+            "flowchart TD\n"
+            f'    A["Input State"] --> B["{lesson_title} Invariant Check"]\n'
+            f'    B --> C["Deterministic Processor: {topic_title}"]\n'
+            '    C --> D["Validated Output State"]\n'
+            "```\n\n"
             "#### 3 Key Concepts to Remember:\n"
             "- **Modularity:** Breaking down complex tasks into manageable, testable steps.\n"
             "- **State Predictability:** Knowing exactly what data enters and what result exits.\n"
