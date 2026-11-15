@@ -20,6 +20,7 @@ import {
 
 import { StudentUser } from '../../types';
 import { UserResponse } from '../../services/api/authApi';
+import { storage } from '../../services/storageService';
 
 export interface ContactPageProps {
   currentStudent?: StudentUser | null;
@@ -70,10 +71,21 @@ export const ContactPage: React.FC<ContactPageProps> = ({
     if (!formData.name || !formData.email || !formData.message) return;
 
     setIsSubmitting(true);
+    try {
+      storage.logAuditEvent({
+        actorId: effectiveStudent?.id || 'guest',
+        actorName: formData.name,
+        action: 'contact_transmission',
+        details: `[${formData.category.toUpperCase()}] ${formData.subject || 'Direct Inquiry'}: ${formData.message}`,
+        status: 'SUCCESS',
+      });
+    } catch (err) {
+      console.warn('Audit notice:', err);
+    }
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
-    }, 600);
+    }, 450);
   };
 
   const faqs = [

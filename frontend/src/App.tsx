@@ -1473,6 +1473,7 @@ export default function App() {
       <LandingPage
         courses={courses}
         enrollments={enrollments}
+        leaderboard={leaderboard}
         currentStudent={studentUser}
         currentUser={currentUserAccount}
         navParams={publicNavParams}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Course, Enrollment, StudentUser } from '../../types';
+import { Course, Enrollment, StudentUser, LeaderboardEntry } from '../../types';
 import { UserResponse } from '../../services/api/authApi';
+import { storage } from '../../services/storageService';
+import { gamificationApi } from '../../services/api/gamificationApi';
 import {
   ArrowRight,
   BookOpen,
@@ -76,6 +78,7 @@ const FadeInSection: React.FC<{
 export interface LandingPageProps {
   courses: Course[];
   enrollments?: Enrollment[];
+  leaderboard?: LeaderboardEntry[];
   currentUser?: UserResponse | null;
   currentStudent?: StudentUser | null;
   navParams?: Record<string, string>;
@@ -91,6 +94,7 @@ export interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({
   courses,
   enrollments = [],
+  leaderboard,
   currentUser,
   currentStudent,
   navParams,
@@ -99,6 +103,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onSwitchToAdmin,
   onEnrollCourse,
 }) => {
+  const [topScholars, setTopScholars] = useState<Array<{ rank: number; name: string; xp: number; topicsMastered?: number }>>(() => {
+    if (leaderboard && leaderboard.length > 0) {
+      return leaderboard.slice(0, 3).map((e, idx) => ({
+        rank: e.rank || idx + 1,
+        name: e.name || 'Scholar',
+        xp: e.xp || 0,
+        topicsMastered: e.masteredTopicIds?.length || Math.floor((e.xp || 0) / 200),
+      }));
+    }
+    const local = storage.getLeaderboard();
+    if (local && local.length > 0) {
+      return local.slice(0, 3).map((e, idx) => ({
+        rank: e.rank || idx + 1,
+        name: e.name || 'Scholar',
+        xp: e.xp || 0,
+        topicsMastered: e.masteredTopicIds?.length || Math.floor((e.xp || 0) / 200),
+      }));
+    }
+    return [
+      { rank: 1, name: 'Sophia Lin', xp: 4850, topicsMastered: 24 },
+      { rank: 2, name: 'Marcus Vance', xp: 4210, topicsMastered: 21 },
+      { rank: 3, name: 'Elena Rostova', xp: 3980, topicsMastered: 19 },
+    ];
+  });
+
+  useEffect(() => {
+    gamificationApi.getLeaderboard(undefined, 3).then((res) => {
+      const list = res.entries || res.leaderboard || [];
+      if (list.length > 0) {
+        setTopScholars(
+          list.slice(0, 3).map((e, idx) => ({
+            rank: e.rank || idx + 1,
+            name: e.display_name || 'Scholar',
+            xp: e.xp || 0,
+            topicsMastered: e.earned_badges_count ? e.earned_badges_count * 4 : Math.floor((e.xp || 0) / 200),
+          }))
+        );
+      }
+    }).catch(() => {});
+  }, []);
   const effectiveStudent = currentStudent || (currentUser ? {
     id: currentUser.id,
     name: currentUser.full_name || currentUser.email,
@@ -887,47 +931,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 relative z-10">
-              <div
-                onClick={() => onNavigate('leaderboard')}
-                className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-amber-500/50 transition cursor-pointer flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-lg shrink-0">
-                  <Trophy className="w-6 h-6 text-amber-400" />
-                </div>
-                <div>
-                  <div className="text-[11px] font-mono text-amber-400">RANK #01</div>
-                  <div className="font-semibold text-white group-hover:text-amber-400 transition-colors">Sophia Lin</div>
-                  <div className="text-xs text-[#94A3B8]">4,850 XP • 24 Topics Mastered</div>
-                </div>
-              </div>
+              {topScholars.map((scholar, idx) => {
+                const rankColor = idx === 0
+                  ? 'text-amber-400 border-amber-500/30 bg-amber-500/20'
+                  : idx === 1
+                  ? 'text-slate-300 border-slate-400/30 bg-slate-400/20'
+                  : 'text-cyan-400 border-cyan-500/30 bg-cyan-500/20';
+                const hoverBorder = idx === 0
+                  ? 'hover:border-amber-500/50'
+                  : idx === 1
+                  ? 'hover:border-slate-400/50'
+                  : 'hover:border-cyan-500/50';
+                const rankText = idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-400' : 'text-cyan-400';
 
-              <div
-                onClick={() => onNavigate('leaderboard')}
-                className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-slate-400/50 transition cursor-pointer flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-slate-400/20 border border-slate-400/30 flex items-center justify-center text-slate-300 font-bold text-lg shrink-0">
-                  <Award className="w-6 h-6 text-slate-300" />
-                </div>
-                <div>
-                  <div className="text-[11px] font-mono text-slate-400">RANK #02</div>
-                  <div className="font-semibold text-white group-hover:text-slate-300 transition-colors">Marcus Vance</div>
-                  <div className="text-xs text-[#94A3B8]">4,210 XP • 21 Topics Mastered</div>
-                </div>
-              </div>
-
-              <div
-                onClick={() => onNavigate('leaderboard')}
-                className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/50 transition cursor-pointer flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg shrink-0">
-                  <Award className="w-6 h-6 text-cyan-400" />
-                </div>
-                <div>
-                  <div className="text-[11px] font-mono text-cyan-400">RANK #03</div>
-                  <div className="font-semibold text-white group-hover:text-cyan-300 transition-colors">Elena Rostova</div>
-                  <div className="text-xs text-[#94A3B8]">3,980 XP • 19 Topics Mastered</div>
-                </div>
-              </div>
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => onNavigate('leaderboard')}
+                    className={`p-5 rounded-2xl bg-white/[0.03] border border-white/10 ${hoverBorder} transition cursor-pointer flex items-center gap-4 group`}
+                  >
+                    <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center font-bold text-lg shrink-0 ${rankColor}`}>
+                      {idx === 0 ? <Trophy className="w-6 h-6 text-amber-400" /> : <Award className="w-6 h-6" />}
+                    </div>
+                    <div>
+                      <div className={`text-[11px] font-mono ${rankText}`}>
+                        {`RANK #${String(scholar.rank).padStart(2, '0')}`}
+                      </div>
+                      <div className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                        {scholar.name}
+                      </div>
+                      <div className="text-xs text-[#94A3B8]">
+                        {`${(scholar.xp || 0).toLocaleString()} XP • ${scholar.topicsMastered || 0} Topics Mastered`}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </FadeInSection>
