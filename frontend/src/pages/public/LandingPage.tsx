@@ -296,9 +296,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           onClick={() => selectStage(0)}
           className="cursor-pointer group flex items-center gap-3 shrink-0"
         >
-          <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.15)] group-hover:border-white/40 transition-colors">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <img
+            src="/learnova-logo.png"
+            alt="Learnova"
+            className="h-8 w-auto object-contain filter drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+          />
           <span className="font-sans text-sm sm:text-base font-bold tracking-[0.25em] uppercase text-white group-hover:text-cyan-300 transition-colors">
             Learnova
           </span>
@@ -611,7 +613,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Headline */}
-            <h1 className="font-sans text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.05] drop-shadow-[0_4px_30px_rgba(0,0,0,0.98)]">
+            <h1 className="font-sans text-[clamp(1.75rem,3.8vw,3.25rem)] font-extrabold tracking-tight text-white leading-[1.1] drop-shadow-[0_4px_30px_rgba(0,0,0,0.98)]">
               Revolutionize Your <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-cyan-300 drop-shadow-[0_0_35px_rgba(34,211,238,0.5)]">
                 Learning
@@ -719,7 +721,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </span>
             </div>
 
-            <h2 className="font-sans text-3xl sm:text-5xl md:text-6xl text-white font-extrabold leading-[1.08] tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
+            <h2 className="font-sans text-[clamp(1.5rem,3vw,2.5rem)] text-white font-extrabold leading-[1.15] tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
               Built for career <br />
               switchers, juniors, and <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-amber-300">

@@ -55,9 +55,11 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   return (
     <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-xl shadow-md mb-4">
-          L
-        </div>
+        <img
+          src="/learnova-logo.png"
+          alt="Learnova"
+          className="h-12 w-auto object-contain mx-auto mb-3"
+        />
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           Welcome back to Learnova
         </h1>

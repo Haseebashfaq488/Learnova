@@ -32,6 +32,14 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pageSize = 8;
 
+  const availableActions = useMemo(() => {
+    const set = new Set<string>();
+    auditEvents.forEach((ev) => {
+      if (ev.action) set.add(ev.action);
+    });
+    return Array.from(set).sort();
+  }, [auditEvents]);
+
   const filteredEvents = useMemo(() => {
     return filterAuditEvents(auditEvents, actionFilter, outcomeFilter, searchQuery);
   }, [auditEvents, actionFilter, outcomeFilter, searchQuery]);
@@ -114,13 +122,12 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
               aria-label="Filter by action"
               className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#12161F] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              <option value="all">All Action Types</option>
-              <option value="ROLE_CHANGE">Role Changes</option>
-              <option value="ACCOUNT_DEACTIVATED">Deactivations</option>
-              <option value="ACCOUNT_ACTIVATED">Reactivations</option>
-              <option value="ADMIN_LOGIN">Admin Sign-Ins</option>
-              <option value="PASSWORD_CHANGED">Password Changes</option>
-              <option value="PERMISSION_OVERRIDE_ATTEMPT">Permission Overrides</option>
+              <option value="all">All Action Types ({auditEvents.length})</option>
+              {availableActions.map((act) => (
+                <option key={act} value={act}>
+                  {act}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -137,8 +144,8 @@ export const SecurityAuditLogPage: React.FC<SecurityAuditLogPageProps> = ({ audi
             >
               <option value="all">All Outcomes</option>
               <option value="success">Success</option>
-              <option value="blocked">Blocked</option>
               <option value="failure">Failure</option>
+              <option value="denied">Denied / Blocked</option>
             </select>
           </div>
         </div>

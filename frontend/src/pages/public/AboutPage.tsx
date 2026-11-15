@@ -74,9 +74,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           onClick={() => onNavigate('landing')}
           className="cursor-pointer group flex items-center gap-3 shrink-0"
         >
-          <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.15)] group-hover:border-white/40 transition-colors">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <img
+            src="/learnova-logo.png"
+            alt="Learnova"
+            className="h-8 w-auto object-contain filter drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+          />
           <span className="font-sans text-sm sm:text-base font-bold tracking-[0.25em] uppercase text-white group-hover:text-cyan-300 transition-colors">
             Learnova
           </span>
@@ -258,14 +260,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           <span>LEARNOVA ACADEMIC COMPUTING & COGNITIVE LABS</span>
         </div>
 
-        <h1 className="font-sans text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-white leading-[1.08] w-full max-w-6xl">
+        <h1 className="font-sans text-[clamp(1.75rem,3.8vw,3.25rem)] font-bold tracking-tight text-white leading-[1.1] w-full max-w-6xl">
           Architecting the Future of <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-white">
             Adaptive Intelligence
           </span>
         </h1>
 
-        <p className="mt-8 text-base sm:text-xl lg:text-2xl text-white/70 font-normal leading-relaxed w-full max-w-5xl">
+        <p className="mt-8 text-base sm:text-lg lg:text-xl text-white/70 font-normal leading-relaxed w-full max-w-5xl">
           Learnova was founded to dismantle the rigid, one-size-fits-all model of modern education. By synthesizing <span className="text-white font-medium">Bayesian Knowledge Tracing</span> with <span className="text-white font-medium">Directed Acyclic Prerequisite Graphs</span>, we create personalized cognitive pathways that adapt to every student in real time.
         </p>
 
@@ -273,22 +275,22 @@ export const AboutPage: React.FC<AboutPageProps> = ({
         <div className="mt-14 grid grid-cols-2 lg:grid-cols-4 gap-6 p-8 sm:p-10 rounded-3xl bg-[#060813]/80 border border-white/10 backdrop-blur-xl w-full shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
           <div className="p-4 border-r border-white/5">
             <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Mastery Precision</span>
-            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">99.8%</div>
+            <div className="text-2xl sm:text-4xl font-bold text-white mt-2">99.8%</div>
             <p className="text-xs text-white/40 mt-1.5">BKT probabilistic certainty</p>
           </div>
           <div className="p-4 border-r border-white/5">
             <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Prerequisite Engine</span>
-            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">0 Cycles</div>
+            <div className="text-2xl sm:text-4xl font-bold text-white mt-2">0 Cycles</div>
             <p className="text-xs text-white/40 mt-1.5">Strict DAG topological order</p>
           </div>
           <div className="p-4 border-r border-white/5">
             <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Faculty Rigor</span>
-            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">100%</div>
+            <div className="text-2xl sm:text-4xl font-bold text-white mt-2">100%</div>
             <p className="text-xs text-white/40 mt-1.5">Audited university curriculum</p>
           </div>
           <div className="p-4">
             <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Active Learners</span>
-            <div className="text-3xl sm:text-5xl font-bold text-white mt-2">12,400+</div>
+            <div className="text-2xl sm:text-4xl font-bold text-white mt-2">12,400+</div>
             <p className="text-xs text-white/40 mt-1.5">Across 18 accredited domains</p>
           </div>
         </div>
@@ -300,7 +302,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
       <section className="relative py-24 px-6 sm:px-12 lg:px-20 xl:px-28 2xl:px-36 w-full z-10 border-t border-white/10">
         <div className="max-w-4xl mb-16">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-400">Our Foundation</span>
-          <h2 className="font-sans text-3xl sm:text-5xl lg:text-6xl font-bold text-white mt-2 tracking-tight">
+          <h2 className="font-sans text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white mt-2 tracking-tight">
             How Learnova Works
           </h2>
           <p className="mt-4 text-base sm:text-lg text-white/60 leading-relaxed">
@@ -366,7 +368,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center w-full">
           <div className="lg:col-span-7">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-400">Our Mission</span>
-            <h2 className="font-sans text-3xl sm:text-5xl lg:text-6xl font-bold text-white mt-2 tracking-tight">
+            <h2 className="font-sans text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white mt-2 tracking-tight">
               Empowering Students with Sovereign Mastery
             </h2>
             <p className="mt-6 text-base sm:text-lg text-white/70 leading-relaxed">

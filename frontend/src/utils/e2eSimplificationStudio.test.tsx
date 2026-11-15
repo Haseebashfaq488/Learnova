@@ -101,7 +101,7 @@ describe('AI Simplification Studio & Visual Diagram Suite (e2e-testing-patterns)
 
       // Verify the diagram container and type label are rendered
       assert.ok(html.includes('Flowchart'), 'Renderer should detect flowchart archetype label');
-      assert.ok(html.includes('Copy Source'), 'Renderer should include Copy Source action button');
+      assert.ok(html.includes('Copy'), 'Renderer should include Copy action button');
       assert.ok(html.includes('Visual Architecture Diagram'), 'Renderer should format h3 headings');
       assert.ok(html.includes('plain English explanation'), 'Renderer should render trailing paragraphs');
     });
@@ -238,7 +238,7 @@ describe('AI Simplification Studio & Visual Diagram Suite (e2e-testing-patterns)
   });
 
   describe('Journey 3: Dedicated Full-Page Simplification Studio (SimplificationStudioPage)', () => {
-    test('renders complete 2-column layout with syllabus assets, prompt presets and composer', () => {
+    test('renders complete full-width layout with attached lesson media and composer', () => {
       const html = renderToString(
         <ThemeProvider>
           <SimplificationStudioPage
@@ -260,28 +260,19 @@ describe('AI Simplification Studio & Visual Diagram Suite (e2e-testing-patterns)
       assert.ok(html.includes('Persistent Session'), 'Page should display persistent session badge');
 
       // Verify active lesson card
-      assert.ok(html.includes(mockLesson.title), 'Sidebar should display active lesson title');
-      assert.ok(html.includes('Memory Management'), 'Sidebar should display active topic title');
+      assert.ok(html.includes(mockLesson.title), 'Header banner should display active lesson title');
+      assert.ok(html.includes('Memory Management'), 'Header banner should display active topic title');
 
-      // Verify all 6 pedagogical prompt presets
-      assert.ok(html.includes('Visual Architecture Diagram'), 'Preset 1: Visual Architecture Diagram present');
-      assert.ok(html.includes('5-Second Mental Model'), 'Preset 2: 5-Second Mental Model present');
-      assert.ok(html.includes('Real-World Analogy'), 'Preset 3: Real-World Analogy present');
-      assert.ok(html.includes('Worked Code Walkthrough'), 'Preset 4: Worked Code Walkthrough present');
-      assert.ok(html.includes('Explain Like I'), 'Preset 5: Explain Like Im 5 present');
-      assert.ok(html.includes('Test My Understanding'), 'Preset 6: Test My Understanding present');
-
-      // Verify attached resources tray
-      assert.ok(html.includes('Attach Lesson Media'), 'Sidebar should include lesson media attachment tray');
-      assert.ok(html.includes('Memory Frame Invariants Guide'), 'Resource 1 listed in attachment tray');
-      assert.ok(html.includes('Stack Allocator Implementation'), 'Resource 2 listed in attachment tray');
+      // Verify attached resources button beside composer
+      assert.ok(html.includes('Attach Media'), 'Button to attach lesson media is present beside composer');
+      assert.ok(html.includes('Attach lesson resources beside chat'), 'Title for attaching resources is present');
 
       // Verify composer input
-      assert.ok(html.includes('Ask a question about this lesson'), 'Composer input should display placeholder');
+      assert.ok(html.includes('Ask any question about this lesson'), 'Composer input should display placeholder');
       assert.ok(html.includes('Send message to AGY tutor'), 'Send message button should have accessible aria-label');
     });
 
-    test('LessonWorkspacePage renders both "Simplify with AI" and "Full Studio" action buttons', () => {
+    test('LessonWorkspacePage renders "Simplify with AI" studio navigation button', () => {
       const html = renderToString(
         <ThemeProvider>
           <LessonWorkspacePage
@@ -299,8 +290,7 @@ describe('AI Simplification Studio & Visual Diagram Suite (e2e-testing-patterns)
         </ThemeProvider>
       );
 
-      assert.ok(html.includes('Simplify with AI'), 'Should render quick Simplify drawer button');
-      assert.ok(html.includes('Full Studio'), 'Should render Full Studio button');
+      assert.ok(html.includes('Simplify with AI'), 'Should render Simplify with AI studio button');
     });
   });
 

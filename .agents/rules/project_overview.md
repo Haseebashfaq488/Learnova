@@ -1,3 +1,8 @@
+---
+trigger: always_on
+description: Authoritative project overview, core invariants, and execution commands for Learnova.
+---
+
 # Project Overview & Architecture Rule: Learnova
 
 This workspace contains **Learnova**, an adaptive and gamified educational platform built with an **Option B Modular Monolith** topology (FastAPI + in-process Durable Outbox Processor + PostgreSQL 17 / SQLite + React 19 / TypeScript / Vite).

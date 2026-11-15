@@ -181,14 +181,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             }`}
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div
-                className={`rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 text-white flex items-center justify-center font-bold shadow-sm shrink-0 ${
-                  sidebarCollapsed ? 'w-7 h-7' : 'w-8 h-8 text-base'
+              <img
+                src="/learnova-logo.png"
+                alt="Learnova"
+                className={`object-contain shrink-0 ${
+                  sidebarCollapsed ? 'w-7 h-7' : 'h-8 w-auto'
                 }`}
                 title="Learnova Admin Governance"
-              >
-                <Shield className={sidebarCollapsed ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
-              </div>
+              />
               {!sidebarCollapsed && (
                 <div className="min-w-0">
                   <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight block truncate">

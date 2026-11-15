@@ -246,9 +246,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           />
           {/* Subtle, elegant translucent brand tag in the top corner */}
           <div className="absolute top-6 left-6 flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-lg">
-            <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-white" />
-            </div>
+            <img src="/learnova-logo.png" alt="Learnova" className="h-7 w-auto object-contain" />
             <span className="font-extrabold text-base tracking-tight text-white leading-none">
               Learnova
             </span>

@@ -134,14 +134,14 @@ export const StudentLayout: React.FC<StudentLayoutProps> = ({
             }`}
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div
-                className={`rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm shrink-0 ${
-                  sidebarCollapsed ? 'w-7 h-7 text-xs' : 'w-8 h-8 text-base'
+              <img
+                src="/learnova-logo.png"
+                alt="Learnova"
+                className={`object-contain shrink-0 ${
+                  sidebarCollapsed ? 'w-7 h-7' : 'h-8 w-auto'
                 }`}
                 title="Learnova Student Portal"
-              >
-                L
-              </div>
+              />
               {!sidebarCollapsed && (
                 <div className="min-w-0">
                   <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight block truncate">

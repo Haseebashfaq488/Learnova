@@ -80,3 +80,34 @@ def publish_course(
 ):
     """Publish a draft course after validating topic/lesson completeness and prerequisite acyclicity."""
     return CourseService.publish_course(db=db, course_id=course_id, actor=current_user)
+
+
+@router.post("/{course_id}/archive", response_model=CourseResponse)
+def archive_course(
+    course_id: UUID,
+    current_user: User = Depends(require_teacher_assigned_to_course),
+    db: Session = Depends(get_db),
+):
+    """Archive course and automatically unenroll all students."""
+    return CourseService.archive_course(db=db, course_id=course_id, actor=current_user)
+
+
+@router.post("/{course_id}/draft", response_model=CourseResponse)
+def draft_course(
+    course_id: UUID,
+    current_user: User = Depends(require_teacher_assigned_to_course),
+    db: Session = Depends(get_db),
+):
+    """Revert course status to draft."""
+    return CourseService.draft_course(db=db, course_id=course_id, actor=current_user)
+
+
+@router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_course(
+    course_id: UUID,
+    current_user: User = Depends(require_teacher_assigned_to_course),
+    db: Session = Depends(get_db),
+):
+    """Delete an archived course. Courses must be archived before they can be deleted."""
+    CourseService.delete_course(db=db, course_id=course_id, actor=current_user)
+    return None

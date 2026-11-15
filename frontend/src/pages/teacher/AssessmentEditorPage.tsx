@@ -115,7 +115,6 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
   const [status, setStatus] = useState<AssessmentStatus>(
     initialAssessment?.status || 'draft'
   );
-  const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
 
   // Filter available questions: approved questions in this course with topic/type/difficulty/search filters
@@ -235,9 +234,14 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
   };
 
   const handleConfirmPublish = () => {
+    if (!title.trim()) {
+      onNotify('error', 'Please provide an assessment title before publishing.');
+      setStep(1);
+      return;
+    }
     if (selectedQuestionIds.length === 0) {
       onNotify('error', 'Cannot publish an assessment with zero questions.');
-      setPublishModalOpen(false);
+      setStep(2);
       return;
     }
 
@@ -260,7 +264,6 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
     onSaveAssessment(toPublish);
     setStatus('published');
-    setPublishModalOpen(false);
     onNotify('success', 'Assessment published live to students.');
     onNavigate('assessments');
   };
@@ -291,7 +294,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               <Button
                 variant="primary"
                 leftIcon={<UploadCloud className="w-4 h-4" />}
-                onClick={() => setPublishModalOpen(true)}
+                onClick={handleConfirmPublish}
               >
                 Publish assessment
               </Button>
@@ -990,7 +993,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               <Button
                 variant="primary"
                 leftIcon={<UploadCloud className="w-4 h-4" />}
-                onClick={() => setPublishModalOpen(true)}
+                onClick={handleConfirmPublish}
               >
                 Publish assessment
               </Button>
@@ -1108,7 +1111,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               <Button
                 variant="primary"
                 leftIcon={<UploadCloud className="w-4 h-4" />}
-                onClick={() => setPublishModalOpen(true)}
+                onClick={handleConfirmPublish}
               >
                 Publish assessment
               </Button>
@@ -1116,17 +1119,6 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
           </div>
         </div>
       )}
-
-      {/* Confirmation Modal for Publishing */}
-      <ConfirmDialog
-        isOpen={publishModalOpen}
-        title="Publish assessment now?"
-        targetObject={title}
-        consequence={`Once published, enrolled students can start attempts. The test contains ${selectedQuestionIds.length} questions worth ${totalPoints} points.`}
-        confirmLabel="Publish assessment"
-        onConfirm={handleConfirmPublish}
-        onCancel={() => setPublishModalOpen(false)}
-      />
     </div>
   );
 };

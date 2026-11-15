@@ -317,8 +317,8 @@ class AISessionService:
                         "flowchart TD\n"
                         f'    A["Inbound Data State"] --> B["{lesson_title} Contract Check"]\n'
                         '    B --> C{"Preconditions Valid?"}\n'
-                        f'    C -->|"Yes"| D["Core Module: {topic_title}"]\n'
-                        '    C -->|"No"| E["Fault Quarantine"]\n'
+                        f'    C -->|Yes| D["Core Module: {topic_title}"]\n'
+                        '    C -->|No| E["Fault Quarantine"]\n'
                         '    D --> F["Deterministic Target State"]\n'
                         "```\n\n"
                         "#### Architectural Flow:\n"
@@ -420,6 +420,15 @@ class AISessionService:
                     saved_candidate_ids.append(str(cand.id))
                 except Exception as exc:
                     logger.warning("Failed to persist candidate question: %s", exc)
+
+        # Clean any Mermaid pipe quotes to prevent syntax errors
+        if response_text and "```mermaid" in response_text:
+            import re
+            response_text = re.sub(
+                r'\|([^|\n]+)\|',
+                lambda m: '|' + m.group(1).replace('"', "'") + '|',
+                response_text,
+            )
 
         # 7. Save Agent Response Message
         agent_msg = AISessionMessage(

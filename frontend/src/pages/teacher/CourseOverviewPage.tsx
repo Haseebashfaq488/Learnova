@@ -349,13 +349,13 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
       {/* Edit Details Modal */}
       {editModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/15 dark:bg-black/25 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7]">
-            <h2 className="text-lg font-bold text-[#1F2937] mb-1">Edit Course Details</h2>
-            <p className="text-xs text-[#5B6472] mb-5">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
+            <h2 className="text-lg font-bold text-[#1F2937] dark:text-white mb-1">Edit Course Details</h2>
+            <p className="text-xs text-[#5B6472] dark:text-gray-400 mb-5">
               Update academic title, summary, or publication status.
             </p>
 
@@ -366,7 +366,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   type="text"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 />
               </FormField>
 
@@ -376,20 +376,28 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   rows={3}
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 />
               </FormField>
 
-              <FormField id="edit-status" label="Course status">
+              <FormField
+                id="edit-status"
+                label="Course status"
+                helperText={
+                  formStatus === 'archived'
+                    ? 'Archiving will automatically unenroll all students and make the course eligible for deletion.'
+                    : 'Draft courses are instructor-only. Published courses are accessible to students.'
+                }
+              >
                 <select
                   id="edit-status"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as CourseStatus)}
-                  className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
+                  <option value="draft">Draft (Private)</option>
+                  <option value="published">Published (Active)</option>
+                  <option value="archived">Archived (Unenrolls students)</option>
                 </select>
               </FormField>
 

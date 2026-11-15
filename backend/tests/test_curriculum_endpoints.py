@@ -295,3 +295,53 @@ def test_get_student_lesson_completions_endpoint(client_with_db: TestClient, db_
     items2 = res_list2.json()
     assert len(items2) == 1
     assert items2[0]["lesson_id"] == str(lesson.id)
+
+
+def test_course_lifecycle_archive_draft_delete(client_with_db: TestClient, db_session: Session, seed_test_users):
+    """Verify archive unenrolls students, draft status, and delete requires archive first."""
+    from app.models.enrollment import Enrollment
+
+    student = seed_test_users["student"]
+    teacher = seed_test_users["teacher1"]
+
+    course = Course(title="Lifecycle Test Course", status="published", creator_id=teacher.id)
+    db_session.add(course)
+    db_session.flush()
+
+    enrollment = Enrollment(student_id=student.id, course_id=course.id, status="active")
+    db_session.add(enrollment)
+    db_session.commit()
+
+    # Attempting to delete published course must fail (400)
+    del_fail = client_with_db.delete(f"/api/v1/courses/{course.id}", headers=auth_header(teacher))
+    assert del_fail.status_code == 400
+    assert "archive" in del_fail.json()["detail"].lower()
+
+    # Archive the course
+    res_arch = client_with_db.post(f"/api/v1/courses/{course.id}/archive", headers=auth_header(teacher))
+    assert res_arch.status_code == 200
+    assert res_arch.json()["status"] == "archived"
+
+    # Verify student is unenrolled
+    enr_check = db_session.query(Enrollment).filter_by(course_id=course.id).first()
+    assert enr_check is None
+
+    # Draft the course
+    res_draft = client_with_db.post(f"/api/v1/courses/{course.id}/draft", headers=auth_header(teacher))
+    assert res_draft.status_code == 200
+    assert res_draft.json()["status"] == "draft"
+
+    # Attempting to delete draft course must also fail
+    del_draft_fail = client_with_db.delete(f"/api/v1/courses/{course.id}", headers=auth_header(teacher))
+    assert del_draft_fail.status_code == 400
+
+    # Archive again
+    client_with_db.post(f"/api/v1/courses/{course.id}/archive", headers=auth_header(teacher))
+
+    # Now delete succeeds
+    del_success = client_with_db.delete(f"/api/v1/courses/{course.id}", headers=auth_header(teacher))
+    assert del_success.status_code == 204
+
+    # Confirm course is gone
+    deleted_check = db_session.query(Course).filter_by(id=course.id).first()
+    assert deleted_check is None

@@ -112,6 +112,19 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
     }
   };
 
+  const handleDeleteConfirmed = () => {
+    if (confirmDeleteId) {
+      const courseToDelete = courses.find((c) => c.id === confirmDeleteId);
+      if (courseToDelete && courseToDelete.status !== 'archived') {
+        alert(`Course "${courseToDelete.title}" must be archived before it can be deleted. Please set its status to Archived first.`);
+        setConfirmDeleteId(null);
+        return;
+      }
+      onDeleteCourse(confirmDeleteId);
+      setConfirmDeleteId(null);
+    }
+  };
+
   const activeChips: ActiveChip[] = [];
   if (statusFilter) {
     activeChips.push({
@@ -258,6 +271,14 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(c.id)}
+                            className="p-1.5 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md cursor-pointer transition-colors"
+                            aria-label={`Delete ${c.title}`}
+                            title={c.status === 'archived' ? 'Delete archived course' : 'Archive course first before deleting'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -317,11 +338,11 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
       {/* Create / Edit Course Modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/15 dark:bg-black/25 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7]">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
             <h2 className="text-lg font-bold text-[#1F2937] mb-1">
               {editingCourse ? 'Edit course details' : 'Create new course'}
             </h2>
@@ -409,6 +430,22 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
         confirmLabel="Publish course"
         onConfirm={handlePublishConfirmed}
         onCancel={() => setConfirmPublishCourse(null)}
+      />
+
+      {/* Confirmation Dialog for Deleting */}
+      <ConfirmDialog
+        isOpen={!!confirmDeleteId}
+        title="Delete course?"
+        targetObject={courses.find((c) => c.id === confirmDeleteId)?.title}
+        consequence={
+          courses.find((c) => c.id === confirmDeleteId)?.status === 'archived'
+            ? 'This will permanently remove the course and its curriculum units. All students have already been unenrolled.'
+            : 'Courses must be set to "Archived" status before they can be deleted to unenroll students safely.'
+        }
+        isDestructive
+        confirmLabel={courses.find((c) => c.id === confirmDeleteId)?.status === 'archived' ? 'Delete Course' : 'Archive Course First'}
+        onConfirm={handleDeleteConfirmed}
+        onCancel={() => setConfirmDeleteId(null)}
       />
     </div>
   );

@@ -44,8 +44,6 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
   const [courseFilter, setCourseFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-
-  const [confirmPublishAssessment, setConfirmPublishAssessment] = useState<Assessment | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filteredAssessments = useMemo(() => {
@@ -117,21 +115,17 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
     },
   ];
 
-  const handlePublishConfirmed = () => {
-    if (confirmPublishAssessment) {
-      if (confirmPublishAssessment.questionIds.length === 0) {
-        onNotify('error', 'Cannot publish an assessment with zero questions.');
-        setConfirmPublishAssessment(null);
-        return;
-      }
-      onSaveAssessment({
-        ...confirmPublishAssessment,
-        status: 'published',
-        updatedAt: new Date().toISOString(),
-      });
-      setConfirmPublishAssessment(null);
-      onNotify('success', 'Assessment published to enrolled learners.');
+  const handlePublishDirect = (assessment: Assessment) => {
+    if (assessment.questionIds.length === 0) {
+      onNotify('error', 'Cannot publish an assessment with zero questions.');
+      return;
     }
+    onSaveAssessment({
+      ...assessment,
+      status: 'published',
+      updatedAt: new Date().toISOString(),
+    });
+    onNotify('success', `"${assessment.title}" published directly to students.`);
   };
 
   const handleDeleteConfirmed = () => {
@@ -258,7 +252,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
                               variant="outline"
                               size="sm"
                               leftIcon={<UploadCloud className="w-3.5 h-3.5" />}
-                              onClick={() => setConfirmPublishAssessment(a)}
+                              onClick={() => handlePublishDirect(a)}
                             >
                               Publish
                             </Button>
@@ -329,7 +323,7 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
                       variant="primary"
                       size="sm"
                       className="flex-1"
-                      onClick={() => setConfirmPublishAssessment(a)}
+                      onClick={() => handlePublishDirect(a)}
                     >
                       Publish
                     </Button>
@@ -340,17 +334,6 @@ export const AssessmentsPage: React.FC<AssessmentsPageProps> = ({
           </div>
         </div>
       )}
-
-      {/* Confirmation Dialog for Publishing Assessment */}
-      <ConfirmDialog
-        isOpen={!!confirmPublishAssessment}
-        title="Publish assessment to learners?"
-        targetObject={confirmPublishAssessment?.title}
-        consequence={`Once published, enrolled students will be able to attempt this ${confirmPublishAssessment?.type} assessment according to its time limit (${confirmPublishAssessment?.timeLimitMinutes || 'Untimed'} mins) and attempt constraints.`}
-        confirmLabel="Publish assessment"
-        onConfirm={handlePublishConfirmed}
-        onCancel={() => setConfirmPublishAssessment(null)}
-      />
 
       {/* Delete Confirmation */}
       <ConfirmDialog

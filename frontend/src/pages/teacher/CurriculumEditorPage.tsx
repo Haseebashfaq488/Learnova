@@ -944,18 +944,19 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
 
                 <FormField
                   id="lesson-desc-input"
-                  label="Learning objective / Instructional notes"
-                  helperText="Describe what learners should understand upon completing this lesson."
+                  label="Lesson Introduction & Content (Markdown Supported)"
+                  helperText="Author the introduction and conceptual notes for this lesson. This will be displayed directly to students on their lesson workspace."
                 >
                   <textarea
                     id="lesson-desc-input"
-                    rows={3}
+                    rows={6}
                     value={lessonDesc}
                     onChange={(e) => {
                       setLessonDesc(e.target.value);
                       setHasUnsavedChanges(true);
                     }}
-                    className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                    placeholder="Write the lesson introduction, core architectural invariants, and instructional notes (supports Markdown)..."
+                    className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                   />
                 </FormField>
 

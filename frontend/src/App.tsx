@@ -2020,6 +2020,10 @@ export default function App() {
         if (existing && isUuid(c.id)) {
           if (c.status === 'published' && existing.status !== 'published') {
             await teacherApi.publishCourse(c.id);
+          } else if (c.status === 'archived' && existing.status !== 'archived') {
+            await teacherApi.archiveCourse(c.id);
+          } else if (c.status === 'draft' && existing.status !== 'draft') {
+            await teacherApi.draftCourse(c.id);
           }
           await teacherApi.updateCourse(c.id, {
             title: c.title,
@@ -2049,7 +2053,19 @@ export default function App() {
     notify('success', `Course "${c.title}" saved.`);
   };
 
-  const handleDeleteCourse = (id: string) => {
+  const handleDeleteCourse = async (id: string) => {
+    try {
+      if (authApi.getAccessToken() && isUuid(id)) {
+        await teacherApi.deleteCourse(id);
+        await refreshTeacherCourseData();
+        notify('info', 'Course deleted from system.');
+        return;
+      }
+    } catch (err: any) {
+      console.warn('Backend course delete error:', err);
+      notify('error', err.message || 'Failed to delete course.');
+      return;
+    }
     storage.deleteCourse(id);
     setCourses(storage.getCourses());
     notify('info', 'Course deleted.');

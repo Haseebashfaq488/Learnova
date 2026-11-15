@@ -113,9 +113,11 @@ export const ContactPage: React.FC<ContactPageProps> = ({
           onClick={() => onNavigate('landing')}
           className="cursor-pointer group flex items-center gap-3 shrink-0"
         >
-          <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.15)] group-hover:border-white/40 transition-colors">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <img
+            src="/learnova-logo.png"
+            alt="Learnova"
+            className="h-8 w-auto object-contain filter drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+          />
           <span className="font-sans text-sm sm:text-base font-bold tracking-[0.25em] uppercase text-white group-hover:text-cyan-300 transition-colors">
             Learnova
           </span>
@@ -297,7 +299,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({
           <span>DIRECT TRANSMISSION GATEWAY ACTIVE</span>
         </div>
 
-        <h1 className="font-sans text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-white leading-[1.08] w-full max-w-6xl">
+        <h1 className="font-sans text-[clamp(1.75rem,3.8vw,3.25rem)] font-bold tracking-tight text-white leading-[1.1] w-full max-w-6xl">
           Get in Touch with <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-white">
             Academic Operations
@@ -506,7 +508,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({
       <section className="relative py-24 px-6 sm:px-12 lg:px-20 xl:px-28 2xl:px-36 w-full z-10 border-t border-white/10">
         <div className="max-w-4xl mb-12">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-400">Direct Answers</span>
-          <h2 className="font-sans text-3xl sm:text-5xl font-bold text-white mt-2 tracking-tight">
+          <h2 className="font-sans text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white mt-2 tracking-tight">
             Frequently Addressed Queries
           </h2>
         </div>

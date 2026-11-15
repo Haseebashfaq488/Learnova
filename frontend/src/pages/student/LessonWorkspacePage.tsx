@@ -18,10 +18,9 @@ import {
   Check,
   BookOpen,
   Download,
-  Maximize2,
 } from 'lucide-react';
 import { StudentNavigationPage } from '../../components/student/StudentLayout';
-import { AIHelperPanel } from '../../components/student/AIHelperPanel';
+import { RichMarkdownRenderer } from '../../components/common/RichMarkdownRenderer';
 import { curriculumApi } from '../../services/api/curriculumApi';
 
 interface LessonWorkspacePageProps {
@@ -49,7 +48,6 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
   onMarkComplete,
   onNavigate,
 }) => {
-  const [isAIOpen, setIsAIOpen] = useState(false);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
 
   const course = courses.find((c) => c.id === courseId) || courses[0];
@@ -97,15 +95,6 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => setIsAIOpen(true)}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition shadow-2xs cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Simplify with AI</span>
-          </button>
-
-          <button
-            type="button"
             onClick={() =>
               onNavigate('simplification_studio', {
                 courseId: course.id,
@@ -113,11 +102,11 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
                 lessonId: lesson.id,
               })
             }
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold text-xs transition shadow-2xs cursor-pointer"
-            title="Open dedicated ChatGPT-grade Simplification Studio"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition shadow-2xs cursor-pointer"
+            title="Open dedicated Simplification Studio"
           >
-            <Maximize2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-            <span>Full Studio</span>
+            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span>Simplify with AI</span>
           </button>
 
           <button
@@ -155,22 +144,23 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
           </p>
         </div>
 
-        {/* Learning Content Body */}
-        <div className="prose dark:prose-invert max-w-none pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
-          <p>
-            In this unit, we investigate foundational principles and structural abstractions in <strong>{course?.title}</strong>.
-            Understanding how state variables bind to physical registers and heap references gives you predictive control over application memory.
-          </p>
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 space-y-2">
-            <h4 className="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider">
-              Core Architectural Invariants:
-            </h4>
-            <ul className="list-disc pl-5 text-xs text-gray-700 dark:text-gray-300 space-y-1">
-              <li>Deterministic state evaluation prevents runtime divergence.</li>
-              <li>Prerequisite validation ensures downstream modules receive strictly typed inputs.</li>
-              <li>Immutability safeguards memory references from unexpected shared concurrency mutations.</li>
-            </ul>
+        {/* Learning Content & Lesson Overview */}
+        <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-indigo-600" />
+              <span>Instructional Notes & Introduction</span>
+            </h3>
           </div>
+          {lesson?.description?.trim() ? (
+            <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed text-gray-800 dark:text-gray-200 bg-gray-50/50 dark:bg-[#1C212B]/50 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800/80">
+              <RichMarkdownRenderer content={lesson.description} />
+            </div>
+          ) : (
+            <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-[#1C212B]/50 border border-gray-200/80 dark:border-gray-800/80 text-xs text-gray-500 dark:text-gray-400">
+              No custom introduction written for this lesson yet. Review the official syllabus resources below or click "Simplify with AI" to generate an architectural breakdown.
+            </div>
+          )}
         </div>
 
         {/* Published Learning Resources Group */}
@@ -314,28 +304,6 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
           </button>
         )}
       </div>
-
-      {/* Attached AI Helper Drawer (with glitch-free transparent backdrop) */}
-      <AIHelperPanel
-        isOpen={isAIOpen}
-        onClose={() => setIsAIOpen(false)}
-        onOpenFullStudio={() => {
-          setIsAIOpen(false);
-          onNavigate('simplification_studio', {
-            courseId: course.id,
-            topicId: topic.id,
-            lessonId: lesson.id,
-          });
-        }}
-        lessonId={lesson?.id || lessonId}
-        lessonTitle={lesson?.title || 'Current Lesson'}
-        topicTitle={topic?.title || 'Topic'}
-        courseTitle={course?.title || 'Course'}
-        lessonContent={lesson?.description || ''}
-        courseId={course?.id || courseId}
-        topicId={topic?.id || topicId}
-        resources={lessonResources}
-      />
     </div>
   );
 };

@@ -585,8 +585,8 @@ def _deterministic_simplify_helper(req: AISimplifyRequest) -> AISimplifyResult:
             "flowchart TD\n"
             f'    A["Inbound Data / Prerequisite Context"] --> B["{lesson_title} Validation Gate"]\n'
             '    B --> C{"Input Invariants Satisfied?"}\n'
-            f'    C -->|"Yes (Valid)"| D["Core Transformation Engine: {topic_title}"]\n'
-            '    C -->|"No (Invalid)"| E["Safe Error Quarantine / Fallback"]\n'
+            f'    C -->|Yes - Valid| D["Core Transformation Engine: {topic_title}"]\n'
+            '    C -->|No - Invalid| E["Safe Error Quarantine / Fallback"]\n'
             f'    D --> F["Deterministic Output State in {course_title}"]\n'
             "```\n\n"
             "#### Architectural Pipeline Stages:\n"
