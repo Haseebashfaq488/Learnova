@@ -137,6 +137,14 @@ import { ContactPage } from './pages/public/ContactPage';
 import { PublicNavigationPage } from './services/routerService';
 
 export default function App() {
+  // Check if current browser path is the root landing page
+  const isRootPath =
+    typeof window !== 'undefined' &&
+    (window.location.pathname === '/' ||
+      window.location.pathname === '' ||
+      window.location.pathname === '/landing' ||
+      window.location.pathname === '/public');
+
   // Parse initial route from browser URL
   const [initialRoute] = useState<AppRouteState | null>(() => {
     return typeof window !== 'undefined'
@@ -153,12 +161,14 @@ export default function App() {
 
   // Portal Mode: parsed from URL, or persisted to localStorage to survive browser reloads
   const [portalMode, setPortalModeState] = useState<'public' | 'student' | 'teacher' | 'admin'>(() => {
+    if (isRootPath) return 'public';
     if (initialRoute?.portal) return initialRoute.portal;
     return storage.getPersistedPortalMode() || 'public';
   });
 
   // Public Marketing & Exploration State
   const [publicPage, setPublicPage] = useState<PublicNavigationPage>(() => {
+    if (isRootPath) return 'landing';
     if (initialRoute?.portal === 'public') return initialRoute.page as PublicNavigationPage;
     return 'landing';
   });
@@ -1107,11 +1117,15 @@ export default function App() {
             const student = mapUserResponseToStudentUser(user);
             setCurrentStudent(student);
             storage.saveStudentUser(student);
-            setPortalMode(targetPortal || 'student', false);
+            if (!isRootPath && initialRoute?.portal !== 'public') {
+              setPortalMode(targetPortal || 'student', false);
+            }
             // Await live hydration before dismissing loading screen
             await refreshStudentCourseData();
           } else if (user.role === 'teacher') {
-            setPortalMode(targetPortal || 'teacher', false);
+            if (!isRootPath && initialRoute?.portal !== 'public') {
+              setPortalMode(targetPortal || 'teacher', false);
+            }
             await refreshTeacherCourseData();
           } else if (user.role === 'administrator') {
             const adminAccount: UserAccount = {
@@ -1127,7 +1141,9 @@ export default function App() {
             };
             setCurrentAdmin(adminAccount);
             storage.saveAdminUser(adminAccount);
-            setPortalMode(targetPortal || 'admin', false);
+            if (!isRootPath && initialRoute?.portal !== 'public') {
+              setPortalMode(targetPortal || 'admin', false);
+            }
             await refreshAdminData();
           }
         } else {
@@ -1191,23 +1207,25 @@ export default function App() {
 
     // Initial URL synchronization: Ensure the browser URL accurately reflects active portal and page
     if (typeof window !== 'undefined') {
-      const activePortal = initialRoute?.portal || portalMode;
-      const activePage =
-        activePortal === 'public'
+      const activePortal = isRootPath ? 'public' : (initialRoute?.portal || portalMode);
+      const activePage = isRootPath
+        ? 'landing'
+        : (activePortal === 'public'
           ? publicPage
           : activePortal === 'student'
           ? studentPage
           : activePortal === 'teacher'
           ? teacherPage
-          : adminPage;
-      const activeParams =
-        activePortal === 'public'
+          : adminPage);
+      const activeParams = isRootPath
+        ? {}
+        : (activePortal === 'public'
           ? publicNavParams
           : activePortal === 'student'
           ? studentNavParams
           : activePortal === 'teacher'
           ? teacherNavParams
-          : adminNavParams;
+          : adminNavParams);
       replaceHistoryState(activePortal, activePage, activeParams);
     }
 
@@ -2170,6 +2188,60 @@ export default function App() {
   const editingQuestion = questions.find((q) => q.id === teacherNavParams.questionId);
   const editingAssessment = assessments.find((a) => a.id === teacherNavParams.assessmentId);
 
+  // Compute breadcrumbs for teacher layout
+  const getTeacherBreadcrumbs = () => {
+    const list: Array<{ label: string; page?: TeacherNavigationPage; params?: Record<string, string> }> = [];
+
+    if (teacherPage === 'overview') {
+      list.push({ label: 'Overview' });
+    } else if (teacherPage === 'courses') {
+      list.push({ label: 'Course Management' });
+    } else if (teacherPage === 'course_overview') {
+      list.push({ label: 'Courses', page: 'courses' });
+      list.push({ label: activeCourse?.title || 'Course Overview' });
+    } else if (teacherPage === 'curriculum') {
+      list.push({ label: 'Courses', page: 'courses' });
+      if (activeCourse) {
+        list.push({ label: activeCourse.title, page: 'course_overview', params: { courseId: activeCourse.id } });
+      }
+      list.push({ label: 'Curriculum Editor' });
+    } else if (teacherPage === 'prerequisites') {
+      list.push({ label: 'Courses', page: 'courses' });
+      if (activeCourse) {
+        list.push({ label: activeCourse.title, page: 'course_overview', params: { courseId: activeCourse.id } });
+      }
+      list.push({ label: 'Prerequisites (DAG)' });
+    } else if (teacherPage === 'resources') {
+      list.push({ label: 'Courses', page: 'courses' });
+      if (activeCourse) {
+        list.push({ label: activeCourse.title, page: 'course_overview', params: { courseId: activeCourse.id } });
+      }
+      list.push({ label: 'Learning Resources' });
+    } else if (teacherPage === 'questions') {
+      list.push({ label: 'Question Bank' });
+    } else if (teacherPage === 'question_editor') {
+      list.push({ label: 'Question Bank', page: 'questions' });
+      list.push({ label: editingQuestion?.id ? 'Edit Question' : 'Create Question' });
+    } else if (teacherPage === 'ai_review') {
+      list.push({ label: 'Question Bank', page: 'questions' });
+      list.push({ label: 'AI Review & Governance (SSD-08)' });
+    } else if (teacherPage === 'assessments') {
+      list.push({ label: 'Assessments' });
+    } else if (teacherPage === 'assessment_editor') {
+      list.push({ label: 'Assessments', page: 'assessments' });
+      list.push({ label: editingAssessment?.id ? 'Edit Assessment' : 'New Assessment' });
+    } else if (teacherPage === 'analytics') {
+      if (teacherNavParams.courseId && activeCourse) {
+        list.push({ label: 'Analytics', page: 'analytics' });
+        list.push({ label: activeCourse.title });
+      } else {
+        list.push({ label: 'Analytics & Reports' });
+      }
+    }
+
+    return list;
+  };
+
   return (
     <TeacherLayout
       currentPage={teacherPage}
@@ -2186,6 +2258,13 @@ export default function App() {
           : undefined
       }
       onSignOut={handleGlobalSignOut}
+      onSwitchPortal={(portal) => {
+        setPortalMode(portal);
+        if (portal === 'admin') refreshAdminData();
+        if (portal === 'student') refreshStudentCourseData();
+      }}
+      onSwitchToPublic={() => setPortalMode('public')}
+      breadcrumbs={getTeacherBreadcrumbs()}
       toasts={toasts}
       onDismissToast={handleDismissToast}
     >

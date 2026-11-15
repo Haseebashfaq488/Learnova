@@ -20,6 +20,8 @@ import {
   Palette,
   Sun,
   Moon,
+  ArrowRightLeft,
+  Globe,
 } from 'lucide-react';
 import { CURRENT_TEACHER } from '../../services/storageService';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -47,6 +49,12 @@ export interface ToastMessage {
   message: string;
 }
 
+export interface BreadcrumbItem {
+  label: string;
+  page?: NavigationPage;
+  params?: Record<string, string>;
+}
+
 interface TeacherLayoutProps {
   currentPage: NavigationPage;
   onNavigate: (page: NavigationPage, params?: Record<string, string>) => void;
@@ -54,6 +62,9 @@ interface TeacherLayoutProps {
   selectedCourseTitle?: string;
   teacherUser?: { name: string; email: string; department?: string };
   onSignOut?: () => void;
+  onSwitchPortal?: (portal: 'student' | 'admin' | 'public') => void;
+  onSwitchToPublic?: () => void;
+  breadcrumbs?: BreadcrumbItem[];
   toasts: ToastMessage[];
   onDismissToast: (id: string) => void;
   children: React.ReactNode;
@@ -66,6 +77,9 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   selectedCourseTitle,
   teacherUser,
   onSignOut,
+  onSwitchPortal,
+  onSwitchToPublic,
+  breadcrumbs = [],
   toasts,
   onDismissToast,
   children,
@@ -264,6 +278,53 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
             })}
           </nav>
 
+          {/* Workspace Quick-Switch Actions */}
+          {(onSwitchPortal || onSwitchToPublic) && (
+            <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545] space-y-1.5">
+              {onSwitchPortal && (
+                <button
+                  type="button"
+                  onClick={() => onSwitchPortal('student')}
+                  title="Switch to Student Portal"
+                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
+                    sidebarCollapsed ? 'justify-center px-0' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    {!sidebarCollapsed && <span>Student Portal</span>}
+                  </div>
+                  {!sidebarCollapsed && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
+                      Student
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {onSwitchToPublic && (
+                <button
+                  type="button"
+                  onClick={onSwitchToPublic}
+                  title="Return to Public Site"
+                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition cursor-pointer ${
+                    sidebarCollapsed ? 'justify-center px-0' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    {!sidebarCollapsed && <span>Public Overview</span>}
+                  </div>
+                  {!sidebarCollapsed && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
+                      Home
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Bottom user utility area */}
           <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545]">
             <div className="relative">
@@ -332,32 +393,52 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
         {/* Mobile Header and Drawer */}
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-[72px] frosted-header px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               {/* Mobile hamburger */}
               <button
+                type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden p-2 rounded-lg text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="md:hidden p-2 rounded-lg text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer shrink-0"
                 aria-label="Open mobile navigation"
               >
                 <Menu className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-2 md:hidden">
+              <div className="flex items-center gap-2 md:hidden shrink-0">
                 <div className="w-7 h-7 rounded-lg bg-[#3156D3] text-white flex items-center justify-center font-bold text-xs">
                   <GraduationCap className="w-4 h-4" />
                 </div>
                 <span className="font-bold text-sm tracking-tight text-[#1F2937] dark:text-white">Learnova</span>
               </div>
 
-              {/* Course breadcrumb indicator in top header */}
-              {selectedCourseTitle && (
-                <div className="hidden lg:flex items-center gap-2 text-xs text-[#5B6472] dark:text-gray-400 pl-3 border-l border-gray-200 dark:border-gray-700">
-                  <span className="text-[#737D8C] dark:text-gray-400">Course:</span>
-                  <span className="font-semibold text-[#1F2937] dark:text-white max-w-sm truncate bg-[#F5F7FA] dark:bg-[#1C212B] px-2 py-0.5 rounded border border-[#D9DEE7] dark:border-[#2D3545]">
-                    {selectedCourseTitle}
-                  </span>
-                </div>
-              )}
+              {/* Breadcrumb Path Tree (Faculty Workspace) */}
+              <nav className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate" aria-label="Breadcrumb">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('overview')}
+                  className="hover:text-[#3156D3] dark:hover:text-indigo-400 font-medium transition cursor-pointer shrink-0"
+                >
+                  Faculty
+                </button>
+                {breadcrumbs.map((crumb, idx) => (
+                  <React.Fragment key={idx}>
+                    <ChevronRight className="w-3.5 h-3.5 mx-1.5 text-gray-400 shrink-0" />
+                    {crumb.page ? (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(crumb.page!, crumb.params)}
+                        className="hover:text-[#3156D3] dark:hover:text-indigo-400 truncate transition cursor-pointer font-medium"
+                      >
+                        {crumb.label}
+                      </button>
+                    ) : (
+                      <span className="font-semibold text-gray-900 dark:text-white truncate">
+                        {crumb.label}
+                      </span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </nav>
             </div>
 
             <div className="flex items-center gap-2">
@@ -474,6 +555,47 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                 </nav>
 
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+                  {(onSwitchPortal || onSwitchToPublic) && (
+                    <div className="flex flex-col gap-1.5 mb-3">
+                      {onSwitchPortal && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onSwitchPortal('student');
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                            <span>Student Portal</span>
+                          </div>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                            Student
+                          </span>
+                        </button>
+                      )}
+                      {onSwitchToPublic && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onSwitchToPublic();
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                            <span>Public Site</span>
+                          </div>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                            Home
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   <div className="mb-3">
                     <span className="text-[10px] font-semibold uppercase text-[#737D8C] dark:text-[#828B99] block mb-1.5">
                       Theme Mode

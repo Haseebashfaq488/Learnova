@@ -23,11 +23,12 @@ import { SystemHealthPage } from '../pages/admin/SystemHealthPage.tsx';
 import { CourseOversightPage } from '../pages/admin/CourseOversightPage.tsx';
 import { AdminProfileSecurityPage } from '../pages/admin/AdminProfileSecurityPage.tsx';
 
-// Teacher Portal Pages
+// Teacher Portal Pages & Layout
 import { DashboardPage } from '../pages/teacher/DashboardPage.tsx';
 import { CoursesPage } from '../pages/teacher/CoursesPage.tsx';
 import { CourseOverviewPage } from '../pages/teacher/CourseOverviewPage.tsx';
 import { AnalyticsPage } from '../pages/teacher/AnalyticsPage.tsx';
+import { TeacherLayout } from '../components/teacher/TeacherLayout.tsx';
 
 // UI components
 import { Button } from '../components/ui/Button.tsx';
@@ -321,6 +322,37 @@ describe('UI Rendering & Studio-Grade Micro-Interactions Verification', () => {
       assert.ok(html.includes('view-enter-animation'), 'Must include view-enter-animation');
       assert.ok(html.includes('interactive-card'), 'Must include interactive-card');
       assert.ok(html.includes('Teacher Analytics'), 'Must include page heading');
+    });
+
+    it('TeacherLayout renders top section breadcrumb routing tree and quick switches', () => {
+      const html = renderToString(
+        React.createElement(
+          TeacherLayout,
+          {
+            currentPage: 'curriculum',
+            onNavigate: () => {},
+            breadcrumbs: [
+              { label: 'Courses', page: 'courses' },
+              { label: 'Introduction to Computer Science', page: 'course_overview', params: { courseId: 'c-1' } },
+              { label: 'Curriculum Editor' },
+            ],
+            toasts: [],
+            onDismissToast: () => {},
+            onSwitchPortal: () => {},
+            onSwitchToPublic: () => {},
+          },
+          React.createElement('div', null, 'Curriculum Editor Body')
+        )
+      );
+
+      // Verify breadcrumb routing tree is present in top header
+      assert.ok(html.includes('aria-label="Breadcrumb"'), 'Must have breadcrumb navigation');
+      assert.ok(html.includes('Faculty'), 'Must have Faculty root breadcrumb');
+      assert.ok(html.includes('Courses'), 'Must include Courses crumb');
+      assert.ok(html.includes('Introduction to Computer Science'), 'Must include Course title crumb');
+      assert.ok(html.includes('Curriculum Editor'), 'Must include active page crumb');
+      assert.ok(html.includes('Student Portal'), 'Must include Student Portal switcher');
+      assert.ok(html.includes('Public Overview'), 'Must include Public site switcher');
     });
   });
 
