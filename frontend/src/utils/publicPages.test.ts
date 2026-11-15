@@ -170,6 +170,7 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
       assert.ok(html.includes('Filter courses by title, instructor, or topic'), 'Search input check');
       assert.ok(html.includes('All Disciplines'), 'Filter chips check');
       assert.ok(html.includes('Inspect Syllabus'), 'Card action check');
+      assert.ok(html.includes('Interactive Curriculum Explorer'), 'Three.js 3D wave banner check');
     });
 
     it('CourseDetailPage renders deep syllabus, DAG prerequisite badges, and BKT rubric', () => {
@@ -256,6 +257,7 @@ describe('Public Marketing & Academic Site Suite (e2e-testing-patterns)', () => 
       assert.ok(html.includes('Bayesian Knowledge Tracing'), 'Tabs check');
       assert.ok(html.includes('Dr. Elena Rostova'), 'Faculty check');
       assert.ok(html.includes('Prof. Alan Turing'), 'Faculty check');
+      assert.ok(html.includes('Three.js 3D Architecture Knot'), '3D architecture canvas check');
     });
 
     it('ContactPage renders inquiry form, live health telemetry, and campus locations', () => {

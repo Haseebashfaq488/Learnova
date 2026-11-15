@@ -52,13 +52,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Minimal Punchy Typography & Actions */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            {/* Live Telemetry Status Strip */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-[#131826] border border-gray-200 dark:border-gray-800 shadow-2xs text-xs text-gray-600 dark:text-gray-300">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
+          <div className="lg:col-span-7 space-y-5 text-left">
+            {/* Disciplined Telemetry Status Strip (No running/pinging animations) */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#131826] border border-gray-200 dark:border-gray-800 shadow-2xs text-xs text-gray-600 dark:text-gray-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="font-semibold text-gray-900 dark:text-white">Learnova Engine v2.4</span>
               <span className="text-gray-300 dark:text-gray-700">·</span>
               <span className="font-mono text-gray-500 dark:text-gray-400">REST API 18ms</span>
@@ -71,7 +68,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Where Cognitive Science Meets Computational Mastery.
             </h1>
 
-            {/* Subtitle - Ultra Concise (< 80ch) */}
+            {/* Subtitle - Minimal & Punchy */}
             <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed">
               Bayesian Knowledge Tracing and Directed Acyclic Graphs engineered for rigorous computer science education.
             </p>
@@ -102,7 +99,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="lg:col-span-5 relative w-full h-[360px] sm:h-[440px] rounded-3xl bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-cyan-500/5 border border-indigo-200/50 dark:border-indigo-900/40 p-2 shadow-xl flex items-center justify-center overflow-hidden">
             {/* Visual Header Pill inside 3D canvas viewport */}
             <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/80 dark:bg-[#0E131F]/80 backdrop-blur-md border border-gray-200/60 dark:border-gray-800 text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
               <span>Three.js 3D Knowledge Network</span>
             </div>
 

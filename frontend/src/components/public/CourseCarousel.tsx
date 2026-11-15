@@ -46,7 +46,7 @@ const TiltCard: React.FC<TiltCardProps> = ({
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
 
-    // Subtle 3D tilt calculation (-8 to +8 degrees)
+    // Subtle 3D tilt calculation (-10 to +10 degrees)
     const tiltX = (y - 0.5) * -12;
     const tiltY = (x - 0.5) * 12;
 
@@ -103,7 +103,7 @@ const TiltCard: React.FC<TiltCardProps> = ({
             </span>
           ) : (
             <span className="text-[11px] font-mono text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Live Course
             </span>
           )}
@@ -198,22 +198,37 @@ export const CourseCarousel: React.FC<CourseCarouselProps> = ({
   onSelectCourse,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [visibleCount, setVisibleCount] = useState<number>(3);
   const touchStartX = useRef<number | null>(null);
 
-  const totalCourses = courses.length;
-  // On desktop we display 3 cards per visible grid row!
-  // Max valid slide index when showing 3 items at a time
-  const maxIndex = Math.max(0, totalCourses - 3);
-
-  // Auto-advance every 5 seconds unless paused
+  // Responsive visible cards: 1 on mobile, 2 on tablet, 3 on desktop
   useEffect(() => {
-    if (isPaused || maxIndex <= 0) return;
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isPaused, maxIndex]);
+    const updateVisibleCount = () => {
+      if (typeof window === 'undefined') return;
+      if (window.innerWidth < 640) {
+        setVisibleCount(1);
+      } else if (window.innerWidth < 1024) {
+        setVisibleCount(2);
+      } else {
+        setVisibleCount(3);
+      }
+    };
+
+    updateVisibleCount();
+    window.addEventListener('resize', updateVisibleCount);
+    return () => window.removeEventListener('resize', updateVisibleCount);
+  }, []);
+
+  const totalCourses = courses.length;
+  // Maximum valid index ensuring remaining view is fully populated
+  const maxIndex = Math.max(0, totalCourses - visibleCount);
+
+  // Clamp activeIndex if screen resized
+  useEffect(() => {
+    if (activeIndex > maxIndex) {
+      setActiveIndex(maxIndex);
+    }
+  }, [maxIndex, activeIndex]);
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
@@ -245,8 +260,6 @@ export const CourseCarousel: React.FC<CourseCarouselProps> = ({
   return (
     <div
       className="relative w-full space-y-6"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       aria-roledescription="carousel"
@@ -293,7 +306,7 @@ export const CourseCarousel: React.FC<CourseCarouselProps> = ({
         <div
           className="flex transition-transform duration-500 ease-out"
           style={{
-            transform: `translateX(-${activeIndex * (100 / Math.min(3, Math.max(1, totalCourses)))}%)`,
+            transform: `translateX(-${activeIndex * (100 / visibleCount)}%)`,
           }}
         >
           {courses.map((course) => {

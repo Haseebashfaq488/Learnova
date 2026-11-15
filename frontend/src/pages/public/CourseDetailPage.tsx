@@ -15,7 +15,7 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle,
-  BarChart3,
+  Play,
 } from 'lucide-react';
 import { Course, Topic, Lesson, LearningResource, Enrollment, UserAccount } from '../../types';
 import { UserResponse } from '../../services/api/authApi';
@@ -81,7 +81,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('courses')}
-          className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold"
+          className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold cursor-pointer"
         >
           Back to Courses
         </button>
@@ -114,7 +114,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Back button & Breadcrumb */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
@@ -135,7 +135,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
         {/* Live Session Status Pill */}
         {currentUser && (
           <div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <span>{`Session: ${userName}`}</span>
             <span className="text-gray-400">({currentUser.role})</span>
           </div>
@@ -171,7 +171,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
               {course.title}
             </h1>
 
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl">
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl">
               {course.description}
             </p>
 
@@ -183,11 +183,11 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
               </div>
               <div className="flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-emerald-500" />
-                <span>{courseLessons.length} Comprehensive Lessons</span>
+                <span>{courseLessons.length} Lessons</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-blue-500" />
-                <span>{courseResources.length} Study Resources</span>
+                <span>{courseResources.length} Resources</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-amber-500" />
@@ -300,14 +300,14 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
       {/* =========================================================================
           SYLLABUS & DAG TOPICS BREAKDOWN
           ========================================================================= */}
-      <section className="space-y-6">
+      <section className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Syllabus &amp; Directed Acyclic Graph (DAG) Structure
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Topics must be mastered sequentially. Click any topic to inspect its lessons and reading materials.
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Sequential mastery enforced with cycle-free topology.
             </p>
           </div>
           <div className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1 rounded-full border border-indigo-200/50 dark:border-indigo-800/50 self-start sm:self-auto">
@@ -382,15 +382,13 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
                 {/* Expanded Lessons Details */}
                 {isExpanded && (
                   <div className="px-5 pb-5 pt-2 border-t border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-[#161D2B]/40 space-y-3">
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {topic.description}
-                    </p>
+                    {topic.description && (
+                      <p className="text-xs text-gray-600 dark:text-gray-300">
+                        {topic.description}
+                      </p>
+                    )}
 
-                    <div className="space-y-2 pt-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 block">
-                        Included Lessons &amp; Practical Units
-                      </span>
-
+                    <div className="space-y-2 pt-1">
                       {topicLessons.length === 0 ? (
                         <p className="text-xs text-gray-400 italic">No lessons assigned yet.</p>
                       ) : (
@@ -401,25 +399,30 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
                               key={lesson.id}
                               className="p-3 rounded-xl bg-white dark:bg-[#121724] border border-gray-200/60 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                             >
-                              <div className="flex items-start gap-2.5">
-                                <BookOpen className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
-                                <div>
-                                  <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                                    {lesson.order}. {lesson.title}
-                                  </h4>
-                                  {lesson.description && (
-                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                                      {lesson.description}
-                                    </p>
-                                  )}
-                                </div>
+                              <div className="flex items-center gap-2.5">
+                                <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
+                                <h4 className="text-xs font-bold text-gray-900 dark:text-white">
+                                  {lesson.order}. {lesson.title}
+                                </h4>
                               </div>
 
-                              {lessonRes.length > 0 && (
-                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0 self-start sm:self-auto">
-                                  {lessonRes.length} Resource Attached
-                                </span>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {lessonRes.length > 0 && (
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                                    {lessonRes.length} Resources
+                                  </span>
+                                )}
+                                {isEnrolled && (
+                                  <button
+                                    type="button"
+                                    onClick={handleContinueClick}
+                                    className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                                  >
+                                    <Play className="w-3 h-3 fill-current" />
+                                    <span>Learn</span>
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           );
                         })
@@ -437,84 +440,62 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({
           COGNITIVE MASTERY & ASSESSMENT ARCHITECTURE
           ========================================================================= */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 space-y-3">
           <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
             <Brain className="w-5 h-5" />
             <h3 className="text-base font-bold text-gray-900 dark:text-white">
               Bayesian Knowledge Tracing (BKT) Criteria
             </h3>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-            Mastery is recalculated following each student response observation using Bayesian
-            probability updates:
-          </p>
 
-          <div className="space-y-2 text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-[#182030] p-3.5 rounded-xl border border-gray-200/60 dark:border-gray-800">
-            <div className="flex justify-between">
-              <span>Prior Knowledge P(L_0):</span>
-              <span className="font-bold text-indigo-600 dark:text-indigo-400">0.20 (20%)</span>
+          <div className="grid grid-cols-2 gap-2 text-xs font-mono text-gray-700 dark:text-gray-300">
+            <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/60 dark:border-gray-800">
+              <span className="text-gray-400 block text-[10px]">Prior P(L_0)</span>
+              <span className="font-bold text-indigo-600 dark:text-indigo-400">20%</span>
             </div>
-            <div className="flex justify-between">
-              <span>Transit Probability P(T):</span>
-              <span className="font-bold text-gray-900 dark:text-white">0.15 (15%)</span>
+            <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/60 dark:border-gray-800">
+              <span className="text-gray-400 block text-[10px]">Transit P(T)</span>
+              <span className="font-bold text-gray-900 dark:text-white">15%</span>
             </div>
-            <div className="flex justify-between">
-              <span>Slip Probability P(S):</span>
-              <span className="font-bold text-gray-900 dark:text-white">0.10 (10%)</span>
+            <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/60 dark:border-gray-800">
+              <span className="text-gray-400 block text-[10px]">Slip P(S)</span>
+              <span className="font-bold text-gray-900 dark:text-white">10%</span>
             </div>
-            <div className="flex justify-between">
-              <span>Guess Probability P(G):</span>
-              <span className="font-bold text-gray-900 dark:text-white">0.20 (20%)</span>
+            <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#182030] border border-gray-200/60 dark:border-gray-800">
+              <span className="text-gray-400 block text-[10px]">Guess P(G)</span>
+              <span className="font-bold text-gray-900 dark:text-white">20%</span>
             </div>
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#121724] border border-gray-200 dark:border-gray-800 space-y-3">
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
             <ShieldCheck className="w-5 h-5" />
             <h3 className="text-base font-bold text-gray-900 dark:text-white">
               Assessment Evaluation Sequence
             </h3>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-            Course completion involves three strictly verified evaluation stages:
-          </p>
 
-          <div className="space-y-2.5 text-xs">
-            <div className="flex items-start gap-2">
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50 dark:bg-[#182030]">
               <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 font-mono font-bold text-[10px]">
                 01
               </span>
-              <div>
-                <span className="font-bold text-gray-900 dark:text-white block">Diagnostic Entrance Exam</span>
-                <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                  Calibrates prior knowledge and bypasses mastered prerequisite units.
-                </span>
-              </div>
+              <span className="font-bold text-gray-900 dark:text-white">Diagnostic Entrance Exam</span>
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50 dark:bg-[#182030]">
               <span className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 font-mono font-bold text-[10px]">
                 02
               </span>
-              <div>
-                <span className="font-bold text-gray-900 dark:text-white block">Adaptive Deliberate Practice</span>
-                <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                  Escalates question difficulty based on dynamic mastery probability.
-                </span>
-              </div>
+              <span className="font-bold text-gray-900 dark:text-white">Adaptive Deliberate Practice</span>
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50 dark:bg-[#182030]">
               <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-[10px]">
                 03
               </span>
-              <div>
-                <span className="font-bold text-gray-900 dark:text-white block">Server-Authoritative Final Exam</span>
-                <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                  Timed exam with segregated answer keys and automated credential award.
-                </span>
-              </div>
+              <span className="font-bold text-gray-900 dark:text-white">Server-Authoritative Final Exam</span>
             </div>
           </div>
         </div>
