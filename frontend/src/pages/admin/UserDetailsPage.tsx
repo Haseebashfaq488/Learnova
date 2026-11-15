@@ -220,7 +220,7 @@ export const UserDetailsPage: React.FC<UserDetailsPageProps> = ({
             <span>Account Specifications</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
               <p className="text-gray-400 mb-0.5">Registration Date</p>
               <p className="font-semibold text-gray-900 dark:text-white">
@@ -320,7 +320,7 @@ export const UserDetailsPage: React.FC<UserDetailsPageProps> = ({
         {/* Teacher Academic Statistics & Course List */}
         {activeUser.role === 'teacher' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#12161F] border border-gray-100 dark:border-gray-800">
                 <p className="text-[10px] text-gray-400 uppercase font-semibold">Assigned Courses</p>
                 <p className="text-lg font-black text-gray-900 dark:text-white mt-0.5">
@@ -404,7 +404,7 @@ export const UserDetailsPage: React.FC<UserDetailsPageProps> = ({
         {/* Student Learning Performance & Enrolled Courses */}
         {activeUser.role === 'student' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#12161F] border border-gray-100 dark:border-gray-800">
                 <p className="text-[10px] text-gray-400 uppercase font-semibold">Gamification Level</p>
                 <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-0.5">

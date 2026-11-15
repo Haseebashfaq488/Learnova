@@ -20,11 +20,14 @@ import {
   UploadCloud,
   X,
   Search,
+  Eye,
+  Edit3,
 } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { RichMarkdownRenderer } from '../../components/common/RichMarkdownRenderer';
 import { Course, Topic, Lesson, LearningResource, Assessment, ResourceType } from '../../types';
 
 interface CurriculumEditorPageProps {
@@ -101,6 +104,15 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
 
   const [lessonTitle, setLessonTitle] = useState(currentLesson?.title || '');
   const [lessonDesc, setLessonDesc] = useState(currentLesson?.description || '');
+  const [lessonOrder, setLessonOrder] = useState<number>(currentLesson?.order || 1);
+  const [lessonDescPreview, setLessonDescPreview] = useState(false);
+
+  // Add Lesson Modal state
+  const [addLessonTopic, setAddLessonTopic] = useState<Topic | null>(null);
+  const [newLessonTitle, setNewLessonTitle] = useState('');
+  const [newLessonOrder, setNewLessonOrder] = useState<number>(1);
+  const [newLessonDesc, setNewLessonDesc] = useState('');
+  const [isSubmittingNewLesson, setIsSubmittingNewLesson] = useState(false);
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -258,6 +270,8 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
     setSelectedId(l.id);
     setLessonTitle(l.title);
     setLessonDesc(l.description);
+    setLessonOrder(l.order || 1);
+    setLessonDescPreview(false);
     setHasUnsavedChanges(false);
   };
 
@@ -299,35 +313,58 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
     }
   };
 
-  // Add Lesson to current topic
-  const handleAddLesson = async (targetTopicId: string) => {
+  // Add Lesson modal open
+  const handleOpenAddLessonModal = (targetTopicId: string) => {
+    const target = sortedTopics.find((t) => t.id === targetTopicId) || topics.find((t) => t.id === targetTopicId);
+    if (!target) return;
     const topicLessons = lessons.filter((l) => l.topicId === targetTopicId);
+    const nextOrder = topicLessons.length + 1;
+    setAddLessonTopic(target);
+    setNewLessonTitle(`Lesson ${nextOrder}: `);
+    setNewLessonOrder(nextOrder);
+    setNewLessonDesc('');
+  };
+
+  const handleAddLesson = handleOpenAddLessonModal;
+
+  const handleCreateLessonSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addLessonTopic) return;
+    if (!newLessonTitle.trim()) {
+      onNotify('error', 'Lesson title cannot be empty.');
+      return;
+    }
+
+    setIsSubmittingNewLesson(true);
     const tempId = `lesson-${Date.now()}`;
     const newLesson: Lesson = {
       id: tempId,
-      topicId: targetTopicId,
+      topicId: addLessonTopic.id,
       courseId: course.id,
-      title: `Lesson ${topicLessons.length + 1}: New Lesson`,
-      description: 'Specific learning objective or instructional exercise.',
-      order: topicLessons.length + 1,
+      title: newLessonTitle.trim(),
+      description: newLessonDesc.trim(),
+      order: Number(newLessonOrder) || 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setSelectedType('lesson');
-    setSelectedId(tempId);
-    setLessonTitle(newLesson.title);
-    setLessonDesc(newLesson.description);
-    setExpandedTopics((prev) => ({ ...prev, [targetTopicId]: true }));
+
+    setExpandedTopics((prev) => ({ ...prev, [addLessonTopic.id]: true }));
 
     try {
       const saved = await onSaveLesson(newLesson);
-      if (saved && (saved as Lesson).id) {
-        const realId = (saved as Lesson).id;
-        setSelectedId(realId);
-      }
-      onNotify('success', 'New lesson added under topic.');
-    } catch {
-      // Error notifications handled by onSaveLesson
+      const effectiveId = saved && (saved as Lesson).id ? (saved as Lesson).id : tempId;
+      setSelectedType('lesson');
+      setSelectedId(effectiveId);
+      setLessonTitle(newLesson.title);
+      setLessonDesc(newLesson.description);
+      setLessonOrder(newLesson.order);
+      setHasUnsavedChanges(false);
+      setAddLessonTopic(null);
+      onNotify('success', 'New lesson created successfully.');
+    } catch (err: any) {
+      onNotify('error', err?.message || 'Failed to create lesson.');
+    } finally {
+      setIsSubmittingNewLesson(false);
     }
   };
 
@@ -378,6 +415,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
       ...currentLesson,
       title: lessonTitle.trim(),
       description: lessonDesc.trim(),
+      order: Number(lessonOrder) || currentLesson.order,
       updatedAt: new Date().toISOString(),
     };
     onSaveLesson(updated);
@@ -464,11 +502,11 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
       {/* Split-pane desktop container (30-35% tree, 65-70% editor) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Pane: Tree View (35%) */}
-        <div className="lg:col-span-4 bg-white rounded-xl border border-[#D9DEE7] p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7]">
+        <div className="lg:col-span-4 bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#3156D3]" />
-              <h2 className="text-sm font-bold text-[#1F2937]">Curriculum Tree</h2>
+              <h2 className="text-sm font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">Curriculum Tree</h2>
             </div>
             <button
               onClick={handleAddTopic}
@@ -480,10 +518,10 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
           </div>
 
           {sortedTopics.length === 0 ? (
-            <div className="text-center py-8 px-4 text-[#5B6472]">
+            <div className="text-center py-8 px-4 text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
               <Layers className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-xs font-semibold text-[#1F2937]">No topics added yet</p>
-              <p className="text-xs text-[#5B6472] mt-1 mb-4">
+              <p className="text-xs font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white">No topics added yet</p>
+              <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mt-1 mb-4">
                 Click Add Topic to create your first curriculum unit.
               </p>
               <Button size="sm" variant="primary" onClick={handleAddTopic}>
@@ -502,13 +540,13 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                 const isExpanded = !!expandedTopics[t.id];
 
                 return (
-                  <div key={t.id} className="rounded-lg border border-[#D9DEE7] overflow-hidden bg-white">
+                  <div key={t.id} className="rounded-lg border border-[#D9DEE7] dark:border-[#2D3545] overflow-hidden bg-white dark:bg-[#181C24]">
                     {/* Topic Row */}
                     <div
                       className={`flex items-center justify-between p-2.5 transition-colors cursor-pointer select-none ${
                         isSelected
-                          ? 'bg-[#E8EEFF] border-l-4 border-l-[#3156D3] text-[#2646B8] font-semibold'
-                          : 'hover:bg-gray-50 text-[#1F2937]'
+                          ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 border-l-4 border-l-[#3156D3] text-[#2646B8] dark:text-indigo-300 font-semibold'
+                          : 'hover:bg-gray-50 dark:bg-[#1C212B] text-[#1F2937] dark:text-white dark:text-white dark:text-white'
                       }`}
                       onClick={() => selectTopicNode(t)}
                     >
@@ -518,7 +556,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                             e.stopPropagation();
                             toggleExpand(t.id);
                           }}
-                          className="p-1 hover:bg-black/5 rounded text-[#737D8C] cursor-pointer"
+                          className="p-1 hover:bg-black/5 rounded text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 cursor-pointer"
                           aria-label={isExpanded ? 'Collapse topic' : 'Expand topic'}
                         >
                           {isExpanded ? (
@@ -538,7 +576,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         <button
                           disabled={idx === 0}
                           onClick={() => handleMoveTopic(idx, 'up')}
-                          className="p-1 text-[#737D8C] hover:text-[#1F2937] disabled:opacity-30 cursor-pointer"
+                          className="p-1 text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:text-[#1F2937] dark:text-white dark:text-white dark:text-white disabled:opacity-30 cursor-pointer"
                           title="Move up"
                           aria-label={`Move topic ${t.title} up`}
                         >
@@ -547,7 +585,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         <button
                           disabled={idx === sortedTopics.length - 1}
                           onClick={() => handleMoveTopic(idx, 'down')}
-                          className="p-1 text-[#737D8C] hover:text-[#1F2937] disabled:opacity-30 cursor-pointer"
+                          className="p-1 text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:text-[#1F2937] dark:text-white dark:text-white dark:text-white disabled:opacity-30 cursor-pointer"
                           title="Move down"
                           aria-label={`Move topic ${t.title} down`}
                         >
@@ -555,7 +593,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         </button>
                         <button
                           onClick={() => handleAddLesson(t.id)}
-                          className="p-1 text-[#3156D3] hover:bg-[#E8EEFF] rounded cursor-pointer ml-1"
+                          className="p-1 text-[#3156D3] hover:bg-[#E8EEFF] dark:hover:bg-indigo-950/40 rounded cursor-pointer ml-1"
                           title="Add lesson to this topic"
                           aria-label={`Add lesson to topic ${t.title}`}
                         >
@@ -566,7 +604,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
 
                     {/* Lessons & Assessments list under this topic */}
                     {isExpanded && (
-                      <div className="bg-[#F5F7FA] border-t border-[#D9DEE7] p-2 space-y-2">
+                      <div className="bg-[#F5F7FA] dark:bg-[#151922] dark:bg-[#151922] dark:bg-[#151922] border-t border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] p-2 space-y-2">
                         {/* Lessons Section */}
                         <div>
                           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 pb-1">
@@ -579,7 +617,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                             </button>
                           </div>
                           {topicLessons.length === 0 ? (
-                            <div className="py-1.5 px-2 text-[11px] text-[#737D8C] bg-white/60 rounded border border-dashed border-gray-200">
+                            <div className="py-1.5 px-2 text-[11px] text-[#737D8C] dark:text-gray-400 bg-white/60 dark:bg-[#181C24]/60 rounded border border-dashed border-gray-200 dark:border-gray-800">
                               No lessons yet
                             </div>
                           ) : (
@@ -594,15 +632,15 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                                     onClick={() => selectLessonNode(l)}
                                     className={`py-1.5 px-2.5 rounded flex items-center justify-between text-xs transition-colors cursor-pointer ${
                                       isLessonSelected
-                                        ? 'bg-[#E8EEFF] text-[#2646B8] font-semibold border-l-2 border-l-[#2646B8]'
-                                        : 'hover:bg-white text-[#5B6472]'
+                                        ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 font-semibold border-l-2 border-l-[#2646B8]'
+                                        : 'hover:bg-white dark:hover:bg-[#1E232E] text-[#5B6472] dark:text-gray-400'
                                     }`}
                                   >
                                     <div className="flex items-center gap-2 truncate">
                                       <FileText className="w-3.5 h-3.5 shrink-0 text-gray-400" />
                                       <span className="truncate">{l.title}</span>
                                     </div>
-                                    <span className="text-[10px] text-[#737D8C] shrink-0 bg-white px-1.5 py-0.5 rounded border border-gray-200">
+                                    <span className="text-[10px] text-[#737D8C] dark:text-gray-400 shrink-0 bg-white dark:bg-[#181C24] px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-800">
                                       {resCount} res
                                     </span>
                                   </div>
@@ -613,7 +651,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         </div>
 
                         {/* Assessments Section */}
-                        <div className="pt-1.5 border-t border-gray-200/80">
+                        <div className="pt-1.5 border-t border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800/80">
                           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 pb-1">
                             <span>Assessments ({topicAssessments.length})</span>
                             <button
@@ -624,7 +662,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                             </button>
                           </div>
                           {topicAssessments.length === 0 ? (
-                            <div className="py-1.5 px-2 text-[11px] text-[#737D8C] bg-white/60 rounded border border-dashed border-gray-200 flex items-center justify-between">
+                            <div className="py-1.5 px-2 text-[11px] text-[#737D8C] dark:text-gray-400 bg-white/60 dark:bg-[#181C24]/60 rounded border border-dashed border-gray-200 dark:border-gray-800 flex items-center justify-between">
                               <span>No assessments yet</span>
                               <button
                                 onClick={() => handleOpenAssessmentDrawer(t)}
@@ -643,11 +681,11 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                                       assessmentId: a.id,
                                     })
                                   }
-                                  className="py-1.5 px-2.5 rounded bg-white hover:bg-indigo-50/50 border border-gray-200 flex items-center justify-between text-xs transition-colors cursor-pointer group"
+                                  className="py-1.5 px-2.5 rounded bg-white dark:bg-[#181C24] hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 border border-gray-200 dark:border-gray-800 flex items-center justify-between text-xs transition-colors cursor-pointer group"
                                 >
                                   <div className="flex items-center gap-2 truncate">
                                     <CheckSquare className="w-3.5 h-3.5 shrink-0 text-indigo-600" />
-                                    <span className="truncate text-gray-900 group-hover:text-indigo-700 font-medium">
+                                    <span className="truncate text-gray-900 dark:text-white dark:text-white dark:text-white group-hover:text-indigo-700 font-medium">
                                       {a.title}
                                     </span>
                                   </div>
@@ -674,18 +712,18 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
         </div>
 
         {/* Right Pane: Selected Node Editor (65%) */}
-        <div className="lg:col-span-8 bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs">
+        <div className="lg:col-span-8 bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-6 shadow-2xs">
           {selectedType === 'topic' && currentTopic ? (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#D9DEE7]">
+              <div className="flex items-center justify-between pb-4 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold bg-[#E8EEFF] text-[#2646B8] px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 px-2 py-0.5 rounded">
                       Topic #{currentTopic.order}
                     </span>
-                    <h2 className="text-lg font-bold text-[#1F2937]">{currentTopic.title}</h2>
+                    <h2 className="text-lg font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">{currentTopic.title}</h2>
                   </div>
-                  <p className="text-xs text-[#5B6472] mt-0.5">
+                  <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mt-0.5">
                     Configure unit learning goals, academic mastery threshold, and prerequisites.
                   </p>
                 </div>
@@ -729,7 +767,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                       setTopicTitle(e.target.value);
                       setHasUnsavedChanges(true);
                     }}
-                    className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                    className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                   />
                 </FormField>
 
@@ -746,7 +784,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                       setTopicDesc(e.target.value);
                       setHasUnsavedChanges(true);
                     }}
-                    className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                    className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                   />
                 </FormField>
 
@@ -766,14 +804,14 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         setTopicThreshold(parseInt(e.target.value, 10) || 75);
                         setHasUnsavedChanges(true);
                       }}
-                      className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2 focus:border-[#3156D3] focus:outline-none"
+                      className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white rounded-lg px-3.5 py-2 focus:border-[#3156D3] focus:outline-none"
                     />
                   </FormField>
 
-                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 flex flex-col justify-between">
+                  <div className="p-3 rounded-lg bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 flex flex-col justify-between">
                     <div>
-                      <span className="text-xs font-semibold text-[#1F2937]">Prerequisite Status</span>
-                      <p className="text-xs text-[#5B6472] mt-0.5">
+                      <span className="text-xs font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white">Prerequisite Status</span>
+                      <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mt-0.5">
                         {currentTopic.prerequisiteTopicIds.length === 0
                           ? 'Foundational topic (No prerequisites required).'
                           : `Requires ${currentTopic.prerequisiteTopicIds.length} prior topic(s) to be mastered.`}
@@ -795,14 +833,14 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                 </div>
 
                 {/* Topic Assessments section */}
-                <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 space-y-3">
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1C212B]/80 dark:bg-[#1C212B]/80 border border-gray-200 dark:border-gray-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#1F2937] flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#1F2937] dark:text-white dark:text-white dark:text-white flex items-center gap-1.5">
                         <CheckSquare className="w-4 h-4 text-indigo-600" />
                         Topic Assessments & Quizzes ({assessments.filter((a) => a.topicId === currentTopic.id).length})
                       </h4>
-                      <p className="text-xs text-[#5B6472] mt-0.5">
+                      <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mt-0.5">
                         Assessments configured to measure learner mastery for this unit.
                       </p>
                     </div>
@@ -824,10 +862,10 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                           <div
                             key={a.id}
                             onClick={() => onNavigate('assessment_editor', { assessmentId: a.id })}
-                            className="p-2.5 rounded-lg bg-white border border-gray-200 hover:border-indigo-300 transition-colors cursor-pointer flex items-center justify-between"
+                            className="p-2.5 rounded-lg bg-white dark:bg-[#181C24] border border-gray-200 dark:border-gray-800 hover:border-indigo-300 transition-colors cursor-pointer flex items-center justify-between"
                           >
                             <div className="min-w-0 pr-2">
-                              <p className="text-xs font-semibold text-gray-900 truncate">{a.title}</p>
+                              <p className="text-xs font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white truncate">{a.title}</p>
                               <p className="text-[11px] text-gray-500 capitalize">
                                 {a.type} • {a.questionIds?.length || 0} questions
                               </p>
@@ -845,13 +883,13 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 italic bg-white p-2.5 rounded-lg border border-dashed border-gray-200">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic bg-white dark:bg-[#181C24] p-2.5 rounded-lg border border-dashed border-gray-200 dark:border-gray-800">
                       No assessments created for this topic yet. Click "New assessment" to create a diagnostic or topic quiz.
                     </p>
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-[#D9DEE7] flex flex-wrap items-center justify-between gap-2">
+                <div className="pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
@@ -885,15 +923,15 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
             </div>
           ) : selectedType === 'lesson' && currentLesson ? (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#D9DEE7]">
+              <div className="flex items-center justify-between pb-4 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold bg-[#EFF8FF] text-[#175CD3] px-2 py-0.5 rounded">
                       Lesson #{currentLesson.order}
                     </span>
-                    <h2 className="text-lg font-bold text-[#1F2937]">{currentLesson.title}</h2>
+                    <h2 className="text-lg font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">{currentLesson.title}</h2>
                   </div>
-                  <p className="text-xs text-[#5B6472] mt-0.5">
+                  <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mt-0.5">
                     Parent Topic: {sortedTopics.find((t) => t.id === currentLesson.topicId)?.title}
                   </p>
                 </div>
@@ -924,46 +962,110 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
               </div>
 
               <form onSubmit={handleSaveLessonChanges} className="space-y-5">
-                <FormField
-                  id="lesson-title-input"
-                  label="Lesson title"
-                  required
-                  helperText="Concise title for the lesson content."
-                >
-                  <input
-                    id="lesson-title-input"
-                    type="text"
-                    value={lessonTitle}
-                    onChange={(e) => {
-                      setLessonTitle(e.target.value);
-                      setHasUnsavedChanges(true);
-                    }}
-                    className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
-                  />
-                </FormField>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="sm:col-span-3">
+                    <FormField
+                      id="lesson-title-input"
+                      label="Lesson title"
+                      required
+                      helperText="Concise title for the lesson content."
+                    >
+                      <input
+                        id="lesson-title-input"
+                        type="text"
+                        value={lessonTitle}
+                        onChange={(e) => {
+                          setLessonTitle(e.target.value);
+                          setHasUnsavedChanges(true);
+                        }}
+                        className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                      />
+                    </FormField>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <FormField
+                      id="lesson-order-input"
+                      label="Unit / Order"
+                      required
+                      helperText="Sequence."
+                    >
+                      <input
+                        id="lesson-order-input"
+                        type="number"
+                        min="1"
+                        value={lessonOrder}
+                        onChange={(e) => {
+                          setLessonOrder(Math.max(1, parseInt(e.target.value, 10) || 1));
+                          setHasUnsavedChanges(true);
+                        }}
+                        className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                      />
+                    </FormField>
+                  </div>
+                </div>
 
-                <FormField
-                  id="lesson-desc-input"
-                  label="Lesson Introduction & Content (Markdown Supported)"
-                  helperText="Author the introduction and conceptual notes for this lesson. This will be displayed directly to students on their lesson workspace."
-                >
-                  <textarea
-                    id="lesson-desc-input"
-                    rows={6}
-                    value={lessonDesc}
-                    onChange={(e) => {
-                      setLessonDesc(e.target.value);
-                      setHasUnsavedChanges(true);
-                    }}
-                    placeholder="Write the lesson introduction, core architectural invariants, and instructional notes (supports Markdown)..."
-                    className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
-                  />
-                </FormField>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label htmlFor="lesson-desc-input" className="block text-xs font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white dark:text-gray-200">
+                      Lesson Introduction & Content (Markdown Supported)
+                    </label>
+                    <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <button
+                        type="button"
+                        onClick={() => setLessonDescPreview(false)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1 transition cursor-pointer ${
+                          !lessonDescPreview
+                            ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                        }`}
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        Write
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLessonDescPreview(true)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1 transition cursor-pointer ${
+                          lessonDescPreview
+                            ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                        }`}
+                      >
+                        <Eye className="w-3 h-3" />
+                        Preview
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mb-2">
+                    Author the introduction and conceptual notes for this lesson. This is displayed directly to students on their lesson workspace.
+                  </p>
+                  {lessonDescPreview ? (
+                    <div className="min-h-[160px] p-4 bg-gray-50 dark:bg-[#1E232E]/60 border border-[#D9DEE7] dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-200">
+                      {lessonDesc.trim() ? (
+                        <RichMarkdownRenderer content={lessonDesc} />
+                      ) : (
+                        <p className="text-xs text-gray-400 italic">No introduction content written yet. Switch to the Write tab to add notes.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <textarea
+                      id="lesson-desc-input"
+                      rows={6}
+                      value={lessonDesc}
+                      onChange={(e) => {
+                        setLessonDesc(e.target.value);
+                        setHasUnsavedChanges(true);
+                      }}
+                      placeholder="Write the lesson introduction, core architectural invariants, and instructional notes (supports Markdown)..."
+                      className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                    />
+                  )}
+                </div>
 
                 {/* Attached resources summary */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-[#1F2937]">
+                    <span className="text-xs font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white">
                       Attached Learning Resources ({resources.filter((r) => r.lessonId === currentLesson.id).length})
                     </span>
                     <div className="flex items-center gap-2">
@@ -992,7 +1094,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                     </div>
                   </div>
                   {resources.filter((r) => r.lessonId === currentLesson.id).length === 0 ? (
-                    <p className="text-xs text-[#737D8C]">
+                    <p className="text-xs text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
                       No documents, videos, or code attached to this lesson yet.
                     </p>
                   ) : (
@@ -1002,10 +1104,10 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                         .map((res) => (
                           <div
                             key={res.id}
-                            className="bg-white p-2 rounded border border-gray-200 text-xs flex items-center justify-between"
+                            className="bg-white dark:bg-[#181C24] p-2 rounded border border-gray-200 dark:border-gray-800 text-xs flex items-center justify-between"
                           >
-                            <span className="font-medium text-[#1F2937] truncate">{res.title}</span>
-                            <span className="text-[10px] uppercase font-semibold text-[#3156D3] bg-[#E8EEFF] px-2 py-0.5 rounded">
+                            <span className="font-medium text-[#1F2937] dark:text-white dark:text-white dark:text-white truncate">{res.title}</span>
+                            <span className="text-[10px] uppercase font-semibold text-[#3156D3] dark:text-indigo-300 bg-[#E8EEFF] dark:bg-indigo-950/40 px-2 py-0.5 rounded">
                               {res.type}
                             </span>
                           </div>
@@ -1014,7 +1116,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-[#D9DEE7] flex justify-end">
+                <div className="pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] flex justify-end">
                   <Button
                     type="submit"
                     variant="primary"
@@ -1027,10 +1129,10 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
               </form>
             </div>
           ) : (
-            <div className="text-center py-16 text-[#5B6472]">
+            <div className="text-center py-16 text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
               <Layers className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-[#1F2937]">Select a topic or lesson</p>
-              <p className="text-xs text-[#5B6472] mt-1">
+              <p className="text-sm font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white">Select a topic or lesson</p>
+              <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mt-1">
                 Choose an item in the tree on the left to edit its parameters or add new content.
               </p>
             </div>
@@ -1070,13 +1172,13 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
             onClick={() => setIsAssessmentDrawerOpen(false)}
           />
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+            <div className="w-screen max-w-full sm:max-w-md bg-white dark:bg-[#181C24] shadow-2xl flex flex-col">
               {/* Drawer Header */}
-              <div className="p-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <div className="p-5 border-b border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-[#1C212B]">
                 <div>
                   <div className="flex items-center gap-2">
                     <CheckSquare className="w-4 h-4 text-indigo-600" />
-                    <h3 className="text-sm font-bold text-gray-900">Attach Assessment to Topic</h3>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white dark:text-white dark:text-white">Attach Assessment to Topic</h3>
                   </div>
                   <p className="text-xs text-gray-500 mt-1 line-clamp-1">
                     Target: <span className="font-semibold text-gray-800">{drawerTopic.title}</span>
@@ -1091,7 +1193,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
               </div>
 
               {/* Drawer Search & Instructions */}
-              <div className="p-4 border-b border-gray-100 bg-white space-y-2">
+              <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#181C24] space-y-2">
                 <p className="text-xs text-gray-600">
                   Select an assessment for <span className="font-semibold">{course.title}</span> to measure learner mastery in this unit.
                 </p>
@@ -1102,7 +1204,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                     value={assessmentDrawerSearch}
                     onChange={(e) => setAssessmentDrawerSearch(e.target.value)}
                     placeholder="Filter course assessments..."
-                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-indigo-500 focus:outline-none"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 rounded-lg focus:bg-white focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1139,12 +1241,12 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                           className={`p-3.5 rounded-xl border transition-all ${
                             isAttachedHere
                               ? 'bg-indigo-50/40 border-indigo-200 ring-1 ring-indigo-200'
-                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-xs'
+                              : 'bg-white dark:bg-[#181C24] border-gray-200 dark:border-gray-800 hover:border-gray-300 hover:shadow-xs'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <h4 className="text-xs font-bold text-gray-900 line-clamp-1">{a.title}</h4>
+                              <h4 className="text-xs font-bold text-gray-900 dark:text-white dark:text-white dark:text-white line-clamp-1">{a.title}</h4>
                               <div className="flex items-center gap-1.5 mt-1">
                                 <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
                                   {a.type}
@@ -1203,7 +1305,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
               </div>
 
               {/* Drawer Footer */}
-              <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-2">
+              <div className="p-4 border-t border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 bg-gray-50 dark:bg-[#1C212B] space-y-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1240,11 +1342,11 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545] flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800">
               <div className="flex items-center gap-2">
                 <UploadCloud className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-bold text-gray-900">Upload Resources from Computer</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white dark:text-white dark:text-white">Upload Resources from Computer</h3>
               </div>
               <button
                 onClick={() => {
@@ -1264,7 +1366,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
 
             <div className="mt-4 flex-1 overflow-y-auto space-y-3">
               {/* Drop area */}
-              <label className="border-2 border-dashed border-gray-300 hover:border-indigo-500 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-gray-50/60 hover:bg-indigo-50/30 transition-colors">
+              <label className="border-2 border-dashed border-gray-300 hover:border-indigo-500 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-gray-50 dark:bg-[#1C212B]/60 hover:bg-indigo-50/30 transition-colors">
                 <UploadCloud className="w-8 h-8 text-indigo-500 mb-2" />
                 <span className="text-xs font-semibold text-gray-800">
                   Click or drag files here to upload
@@ -1305,14 +1407,14 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                     {stagedFiles.map((file, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs"
+                        className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 text-xs"
                       >
                         <div className="flex items-center gap-2 truncate">
                           <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                           <span className="truncate font-medium text-gray-800">{file.name}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-gray-500 bg-white px-1.5 py-0.5 rounded border border-gray-200">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 bg-white dark:bg-[#12161F] px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-800">
                             {formatFileSize(file.size)}
                           </span>
                           <button
@@ -1330,7 +1432,7 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
               )}
             </div>
 
-            <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-end gap-2">
+            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 flex items-center justify-end gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -1351,6 +1453,112 @@ export const CurriculumEditorPage: React.FC<CurriculumEditorPageProps> = ({
                 Attach {stagedFiles.length} file(s)
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create New Lesson Modal */}
+      {addLessonTopic && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-gray-800 flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <h3 className="text-base font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">Create New Lesson</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAddLessonTopic(null)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="mt-3">
+              <span className="text-xs text-gray-500 dark:text-gray-400">Target Topic:</span>{' '}
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                {addLessonTopic.title}
+              </span>
+            </div>
+
+            <form onSubmit={handleCreateLessonSubmit} className="mt-4 space-y-4 flex-1 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-3">
+                  <FormField
+                    id="new-lesson-title"
+                    label="Lesson title"
+                    required
+                    helperText="Concise name for the lesson unit."
+                  >
+                    <input
+                      id="new-lesson-title"
+                      type="text"
+                      autoFocus
+                      value={newLessonTitle}
+                      onChange={(e) => setNewLessonTitle(e.target.value)}
+                      placeholder="e.g. Memory Hierarchy & Cache Lines"
+                      className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                    />
+                  </FormField>
+                </div>
+                <div className="sm:col-span-1">
+                  <FormField
+                    id="new-lesson-order"
+                    label="Sequence"
+                    required
+                    helperText="Order."
+                  >
+                    <input
+                      id="new-lesson-order"
+                      type="number"
+                      min="1"
+                      value={newLessonOrder}
+                      onChange={(e) => setNewLessonOrder(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                    />
+                  </FormField>
+                </div>
+              </div>
+
+              <FormField
+                id="new-lesson-desc"
+                label="Lesson Introduction & Content (Markdown Supported)"
+                helperText="Author the introduction, conceptual notes, and objectives. Students see this directly on their lesson workspace."
+              >
+                <textarea
+                  id="new-lesson-desc"
+                  rows={5}
+                  value={newLessonDesc}
+                  onChange={(e) => setNewLessonDesc(e.target.value)}
+                  placeholder="Write the lesson introduction, core architectural invariants, and instructional notes (supports Markdown)..."
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none font-sans"
+                />
+              </FormField>
+
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 flex items-center justify-end gap-2.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setAddLessonTopic(null)}
+                  disabled={isSubmittingNewLesson}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  leftIcon={<Save className="w-4 h-4" />}
+                  disabled={isSubmittingNewLesson || !newLessonTitle.trim()}
+                >
+                  {isSubmittingNewLesson ? 'Creating Lesson...' : 'Create Lesson'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

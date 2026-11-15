@@ -77,7 +77,7 @@ export const DiagnosticIntroPage: React.FC<DiagnosticIntroPageProps> = ({
         </div>
 
         {/* Assessment Parameters */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           <div className="p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#181C24]">
             <span className="text-gray-500 dark:text-gray-400 block mb-1">Time Limit</span>
             <div className="flex items-center gap-1 font-bold text-gray-900 dark:text-white">

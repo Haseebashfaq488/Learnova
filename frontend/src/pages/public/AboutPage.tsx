@@ -213,7 +213,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
 
           <div className="pt-6 border-t border-white/10 space-y-3">
             {!effectiveStudent ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -272,7 +272,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
         </p>
 
         {/* Expansive Full-Width Telemetry Stats Bar */}
-        <div className="mt-14 grid grid-cols-2 lg:grid-cols-4 gap-6 p-8 sm:p-10 rounded-3xl bg-[#060813]/80 border border-white/10 backdrop-blur-xl w-full shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
+        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-8 sm:p-10 rounded-3xl bg-[#060813]/80 border border-white/10 backdrop-blur-xl w-full shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
           <div className="p-4 border-r border-white/5">
             <span className="text-xs font-mono text-cyan-400 tracking-wider uppercase">Mastery Precision</span>
             <div className="text-2xl sm:text-4xl font-bold text-white mt-2">99.8%</div>

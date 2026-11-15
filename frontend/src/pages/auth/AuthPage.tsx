@@ -639,7 +639,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
               <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block mb-2 text-center">
                 Quick Demo One-Click Fill
               </span>
-              <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                 <motion.button
                   type="button"
                   whileHover={{ scale: 1.05, y: -2 }}

@@ -449,7 +449,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="pt-6 border-t border-white/10 space-y-3">
             {!effectiveStudent ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -1002,7 +1002,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* ========================================================================= */}
         <FadeInSection className="pt-8 pb-6 border-t border-white/10 text-xs text-[#64748B]">
           <footer className="space-y-8">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-2.5">
                 <span className="font-sans font-bold text-xs uppercase tracking-widest text-white">
                   Learner Views

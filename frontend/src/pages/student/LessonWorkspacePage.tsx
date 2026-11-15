@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Course,
   Topic,
@@ -52,14 +52,71 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
 
   const course = courses.find((c) => c.id === courseId) || courses[0];
   const topic = topics.find((t) => t.id === topicId) || topics[0];
-  const lesson = lessons.find((l) => l.id === lessonId) || lessons[0];
+  const propLesson = lessons.find((l) => l.id === lessonId) || lessons[0];
+
+  const [liveLesson, setLiveLesson] = useState<Lesson | null>(null);
+  const [liveResources, setLiveResources] = useState<LearningResource[] | null>(null);
+  const [isLoadingLesson, setIsLoadingLesson] = useState(false);
+
+  // Authoritatively fetch fresh lesson details and instructional introduction from the database
+  const activeLessonId = lessonId || propLesson?.id;
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!activeLessonId) return;
+
+    setIsLoadingLesson(true);
+    curriculumApi
+      .getLesson(activeLessonId)
+      .then((data) => {
+        if (!isMounted) return;
+        setLiveLesson({
+          id: data.id,
+          topicId: data.topic_id,
+          courseId: data.course_id || courseId,
+          title: data.title,
+          description: data.description || '',
+          order: data.order,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        });
+
+        if (Array.isArray(data.resources) && data.resources.length > 0) {
+          setLiveResources(
+            data.resources.map((r) => ({
+              id: r.id,
+              lessonId: r.lesson_id,
+              courseId: r.course_id || courseId,
+              title: r.title,
+              type: r.type,
+              contentOrUrl: r.content_or_url,
+              fileSize: r.file_size_bytes ? `${Math.round(r.file_size_bytes / 1024)} KB` : undefined,
+              createdAt: r.created_at,
+            }))
+          );
+        }
+      })
+      .catch((err) => {
+        // Fall back gracefully to local curriculum data if offline or network error
+        console.warn('Could not fetch authoritative lesson from server:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingLesson(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeLessonId, courseId]);
+
+  const lesson = liveLesson || propLesson;
 
   const topicLessons = lessons.filter((l) => l.topicId === topic?.id).sort((a, b) => a.order - b.order);
   const currentIdx = topicLessons.findIndex((l) => l.id === lesson?.id);
   const prevLesson = currentIdx > 0 ? topicLessons[currentIdx - 1] : null;
   const nextLesson = currentIdx >= 0 && currentIdx < topicLessons.length - 1 ? topicLessons[currentIdx + 1] : null;
 
-  const lessonResources = resources.filter((r) => r.lessonId === lesson?.id);
+  const lessonResources = liveResources || resources.filter((r) => r.lessonId === lesson?.id);
 
   const handleCopyCode = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -139,9 +196,6 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
             {lesson?.title}
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl">
-            {lesson?.description}
-          </p>
         </div>
 
         {/* Learning Content & Lesson Overview */}
@@ -151,8 +205,20 @@ export const LessonWorkspacePage: React.FC<LessonWorkspacePageProps> = ({
               <FileText className="w-4 h-4 text-indigo-600" />
               <span>Instructional Notes & Introduction</span>
             </h3>
+            {isLoadingLesson && (
+              <span className="text-[11px] text-indigo-500 flex items-center gap-1.5 font-medium">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                Syncing with server...
+              </span>
+            )}
           </div>
-          {lesson?.description?.trim() ? (
+          {isLoadingLesson && !lesson?.description ? (
+            <div className="p-6 rounded-2xl bg-gray-50/50 dark:bg-[#1C212B]/50 border border-gray-200/80 dark:border-gray-800/80 space-y-3 animate-pulse">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            </div>
+          ) : lesson?.description?.trim() ? (
             <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed text-gray-800 dark:text-gray-200 bg-gray-50/50 dark:bg-[#1C212B]/50 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800/80">
               <RichMarkdownRenderer content={lesson.description} />
             </div>

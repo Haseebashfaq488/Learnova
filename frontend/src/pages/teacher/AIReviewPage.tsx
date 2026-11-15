@@ -576,15 +576,15 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
       />
 
       {/* Governance Banner */}
-      <div className="p-4 rounded-xl bg-[#F4F6FF] border border-[#3156D3]/20 flex items-start gap-3.5">
-        <div className="p-2 rounded-lg bg-[#E8EEFF] text-[#2646B8] shrink-0 mt-0.5">
+      <div className="p-4 rounded-xl bg-[#F4F6FF] dark:bg-indigo-950/30 border border-[#3156D3]/20 dark:border-indigo-800/40 flex items-start gap-3.5">
+        <div className="p-2 rounded-lg bg-[#E8EEFF] dark:bg-indigo-900/40 text-[#2646B8] dark:text-indigo-300 shrink-0 mt-0.5">
           <Sparkles className="w-4 h-4" />
         </div>
-        <div className="text-xs text-[#1F2937] leading-relaxed">
+        <div className="text-xs text-[#1F2937] dark:text-white leading-relaxed">
           <p className="font-bold text-[#2646B8]">
             Curriculum Hierarchy &amp; Teacher-in-the-Loop Governance
           </p>
-          <p className="text-[#5B6472] mt-0.5">
+          <p className="text-[#5B6472] dark:text-gray-400 mt-0.5">
             Strict hierarchy: <strong>1. Course</strong> → <strong>2. Topic</strong> → <strong>3. Lesson</strong>.
             Questions generated are anchored to the specific lesson and its learning resources.
             Candidates remain quarantined until approved.
@@ -595,21 +595,21 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
       {/* ==================================================== */}
       {/* STEP 1: Select Course                                */}
       {/* ==================================================== */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-5 shadow-2xs space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7]">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-5 shadow-2xs space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545]">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#3156D3] text-white flex items-center justify-center text-xs font-bold">
               1
             </span>
             <BookOpen className="w-4 h-4 text-[#3156D3]" />
-            <h2 className="text-sm font-bold text-[#1F2937]">Step 1: Select Course</h2>
+            <h2 className="text-sm font-bold text-[#1F2937] dark:text-white">Step 1: Select Course</h2>
           </div>
-          <span className="text-[11px] text-[#737D8C]">
+          <span className="text-[11px] text-[#737D8C] dark:text-gray-400">
             Curriculum Oversight & Question Generation
           </span>
         </div>
 
-        <p className="text-xs text-[#5B6472]">
+        <p className="text-xs text-[#5B6472] dark:text-gray-400">
           Choose the course you want to author or generate assessment questions for:
         </p>
 
@@ -630,8 +630,8 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 onClick={() => handleCourseChange(c.id)}
                 className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                   isSelected
-                    ? 'border-[#3156D3] bg-[#F4F6FF] ring-2 ring-[#3156D3]/20 shadow-xs'
-                    : 'border-[#D9DEE7] bg-white hover:border-gray-300 hover:bg-gray-50/50'
+                    ? 'border-[#3156D3] bg-[#F4F6FF] dark:bg-indigo-950/40 ring-2 ring-[#3156D3]/20 shadow-xs'
+                    : 'border-[#D9DEE7] bg-white hover:border-gray-300 hover:bg-gray-50 dark:bg-[#1C212B]/50'
                 }`}
               >
                 <div>
@@ -651,12 +651,12 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                       </span>
                     )}
                   </div>
-                  <h3 className="text-xs font-bold text-[#1F2937] line-clamp-2 mt-1">
+                  <h3 className="text-xs font-bold text-[#1F2937] dark:text-white line-clamp-2 mt-1">
                     {c.title}
                   </h3>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-[#737D8C]">
+                <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-[#737D8C] dark:text-gray-400">
                   <span>
                     {topicCount} Topics • {lessonCount} Lessons
                   </span>
@@ -673,23 +673,23 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
       {/* ==================================================== */}
       {/* STEP 2: Select Topic (within chosen Course)          */}
       {/* ==================================================== */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-5 shadow-2xs space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7]">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-5 shadow-2xs space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545]">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#3156D3] text-white flex items-center justify-center text-xs font-bold">
               2
             </span>
             <Layers className="w-4 h-4 text-[#3156D3]" />
-            <h2 className="text-sm font-bold text-[#1F2937]">
+            <h2 className="text-sm font-bold text-[#1F2937] dark:text-white">
               Step 2: Select Curriculum Topic in "{activeCourse?.title}"
             </h2>
           </div>
-          <span className="text-xs text-[#737D8C]">
+          <span className="text-xs text-[#737D8C] dark:text-gray-400">
             {courseTopics.length} topic{courseTopics.length !== 1 ? 's' : ''} available
           </span>
         </div>
 
-        <p className="text-xs text-[#5B6472]">
+        <p className="text-xs text-[#5B6472] dark:text-gray-400">
           Choose the pedagogical topic under which the target lesson belongs:
         </p>
 
@@ -712,25 +712,25 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                   onClick={() => handleTopicChange(t.id)}
                   className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'border-[#3156D3] bg-[#E8EEFF] text-[#1F2937] ring-2 ring-[#3156D3]/20 font-semibold'
-                      : 'border-[#D9DEE7] bg-white text-[#5B6472] hover:bg-gray-50'
+                      ? 'border-[#3156D3] bg-[#E8EEFF] text-[#1F2937] dark:text-white ring-2 ring-[#3156D3]/20 font-semibold'
+                      : 'border-[#D9DEE7] bg-white text-[#5B6472] dark:text-gray-400 hover:bg-gray-50 dark:bg-[#1C212B]'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className="text-[10px] font-bold text-[#3156D3] bg-white px-2 py-0.5 rounded border border-[#3156D3]/30">
+                      <span className="text-[10px] font-bold text-[#3156D3] dark:text-indigo-300 bg-white dark:bg-[#12161F] px-2 py-0.5 rounded border border-[#3156D3]/30 dark:border-indigo-800/40">
                         Topic {t.order}
                       </span>
-                      <span className="text-[10px] text-[#737D8C]">{lessonCount} Lessons</span>
+                      <span className="text-[10px] text-[#737D8C] dark:text-gray-400">{lessonCount} Lessons</span>
                     </div>
-                    <h4 className="text-xs font-bold text-[#1F2937] line-clamp-1 mt-1">{t.title}</h4>
-                    <p className="text-[11px] text-[#737D8C] line-clamp-2 mt-1">
+                    <h4 className="text-xs font-bold text-[#1F2937] dark:text-white line-clamp-1 mt-1">{t.title}</h4>
+                    <p className="text-[11px] text-[#737D8C] dark:text-gray-400 line-clamp-2 mt-1">
                       {t.description || 'Curriculum unit'}
                     </p>
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
-                    <span className="text-[#737D8C]">Mastery: {t.masteryThreshold || 75}%</span>
+                    <span className="text-[#737D8C] dark:text-gray-400">Mastery: {t.masteryThreshold || 75}%</span>
                     <span className={`font-semibold ${isSelected ? 'text-[#3156D3]' : 'text-gray-400'}`}>
                       {isSelected ? 'Active Topic ✓' : 'Select →'}
                     </span>
@@ -745,23 +745,23 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
       {/* ==================================================== */}
       {/* STEP 3: Select Lesson (within chosen Topic)          */}
       {/* ==================================================== */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-5 shadow-2xs space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7]">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-5 shadow-2xs space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545]">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#3156D3] text-white flex items-center justify-center text-xs font-bold">
               3
             </span>
             <Compass className="w-4 h-4 text-[#3156D3]" />
-            <h2 className="text-sm font-bold text-[#1F2937]">
+            <h2 className="text-sm font-bold text-[#1F2937] dark:text-white">
               Step 3: Select Lesson in "{activeTopic?.title || 'Selected Topic'}"
             </h2>
           </div>
-          <span className="text-xs text-[#737D8C]">
+          <span className="text-xs text-[#737D8C] dark:text-gray-400">
             Topic: <strong className="text-[#3156D3]">{activeTopic?.title}</strong>
           </span>
         </div>
 
-        <p className="text-xs text-[#5B6472]">
+        <p className="text-xs text-[#5B6472] dark:text-gray-400">
           Choose the specific lesson to target. Learning materials and question candidates will be anchored to this lesson:
         </p>
 
@@ -782,27 +782,27 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                   onClick={() => handleLessonChange(l.id)}
                   className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'border-[#3156D3] bg-[#E8EEFF] text-[#1F2937] ring-2 ring-[#3156D3]/20 font-semibold'
-                      : 'border-[#D9DEE7] bg-white text-[#5B6472] hover:bg-gray-50'
+                      ? 'border-[#3156D3] bg-[#E8EEFF] text-[#1F2937] dark:text-white ring-2 ring-[#3156D3]/20 font-semibold'
+                      : 'border-[#D9DEE7] bg-white text-[#5B6472] dark:text-gray-400 hover:bg-gray-50 dark:bg-[#1C212B]'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className="text-[10px] font-bold text-[#3156D3] bg-white px-2 py-0.5 rounded border border-[#3156D3]/30">
+                      <span className="text-[10px] font-bold text-[#3156D3] dark:text-indigo-300 bg-white dark:bg-[#12161F] px-2 py-0.5 rounded border border-[#3156D3]/30 dark:border-indigo-800/40">
                         Lesson {l.order}
                       </span>
-                      <span className="text-[10px] text-[#737D8C]">
+                      <span className="text-[10px] text-[#737D8C] dark:text-gray-400">
                         {resCount} Resource{resCount !== 1 ? 's' : ''}
                       </span>
                     </div>
-                    <h4 className="text-xs font-bold text-[#1F2937] line-clamp-2 mt-1">{l.title}</h4>
-                    <p className="text-[11px] text-[#737D8C] line-clamp-2 mt-1">
+                    <h4 className="text-xs font-bold text-[#1F2937] dark:text-white line-clamp-2 mt-1">{l.title}</h4>
+                    <p className="text-[11px] text-[#737D8C] dark:text-gray-400 line-clamp-2 mt-1">
                       {l.description || 'Lesson materials and concepts.'}
                     </p>
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
-                    <span className="text-[#737D8C]">
+                    <span className="text-[#737D8C] dark:text-gray-400">
                       {resCount > 0 ? `${resCount} file(s) available` : 'Description text only'}
                     </span>
                     <span className={`font-semibold ${isSelected ? 'text-[#3156D3]' : 'text-gray-400'}`}>
@@ -819,20 +819,20 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
       {/* ==================================================== */}
       {/* STEP 4: Resource Input & Generation Form             */}
       {/* ==================================================== */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7]">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-6 shadow-2xs space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7] dark:border-[#2D3545]">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#3156D3] text-white flex items-center justify-center text-xs font-bold">
               4
             </span>
             <Sparkles className="w-4 h-4 text-[#3156D3]" />
-            <h2 className="text-base font-bold text-[#1F2937]">
+            <h2 className="text-base font-bold text-[#1F2937] dark:text-white">
               Step 4: Resource &amp; Question Generation Settings
             </h2>
           </div>
-          <span className="text-xs text-[#737D8C]">
+          <span className="text-xs text-[#737D8C] dark:text-gray-400">
             Targeting: <strong className="text-[#3156D3]">{activeTopic?.title}</strong> →{' '}
-            <strong className="text-[#1F2937]">{activeLesson?.title || 'Lesson'}</strong>
+            <strong className="text-[#1F2937] dark:text-white">{activeLesson?.title || 'Lesson'}</strong>
           </span>
         </div>
 
@@ -847,7 +847,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               id="gen-resource"
               value={selectedResourceId}
               onChange={(e) => setSelectedResourceId(e.target.value)}
-              className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2.5 focus:border-[#3156D3] focus:outline-none"
+              className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white.5 focus:border-[#3156D3] focus:outline-none"
             >
               <option value="">
                 Use Lesson Description: {activeLesson ? `"${activeLesson.title}"` : 'Syllabus Text'}
@@ -876,7 +876,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               value={customContext}
               onChange={(e) => setCustomContext(e.target.value)}
               placeholder="e.g. Emphasize dictionary copy semantics and immutable keys..."
-              className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2.5 focus:border-[#3156D3] focus:outline-none"
+              className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white.5 focus:border-[#3156D3] focus:outline-none"
             />
           </FormField>
         </div>
@@ -884,7 +884,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
         {/* Allowed Question Formats & Difficulty */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
           <div className="md:col-span-2 space-y-2">
-            <label className="text-xs font-semibold text-[#1F2937] block">
+            <label className="text-xs font-semibold text-[#1F2937] dark:text-white block">
               Allowed Question Formats (Select one or more)
             </label>
             <div className="flex flex-wrap gap-2">
@@ -903,8 +903,8 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                     onClick={() => handleToggleType(t.id as QuestionType)}
                     className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                       isSelected
-                        ? 'bg-[#E8EEFF] border-[#3156D3] text-[#2646B8] font-semibold'
-                        : 'bg-white border-[#D9DEE7] text-[#5B6472] hover:bg-gray-50'
+                        ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 border-[#3156D3] text-[#2646B8] dark:text-indigo-300 font-semibold'
+                        : 'bg-white border-[#D9DEE7] text-[#5B6472] dark:text-gray-400 hover:bg-gray-50 dark:bg-[#1C212B]'
                     }`}
                   >
                     {isSelected ? (
@@ -919,13 +919,13 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField id="gen-diff" label="Difficulty">
               <select
                 id="gen-diff"
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-2.5 py-1.5 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -938,7 +938,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 id="gen-count"
                 value={questionCount}
                 onChange={(e) => setQuestionCount(parseInt(e.target.value, 10))}
-                className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-2.5 py-1.5 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="1">1 Question</option>
                 <option value="2">2 Questions</option>
@@ -949,7 +949,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
           </div>
         </div>
 
-        <div className="pt-3 border-t border-[#D9DEE7] flex justify-end items-center gap-3">
+        <div className="pt-3 border-t border-[#D9DEE7] dark:border-[#2D3545] flex justify-end items-center gap-3">
           <Button
             variant="primary"
             leftIcon={
@@ -971,9 +971,9 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
       {/* CANDIDATE REVIEW QUEUE                               */}
       {/* ==================================================== */}
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-[#D9DEE7]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545]">
           <div className="flex items-center gap-2.5">
-            <h2 className="text-base font-bold text-[#1F2937]">Candidate Review Queue</h2>
+            <h2 className="text-base font-bold text-[#1F2937] dark:text-white">Candidate Review Queue</h2>
             <span className="text-xs font-semibold bg-[#FFF5D6] text-[#946200] px-2.5 py-0.5 rounded-full border border-[#946200]/30">
               {coursePendingCandidates.length} Pending Review
             </span>
@@ -1016,15 +1016,15 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
         </div>
 
         {/* Iterative AGY Persistent Session Refinement Bar */}
-        <div className="bg-[#F8FAFC] border border-[#D9DEE7] rounded-xl p-3.5 space-y-2">
+        <div className="bg-[#F8FAFC] border border-[#D9DEE7] dark:border-[#2D3545] rounded-xl p-3.5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-[#3156D3]" />
-              <span className="text-xs font-bold text-[#1F2937]">
+              <span className="text-xs font-bold text-[#1F2937] dark:text-white">
                 Iterative Question Refinement (Persistent AGY Session)
               </span>
             </div>
-            <span className="text-[11px] text-[#737D8C]">
+            <span className="text-[11px] text-[#737D8C] dark:text-gray-400">
               Refine questions or add new formats in the same conversation
             </span>
           </div>
@@ -1041,7 +1041,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 }
               }}
               disabled={isRefining}
-              className="flex-1 bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2 focus:border-[#3156D3] focus:outline-none"
+              className="flex-1 bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white focus:border-[#3156D3] focus:outline-none"
             />
             <Button
               variant="secondary"
@@ -1056,7 +1056,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
         </div>
 
         {/* CANDIDATE FILTERS & SORTING CONTROLS */}
-        <div className="bg-white rounded-xl border border-[#D9DEE7] p-4 shadow-2xs space-y-3">
+        <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-4 shadow-2xs space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             {/* Search Input */}
             <div className="md:col-span-2 relative">
@@ -1066,7 +1066,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 value={candidateSearchQuery}
                 onChange={(e) => setCandidateSearchQuery(e.target.value)}
                 placeholder="Filter candidates by prompt or keyword..."
-                className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9DEE7] rounded-lg text-xs focus:border-[#3156D3] focus:outline-none"
+                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] rounded-lg text-xs dark:text-white focus:border-[#3156D3] focus:outline-none"
               />
             </div>
 
@@ -1075,7 +1075,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               <select
                 value={candidateStatusFilter}
                 onChange={(e) => setCandidateStatusFilter(e.target.value as any)}
-                className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="all">All Statuses</option>
                 <option value="pending_review">Pending Review Only</option>
@@ -1089,7 +1089,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               <select
                 value={candidateTypeFilter}
                 onChange={(e) => setCandidateTypeFilter(e.target.value)}
-                className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="all">All Question Types</option>
                 <option value="multiple_choice">Multiple Choice</option>
@@ -1107,7 +1107,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               <select
                 value={candidateDifficultyFilter}
                 onChange={(e) => setCandidateDifficultyFilter(e.target.value)}
-                className="bg-white border border-[#D9DEE7] text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                className="bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-2.5 py-1.5 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="all">All Difficulties</option>
                 <option value="easy">Easy</option>
@@ -1118,7 +1118,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               <select
                 value={candidateLessonScope}
                 onChange={(e) => setCandidateLessonScope(e.target.value as any)}
-                className="bg-white border border-[#D9DEE7] text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                className="bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-2.5 py-1.5 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="all">All Course Lessons</option>
                 <option value="current_lesson">Current Selected Lesson Only</option>
@@ -1127,11 +1127,11 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
 
             {/* Sorting Controls */}
             <div className="flex items-center gap-2">
-              <span className="text-[#737D8C] text-[11px] font-semibold">Sort by:</span>
+              <span className="text-[#737D8C] dark:text-gray-400 text-[11px] font-semibold">Sort by:</span>
               <select
                 value={sortField}
                 onChange={(e) => setSortField(e.target.value as any)}
-                className="bg-white border border-[#D9DEE7] text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                className="bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-2.5 py-1.5 dark:text-white focus:border-[#3156D3] focus:outline-none"
               >
                 <option value="date">Date Created</option>
                 <option value="difficulty">Difficulty</option>
@@ -1142,7 +1142,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               <button
                 type="button"
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="p-1.5 rounded-lg border border-[#D9DEE7] hover:bg-gray-50 text-[#1F2937] flex items-center gap-1 cursor-pointer transition-colors"
+                className="p-1.5 rounded-lg border border-[#D9DEE7] dark:border-[#2D3545] hover:bg-gray-50 dark:bg-[#1C212B] text-[#1F2937] dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
                 title={`Sort ${sortOrder === 'asc' ? 'Ascending' : 'Descending'} (click to invert)`}
               >
                 {sortOrder === 'asc' ? (
@@ -1174,9 +1174,9 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
 
         {/* Candidates List */}
         {filteredAndSortedCandidates.length === 0 ? (
-          <div className="bg-white rounded-xl border border-[#D9DEE7] p-8 text-center text-xs text-[#5B6472]">
+          <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-8 text-center text-xs text-[#5B6472] dark:text-gray-400">
             <CheckCircle2 className="w-8 h-8 text-[#18794E] mx-auto mb-2" />
-            <p className="text-sm font-semibold text-[#1F2937]">
+            <p className="text-sm font-semibold text-[#1F2937] dark:text-white">
               No questions match the current filters
             </p>
             <p className="mt-1 max-w-md mx-auto">
@@ -1194,7 +1194,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
               return (
                 <div
                   key={cand.id}
-                  className={`bg-white rounded-xl border p-5 shadow-2xs space-y-4 transition-all ${
+                  className={`bg-white dark:bg-[#181C24] rounded-xl border p-5 shadow-2xs space-y-4 transition-all ${
                     cand.status === 'rejected'
                       ? 'border-red-200 bg-red-50/20'
                       : cand.status === 'approved'
@@ -1204,16 +1204,16 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-[#737D8C] bg-gray-100 px-2 py-0.5 rounded">
+                      <span className="text-xs font-bold text-[#737D8C] dark:text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                         Candidate #{idx + 1}
                       </span>
-                      <span className="text-xs font-semibold text-[#3156D3] bg-[#E8EEFF] px-2 py-0.5 rounded">
+                      <span className="text-xs font-semibold text-[#3156D3] dark:text-indigo-300 bg-[#E8EEFF] dark:bg-indigo-950/40 px-2 py-0.5 rounded">
                         {cand.type.replace('_', ' ')}
                       </span>
-                      <span className="text-xs font-medium text-gray-600 bg-gray-50 border px-2 py-0.5 rounded">
+                      <span className="text-xs font-medium text-gray-600 bg-gray-50 dark:bg-[#1C212B] border px-2 py-0.5 rounded">
                         {cand.difficulty} • {cand.points || 1} pt{cand.points !== 1 ? 's' : ''}
                       </span>
-                      <span className="text-xs text-[#737D8C]">
+                      <span className="text-xs text-[#737D8C] dark:text-gray-400">
                         {topicObj?.title} {lessonObj?.title ? `→ ${lessonObj.title}` : ''} • {courseObj?.title}
                       </span>
                     </div>
@@ -1223,7 +1223,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveCandidate(cand.id)}
-                        className="p-1 rounded-md text-[#737D8C] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        className="p-1 rounded-md text-[#737D8C] dark:text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         title="Remove candidate question"
                         aria-label={`Remove candidate question ${idx + 1}`}
                       >
@@ -1234,21 +1234,21 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
 
                   {/* Question Prompt */}
                   <div>
-                    <h3 className="text-sm font-bold text-[#1F2937] leading-relaxed">
+                    <h3 className="text-sm font-bold text-[#1F2937] dark:text-white leading-relaxed">
                       {cand.prompt}
                     </h3>
                   </div>
 
                   {/* Answer Preview */}
                   {cand.type === 'multiple_choice' && (
-                    <div className="space-y-1.5 pl-2 border-l-2 border-gray-200">
+                    <div className="space-y-1.5 pl-2 border-l-2 border-gray-200 dark:border-gray-800">
                       {(cand.options || []).map((opt, i) => (
                         <div
                           key={opt.id}
                           className={`text-xs p-2 rounded flex items-center justify-between ${
                             opt.isCorrect
                               ? 'bg-[#EAF7F0] text-[#18794E] font-medium border border-[#18794E]/30'
-                              : 'text-[#5B6472] bg-gray-50'
+                              : 'text-[#5B6472] dark:text-gray-400 bg-gray-50 dark:bg-[#1C212B]'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -1268,14 +1268,14 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                   )}
 
                   {cand.type === 'true_false' && (
-                    <div className="text-xs p-2.5 rounded bg-gray-50 border border-gray-200 font-semibold text-[#1F2937]">
+                    <div className="text-xs p-2.5 rounded bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 font-semibold text-[#1F2937] dark:text-white">
                       Expected Answer: {cand.correctBool ? 'True' : 'False'}
                     </div>
                   )}
 
                   {cand.type === 'fill_blank' && (
-                    <div className="text-xs p-2.5 rounded bg-gray-50 border border-gray-200">
-                      <span className="text-[#5B6472]">Accepted Answers: </span>
+                    <div className="text-xs p-2.5 rounded bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800">
+                      <span className="text-[#5B6472] dark:text-gray-400">Accepted Answers: </span>
                       <span className="font-mono font-bold text-[#18794E]">
                         {(cand.acceptedAnswers || []).join(', ')}
                       </span>
@@ -1283,22 +1283,22 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                   )}
 
                   {cand.type === 'matching' && (
-                    <div className="text-xs border rounded-lg divide-y bg-gray-50">
+                    <div className="text-xs border rounded-lg divide-y bg-gray-50 dark:bg-[#1C212B]">
                       {(cand.matchingPairs || []).map((pair) => (
-                        <div key={pair.id} className="p-2 grid grid-cols-2">
+                        <div key={pair.id} className="p-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <span className="font-semibold">{pair.left}</span>
-                          <span className="text-[#5B6472]">{pair.right}</span>
+                          <span className="text-[#5B6472] dark:text-gray-400">{pair.right}</span>
                         </div>
                       ))}
                     </div>
                   )}
 
                   {cand.type === 'short_answer' && (
-                    <div className="text-xs p-2.5 rounded bg-gray-50 border border-gray-200">
-                      <span className="font-semibold block text-[#1F2937] mb-0.5">
+                    <div className="text-xs p-2.5 rounded bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800">
+                      <span className="font-semibold block text-[#1F2937] dark:text-white mb-0.5">
                         Grading Rubric / Key Concepts:
                       </span>
-                      <span className="text-[#5B6472]">{cand.expectedRubric}</span>
+                      <span className="text-[#5B6472] dark:text-gray-400">{cand.expectedRubric}</span>
                     </div>
                   )}
 
@@ -1308,7 +1308,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                       <span className="font-bold text-[#175CD3] block mb-0.5">
                         Pedagogical Rationale:
                       </span>
-                      <p className="text-[#1F2937] leading-relaxed">{cand.explanation}</p>
+                      <p className="text-[#1F2937] dark:text-white leading-relaxed">{cand.explanation}</p>
                     </div>
                   )}
 
@@ -1320,7 +1320,7 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
 
                   {/* Actions: Edit, Remove, Approve, Reject */}
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-[11px] text-[#737D8C] italic">
+                    <span className="text-[11px] text-[#737D8C] dark:text-gray-400 italic">
                       Source: {cand.sourceContext || 'Curriculum Syllabus'}
                     </span>
 
@@ -1387,9 +1387,9 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#D9DEE7]">
-            <h3 className="text-base font-bold text-[#1F2937] mb-1">Reject candidate question?</h3>
-            <p className="text-xs text-[#5B6472] mb-4">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
+            <h3 className="text-base font-bold text-[#1F2937] dark:text-white mb-1">Reject candidate question?</h3>
+            <p className="text-xs text-[#5B6472] dark:text-gray-400 mb-4">
               This candidate will be flagged as rejected and discarded from the active question bank.
             </p>
 
@@ -1404,11 +1404,11 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="e.g. Inaccurate premise or outside lesson scope..."
-                className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white focus:border-[#3156D3] focus:outline-none"
               />
             </FormField>
 
-            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#D9DEE7] mt-4">
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] mt-4">
               <Button variant="secondary" onClick={() => setRejectModalId(null)}>
                 Cancel
               </Button>
@@ -1427,12 +1427,12 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#D9DEE7]">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
             <div className="flex items-center gap-2.5 mb-2 text-red-600">
               <XCircle className="w-5 h-5" />
-              <h3 className="text-base font-bold text-[#1F2937]">Reject All Pending Candidates?</h3>
+              <h3 className="text-base font-bold text-[#1F2937] dark:text-white">Reject All Pending Candidates?</h3>
             </div>
-            <p className="text-xs text-[#5B6472] mb-4">
+            <p className="text-xs text-[#5B6472] dark:text-gray-400 mb-4">
               You are about to reject all <strong>{coursePendingCandidates.length}</strong> pending questions for this course. None of them will be promoted to the Question Bank.
             </p>
 
@@ -1447,11 +1447,11 @@ export const AIReviewPage: React.FC<AIReviewPageProps> = ({
                 value={bulkRejectReason}
                 onChange={(e) => setBulkRejectReason(e.target.value)}
                 placeholder="e.g. Questions do not match the current lesson syllabus or requirements..."
-                className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg px-3 py-2 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#12161F] border border-[#D9DEE7] dark:border-[#2D3545] text-xs rounded-lg px-3 py-2 dark:text-white focus:border-[#3156D3] focus:outline-none"
               />
             </FormField>
 
-            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#D9DEE7] mt-4">
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] mt-4">
               <Button variant="secondary" onClick={() => setBulkRejectModalOpen(false)}>
                 Cancel
               </Button>

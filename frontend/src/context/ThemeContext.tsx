@@ -27,8 +27,8 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
-  actualTheme: 'light',
+  theme: 'dark',
+  actualTheme: 'dark',
   setTheme: () => {},
   palette: 'indigo',
   setPalette: () => {},
@@ -47,10 +47,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return saved;
       }
     } catch {}
-    return 'light';
+    return 'dark';
   });
 
-  const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
+  const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('dark');
 
   const [palette, setPaletteState] = useState<PaletteId>(() => {
     try {
@@ -176,7 +176,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setMotionMode = (m: MotionMode) => setMotionModeState(m);
 
   const resetToDefaults = () => {
-    setThemeState('light');
+    setThemeState('dark');
     setPaletteState('indigo');
     setFontState('inter');
     setMotionModeState('expressive');

@@ -237,7 +237,7 @@ export const AdminProfileSecurityPage: React.FC<AdminProfileSecurityPageProps> =
           {/* Password Strength Checklist */}
           <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-[#12161F] border border-gray-200/80 dark:border-gray-800 space-y-1 text-[11px]">
             <p className="font-semibold text-gray-700 dark:text-gray-300">Password Policy Criteria:</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 pt-1">
               <span className={`flex items-center gap-1 ${hasMinLength ? 'text-emerald-600 font-bold' : 'text-gray-400'}`}>
                 {hasMinLength ? '✓' : '•'} 8+ Characters
               </span>

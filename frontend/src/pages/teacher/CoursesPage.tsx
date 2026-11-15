@@ -221,7 +221,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                       <td className="py-4 px-5 max-w-md">
                         <button
                           onClick={() => onNavigate('course_overview', { courseId: c.id })}
-                          className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-left transition-colors cursor-pointer text-sm"
+                          className="font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-left transition-colors cursor-pointer text-sm"
                         >
                           {c.title}
                         </button>
@@ -299,7 +299,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <button
                       onClick={() => onNavigate('course_overview', { courseId: c.id })}
-                      className="font-bold text-sm text-gray-900 dark:text-white text-left hover:text-indigo-600 dark:hover:text-indigo-400"
+                      className="font-bold text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white text-left hover:text-indigo-600 dark:hover:text-indigo-400"
                     >
                       {c.title}
                     </button>
@@ -342,11 +342,11 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
-            <h2 className="text-lg font-bold text-[#1F2937] mb-1">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
+            <h2 className="text-lg font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white mb-1">
               {editingCourse ? 'Edit course details' : 'Create new course'}
             </h2>
-            <p className="text-xs text-[#5B6472] mb-5">
+            <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mb-5">
               Enter academic course title and descriptive overview.
             </p>
 
@@ -367,7 +367,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                     if (formErrors.title) setFormErrors({ ...formErrors, title: '' });
                   }}
                   placeholder="e.g., Introduction to Computer Science"
-                  className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#12161F] dark:text-white border border-[#D9DEE7] dark:border-[#2D3545] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 />
               </FormField>
 
@@ -387,7 +387,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                     if (formErrors.description) setFormErrors({ ...formErrors, description: '' });
                   }}
                   placeholder="Provide an overview of the curriculum..."
-                  className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#12161F] dark:text-white border border-[#D9DEE7] dark:border-[#2D3545] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 />
               </FormField>
 
@@ -400,7 +400,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                   id="course-status"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as CourseStatus)}
-                  className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#12161F] dark:text-white border border-[#D9DEE7] dark:border-[#2D3545] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 >
                   <option value="draft">Draft (Work in progress)</option>
                   <option value="published">Published (Active course)</option>
@@ -408,7 +408,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                 </select>
               </FormField>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#D9DEE7]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#D9DEE7] dark:border-[#2D3545]">
                 <Button variant="secondary" type="button" onClick={() => setModalOpen(false)}>
                   Cancel
                 </Button>

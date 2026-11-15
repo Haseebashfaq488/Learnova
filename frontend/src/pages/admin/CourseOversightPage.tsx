@@ -309,7 +309,7 @@ export const CourseOversightPage: React.FC<CourseOversightPageProps> = ({
               </div>
 
               {/* Key Curriculum Metrics */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                 <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#12161F] border border-gray-200/80 dark:border-gray-800">
                   <p className="text-[10px] uppercase font-bold text-gray-400">Curriculum Scope</p>
                   <p className="text-sm font-extrabold text-gray-900 dark:text-white mt-1">

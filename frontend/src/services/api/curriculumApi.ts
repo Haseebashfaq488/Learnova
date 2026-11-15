@@ -33,6 +33,27 @@ export interface BackendResourceActivityResponse {
   created_at: string;
 }
 
+export interface BackendLessonDetailResponse {
+  id: string;
+  topic_id: string;
+  course_id?: string | null;
+  title: string;
+  description?: string | null;
+  order: number;
+  resources: Array<{
+    id: string;
+    lesson_id: string;
+    course_id?: string | null;
+    title: string;
+    type: 'document' | 'video' | 'markdown' | 'code' | 'link';
+    content_or_url: string;
+    file_size_bytes?: number | null;
+    created_at: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+}
+
 export function mapBackendCompletionToCompletion(c: BackendLessonCompletionResponse): LessonCompletion {
   return {
     id: c.id,
@@ -53,6 +74,15 @@ class CurriculumApiClient {
       ? `/students/me/lesson-completions?course_id=${courseId}`
       : '/students/me/lesson-completions';
     return authApi.request<BackendLessonCompletionResponse[]>(url, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Retrieve authoritative lesson details, introduction, and resources from the database (SSD-03, FR-CRS-06).
+   */
+  public async getLesson(lessonId: string): Promise<BackendLessonDetailResponse> {
+    return authApi.request<BackendLessonDetailResponse>(`/lessons/${lessonId}`, {
       method: 'GET',
     });
   }

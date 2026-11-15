@@ -289,7 +289,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
         title="Question Bank"
         description="Explore, create, and organize reusable assessment items following the strict curriculum hierarchy: Course -> Topic -> Lesson."
         primaryAction={
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               leftIcon={<Sparkles className="w-4 h-4 text-[#3156D3]" />}
@@ -319,21 +319,21 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
       {/* ==================================================== */}
       {/* STEP 1: Select Course                                */}
       {/* ==================================================== */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-5 shadow-2xs space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7]">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] p-5 shadow-2xs space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#3156D3] text-white flex items-center justify-center text-xs font-bold">
               1
             </span>
             <BookOpen className="w-4 h-4 text-[#3156D3]" />
-            <h2 className="text-sm font-bold text-[#1F2937]">Step 1: Select Course</h2>
+            <h2 className="text-sm font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">Step 1: Select Course</h2>
           </div>
-          <span className="text-[11px] text-[#737D8C]">
+          <span className="text-[11px] text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
             Assessment Repository & Item Registry
           </span>
         </div>
 
-        <p className="text-xs text-[#5B6472]">
+        <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
           Choose the course to inspect question categories:
         </p>
 
@@ -352,8 +352,8 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                 onClick={() => handleCourseChange(c.id)}
                 className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                   isSelected
-                    ? 'border-[#3156D3] bg-[#F4F6FF] ring-2 ring-[#3156D3]/20 shadow-xs'
-                    : 'border-[#D9DEE7] bg-white hover:border-gray-300 hover:bg-gray-50/50'
+                    ? 'border-[#3156D3] bg-[#F4F6FF] dark:bg-indigo-950/40 dark:bg-indigo-950/40 dark:bg-indigo-950/40 ring-2 ring-[#3156D3]/20 shadow-xs'
+                    : 'border-[#D9DEE7] bg-white hover:border-gray-300 hover:bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B]/50'
                 }`}
               >
                 <div>
@@ -367,16 +367,16 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                     >
                       {isAssigned ? 'My Course' : 'Authorized'}
                     </span>
-                    <span className="text-[10px] font-bold text-[#3156D3] bg-white px-2 py-0.5 rounded border border-[#3156D3]/20">
+                    <span className="text-[10px] font-bold text-[#3156D3] dark:text-indigo-400 bg-white dark:bg-[#1E232E] px-2 py-0.5 rounded border border-[#3156D3]/20 dark:border-indigo-800">
                       {countInCourse} Question{countInCourse !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  <h3 className="text-xs font-bold text-[#1F2937] line-clamp-2 mt-1">
+                  <h3 className="text-xs font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white line-clamp-2 mt-1">
                     {c.title}
                   </h3>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-[#737D8C]">
+                <div className="mt-3 pt-2 border-t border-gray-100 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 flex items-center justify-between text-[11px] text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
                   <span>
                     {tCount} Topics • {lCount} Lessons
                   </span>
@@ -393,23 +393,23 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
       {/* ==================================================== */}
       {/* STEP 2: Select Topic                                 */}
       {/* ==================================================== */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-5 shadow-2xs space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7]">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] p-5 shadow-2xs space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#3156D3] text-white flex items-center justify-center text-xs font-bold">
               2
             </span>
             <Layers className="w-4 h-4 text-[#3156D3]" />
-            <h2 className="text-sm font-bold text-[#1F2937]">
+            <h2 className="text-sm font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">
               Step 2: Select Topic in "{activeCourse?.title}"
             </h2>
           </div>
-          <span className="text-xs text-[#737D8C]">
+          <span className="text-xs text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
             Filter questions by curriculum topic
           </span>
         </div>
 
-        <p className="text-xs text-[#5B6472]">
+        <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
           Select a specific topic to view its lessons, or choose "All Topics":
         </p>
 
@@ -425,7 +425,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 border ${
                 selectedTopicId === 'all'
                   ? 'bg-[#3156D3] text-white border-[#3156D3] shadow-xs'
-                  : 'bg-white text-[#5B6472] border-[#D9DEE7] hover:bg-gray-50'
+                  : 'bg-white text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 border-[#D9DEE7] hover:bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B]'
               }`}
             >
               <span>All Topics ({courseTopics.length})</span>
@@ -445,15 +445,15 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                   onClick={() => setSelectedTopicId(t.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 border ${
                     isSelected
-                      ? 'bg-[#E8EEFF] text-[#2646B8] border-[#3156D3] ring-1 ring-[#3156D3]'
-                      : 'bg-white text-[#5B6472] border-[#D9DEE7] hover:bg-gray-50'
+                      ? 'bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 border-[#3156D3] ring-1 ring-[#3156D3]'
+                      : 'bg-white text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 border-[#D9DEE7] hover:bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B]'
                   }`}
                 >
                   <span className="text-[10px] uppercase font-bold opacity-75">T{t.order}:</span>
                   <span>{t.title}</span>
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                      isSelected ? 'bg-white text-[#2646B8]' : 'bg-gray-100 text-gray-700'
+                      isSelected ? 'bg-white dark:bg-[#1E232E] text-[#2646B8] dark:text-indigo-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {qCountInTopic} Qs • {lCountInTopic} Ls
@@ -483,11 +483,11 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
           }}
         />
 
-        <div className="flex items-center justify-between text-xs text-[#737D8C] px-1">
+        <div className="flex items-center justify-between text-xs text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 px-1">
           <span>
             Showing <strong>{filteredQuestions.length}</strong> questions across{' '}
             <strong>{displayedTopics.length}</strong> topic{displayedTopics.length !== 1 ? 's' : ''} for{' '}
-            <strong className="text-[#1F2937]">{activeCourse?.title}</strong>
+            <strong className="text-[#1F2937] dark:text-white dark:text-white dark:text-white">{activeCourse?.title}</strong>
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -534,17 +534,17 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
             return (
               <div
                 key={topic.id}
-                className="bg-white rounded-xl border border-[#D9DEE7] overflow-hidden shadow-2xs space-y-4 p-5"
+                className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] overflow-hidden shadow-2xs space-y-4 p-5"
               >
                 {/* Topic Header */}
                 <div
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#D9DEE7] cursor-pointer select-none"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] cursor-pointer select-none"
                   onClick={() => toggleLessonCollapse(topicCollapsedKey)}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      className="p-1 rounded text-gray-500 hover:bg-gray-100 transition"
+                      className="p-1 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                       aria-label={isTopicCollapsed ? 'Expand topic' : 'Collapse topic'}
                     >
                       {isTopicCollapsed ? (
@@ -559,12 +559,12 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                         <span className="text-[10px] font-bold text-[#3156D3] bg-[#E8EEFF] px-2 py-0.5 rounded border border-[#3156D3]/20">
                           Topic {topic.order}
                         </span>
-                        <h3 className="text-sm font-bold text-[#1F2937]">{topic.title}</h3>
-                        <span className="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded">
+                        <h3 className="text-sm font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">{topic.title}</h3>
+                        <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold px-2 py-0.5 rounded">
                           {topicQuestions.length} Questions
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#737D8C] line-clamp-1">
+                      <p className="text-[11px] text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 line-clamp-1">
                         {topic.description || 'Curriculum unit'}
                       </p>
                     </div>
@@ -604,9 +604,9 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                 {!isTopicCollapsed && (
                   <div className="space-y-4 pl-0 sm:pl-2">
                     {topicLessons.length === 0 ? (
-                      <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg text-xs text-[#5B6472] text-center">
+                      <div className="p-4 bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 rounded-lg text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 text-center">
                         <p className="font-semibold">No lessons defined for this topic</p>
-                        <p className="mt-0.5 text-[#737D8C]">
+                        <p className="mt-0.5 text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
                           Add lessons to "{topic.title}" in the Curriculum Editor to structure questions per lesson.
                         </p>
                       </div>
@@ -627,17 +627,17 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                         return (
                           <div
                             key={lesson.id}
-                            className="bg-[#F8FAFC] rounded-xl border border-[#D9DEE7] overflow-hidden"
+                            className="bg-[#F8FAFC] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] overflow-hidden"
                           >
                             {/* Lesson Category Header */}
                             <div
-                              className="p-3.5 bg-gray-50 border-b border-[#D9DEE7] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 cursor-pointer select-none hover:bg-gray-100/70 transition-colors"
+                              className="p-3.5 bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B] border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 cursor-pointer select-none hover:bg-gray-100/70 transition-colors"
                               onClick={() => toggleLessonCollapse(lessonKey)}
                             >
-                              <div className="flex items-center gap-2.5">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <button
                                   type="button"
-                                  className="p-1 rounded text-gray-500 hover:bg-white transition"
+                                  className="p-1 rounded text-gray-500 hover:bg-white dark:hover:bg-gray-800 transition"
                                   aria-label={isLessonCollapsed ? 'Expand lesson' : 'Collapse lesson'}
                                 >
                                   {isLessonCollapsed ? (
@@ -649,14 +649,14 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
 
                                 <div>
                                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                    <span className="text-[10px] font-bold text-[#3156D3] bg-white px-2 py-0.5 rounded border border-[#3156D3]/20">
+                                    <span className="text-[10px] font-bold text-[#3156D3] dark:text-indigo-400 bg-white dark:bg-[#1E232E] px-2 py-0.5 rounded border border-[#3156D3]/20 dark:border-indigo-800">
                                       Lesson {lesson.order}
                                     </span>
-                                    <span className="text-xs font-bold text-[#1F2937]">
+                                    <span className="text-xs font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white">
                                       {lesson.title}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-[#737D8C] line-clamp-1">
+                                  <p className="text-[11px] text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 line-clamp-1">
                                     {lesson.description}
                                   </p>
                                 </div>
@@ -676,7 +676,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                   <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">
                                     {hardCount} Hard
                                   </span>
-                                  <span className="bg-white text-gray-700 font-bold px-2 py-0.5 rounded border">
+                                  <span className="bg-white dark:bg-[#1E232E] text-gray-700 dark:text-gray-300 font-bold px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
                                     {lessonQList.length} Total
                                   </span>
                                 </div>
@@ -718,13 +718,13 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
 
                             {/* Questions for This Lesson */}
                             {!isLessonCollapsed && (
-                              <div className="bg-white">
+                              <div className="bg-white dark:bg-[#181C24]">
                                 {lessonQList.length === 0 ? (
-                                  <div className="p-6 text-center text-xs text-[#5B6472]">
-                                    <p className="font-semibold text-[#1F2937]">
+                                  <div className="p-6 text-center text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
+                                    <p className="font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white">
                                       No questions created for this lesson yet
                                     </p>
-                                    <p className="mt-1 text-[#737D8C] max-w-sm mx-auto">
+                                    <p className="mt-1 text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 max-w-sm mx-auto">
                                       Anchor questions directly to "{lesson.title}" through manual authoring or AI generation.
                                     </p>
                                     <div className="flex items-center justify-center gap-2 mt-3">
@@ -762,7 +762,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                   <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                       <thead>
-                                        <tr className="bg-white border-b border-[#D9DEE7] text-[11px] font-semibold text-[#5B6472]">
+                                        <tr className="bg-white dark:bg-[#181C24] border-b border-[#D9DEE7] dark:border-[#2D3545] text-[11px] font-semibold text-[#5B6472] dark:text-gray-400">
                                           <th scope="col" className="py-2.5 px-5">Question Prompt</th>
                                           <th scope="col" className="py-2.5 px-3">Type</th>
                                           <th scope="col" className="py-2.5 px-3">Difficulty</th>
@@ -778,7 +778,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                               <button
                                                 type="button"
                                                 onClick={() => setPreviewQuestion(q)}
-                                                className="font-medium text-[#1F2937] group-hover:text-[#3156D3] text-left transition-colors cursor-pointer text-xs line-clamp-2"
+                                                className="font-medium text-[#1F2937] dark:text-white dark:text-white dark:text-white group-hover:text-[#3156D3] text-left transition-colors cursor-pointer text-xs line-clamp-2"
                                               >
                                                 {q.prompt}
                                               </button>
@@ -790,7 +790,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                               )}
                                             </td>
                                             <td className="py-3 px-3">
-                                              <span className="font-medium text-[#1F2937] bg-gray-100 px-2 py-0.5 rounded border border-gray-200 text-[11px]">
+                                              <span className="font-medium text-[#1F2937] dark:text-white dark:text-white dark:text-white bg-gray-100 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 text-[11px]">
                                                 {formatTypeLabel(q.type)}
                                               </span>
                                             </td>
@@ -798,7 +798,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                             <td className="py-3 px-3">
                                               <StatusBadge status={q.status} />
                                             </td>
-                                            <td className="py-3 px-3 text-center font-semibold text-[#1F2937]">
+                                            <td className="py-3 px-3 text-center font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white">
                                               {q.points || 1}
                                             </td>
                                             <td className="py-3 px-5 text-right">
@@ -820,7 +820,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                                       lessonId: lesson.id,
                                                     })
                                                   }
-                                                  className="p-1.5 text-[#5B6472] hover:text-[#1F2937] hover:bg-gray-100 rounded cursor-pointer transition-colors"
+                                                  className="p-1.5 text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:text-[#1F2937] dark:text-white dark:text-white dark:text-white hover:bg-gray-100 rounded cursor-pointer transition-colors"
                                                   title="Edit question"
                                                   aria-label={`Edit ${q.prompt}`}
                                                 >
@@ -828,7 +828,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                                                 </button>
                                                 <button
                                                   onClick={() => setConfirmDeleteId(q.id)}
-                                                  className="p-1.5 text-[#5B6472] hover:text-[#B42318] hover:bg-[#FEF0EF] rounded cursor-pointer transition-colors"
+                                                  className="p-1.5 text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:text-[#B42318] hover:bg-[#FEF0EF] rounded cursor-pointer transition-colors"
                                                   title="Delete question"
                                                   aria-label={`Delete ${q.prompt}`}
                                                 >
@@ -863,17 +863,17 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-[#D9DEE7] max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7]">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-xl w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold bg-[#E8EEFF] text-[#2646B8] px-2 py-0.5 rounded">
+                <span className="text-xs font-semibold bg-[#E8EEFF] dark:bg-indigo-950/40 text-[#2646B8] dark:text-indigo-300 px-2 py-0.5 rounded">
                   {formatTypeLabel(previewQuestion.type)}
                 </span>
-                <span className="text-xs text-[#737D8C]">• {previewQuestion.points || 1} pts</span>
+                <span className="text-xs text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">• {previewQuestion.points || 1} pts</span>
               </div>
               <button
                 onClick={() => setPreviewQuestion(null)}
-                className="p-1 text-[#5B6472] hover:bg-gray-100 rounded-lg cursor-pointer"
+                className="p-1 text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-100 rounded-lg cursor-pointer"
                 aria-label="Close preview"
               >
                 <X className="w-5 h-5" />
@@ -882,10 +882,10 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
 
             <div className="py-4 overflow-y-auto flex-1 space-y-4 text-xs">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#737D8C] tracking-wider block mb-1">
+                <span className="text-[10px] uppercase font-bold text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 tracking-wider block mb-1">
                   Question Prompt (Student View)
                 </span>
-                <p className="text-sm font-semibold text-[#1F2937] leading-relaxed">
+                <p className="text-sm font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white leading-relaxed">
                   {previewQuestion.prompt}
                 </p>
               </div>
@@ -893,18 +893,18 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
               {/* Type-specific preview representation */}
               {previewQuestion.type === 'multiple_choice' && (
                 <div className="space-y-2">
-                  <span className="text-[10px] font-semibold text-[#5B6472]">Options:</span>
+                  <span className="text-[10px] font-semibold text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">Options:</span>
                   {(previewQuestion.options || []).map((opt, i) => (
                     <div
                       key={opt.id}
                       className={`p-2.5 rounded-lg border text-xs flex items-center justify-between ${
                         opt.isCorrect
                           ? 'bg-[#EAF7F0] border-[#18794E]/40 text-[#18794E] font-medium'
-                          : 'bg-gray-50 border-gray-200 text-[#1F2937]'
+                          : 'bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B] border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 text-[#1F2937] dark:text-white dark:text-white dark:text-white'
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-white border flex items-center justify-center font-bold text-[10px]">
+                        <span className="w-5 h-5 rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-[10px]">
                           {String.fromCharCode(65 + i)}
                         </span>
                         <span>{opt.text}</span>
@@ -921,13 +921,13 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
 
               {previewQuestion.type === 'true_false' && (
                 <div className="space-y-2">
-                  <span className="text-[10px] font-semibold text-[#5B6472]">Answer Choices:</span>
-                  <div className="grid grid-cols-2 gap-3">
+                  <span className="text-[10px] font-semibold text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">Answer Choices:</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div
                       className={`p-3 rounded-lg border text-center font-semibold flex items-center justify-center gap-1.5 ${
                         previewQuestion.correctBool === true
                           ? 'bg-[#EAF7F0] border-[#18794E] text-[#18794E]'
-                          : 'bg-gray-50 border-gray-200 text-gray-500'
+                          : 'bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B] border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 text-gray-500'
                       }`}
                     >
                       <span>True</span>
@@ -941,7 +941,7 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                       className={`p-3 rounded-lg border text-center font-semibold flex items-center justify-center gap-1.5 ${
                         previewQuestion.correctBool === false
                           ? 'bg-[#EAF7F0] border-[#18794E] text-[#18794E]'
-                          : 'bg-gray-50 border-gray-200 text-gray-500'
+                          : 'bg-gray-50 dark:bg-[#1C212B] dark:bg-[#1C212B] dark:bg-[#1C212B] border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 text-gray-500'
                       }`}
                     >
                       <span>False</span>
@@ -956,19 +956,19 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
               )}
 
               {previewQuestion.type === 'fill_blank' && (
-                <div className="space-y-2 bg-[#F5F7FA] p-3 rounded-lg border border-[#D9DEE7]">
-                  <span className="text-[10px] font-semibold text-[#5B6472]">Accepted Answer(s):</span>
+                <div className="space-y-2 bg-[#F5F7FA] p-3 rounded-lg border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
+                  <span className="text-[10px] font-semibold text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">Accepted Answer(s):</span>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {(previewQuestion.acceptedAnswers || []).map((ans, i) => (
                       <span
                         key={i}
-                        className="bg-white border border-[#18794E]/30 text-[#18794E] font-mono font-bold px-2 py-1 rounded"
+                        className="bg-white dark:bg-emerald-950/30 border border-[#18794E]/30 dark:border-emerald-800/40 text-[#18794E] dark:text-emerald-400 font-mono font-bold px-2 py-1 rounded"
                       >
                         {ans}
                       </span>
                     ))}
                   </div>
-                  <span className="text-[10px] text-[#737D8C] block mt-1">
+                  <span className="text-[10px] text-[#737D8C] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 block mt-1">
                     Case sensitivity: {previewQuestion.caseSensitive ? 'Enforced' : 'Case-insensitive'}
                   </span>
                 </div>
@@ -976,12 +976,12 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
 
               {previewQuestion.type === 'matching' && (
                 <div className="space-y-2">
-                  <span className="text-[10px] font-semibold text-[#5B6472]">Target Matching Pairs:</span>
-                  <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+                  <span className="text-[10px] font-semibold text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">Target Matching Pairs:</span>
+                  <div className="divide-y divide-gray-100 border border-gray-200 dark:border-gray-800 dark:border-gray-800 dark:border-gray-800 rounded-lg overflow-hidden">
                     {(previewQuestion.matchingPairs || []).map((pair) => (
-                      <div key={pair.id} className="grid grid-cols-2 p-2.5 text-xs bg-white">
-                        <span className="font-semibold text-[#1F2937] pr-2 border-r">{pair.left}</span>
-                        <span className="text-[#5B6472] pl-2">{pair.right}</span>
+                      <div key={pair.id} className="grid grid-cols-1 sm:grid-cols-2 p-2.5 text-xs bg-white dark:bg-[#181C24]">
+                        <span className="font-semibold text-[#1F2937] dark:text-white dark:text-white dark:text-white pr-2 border-r">{pair.left}</span>
+                        <span className="text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 pl-2">{pair.right}</span>
                       </div>
                     ))}
                   </div>
@@ -989,11 +989,11 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
               )}
 
               {previewQuestion.type === 'short_answer' && (
-                <div className="p-3 bg-[#F5F7FA] rounded-lg border border-[#D9DEE7] space-y-1">
-                  <span className="text-[10px] font-bold text-[#5B6472] uppercase">
+                <div className="p-3 bg-[#F5F7FA] rounded-lg border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] space-y-1">
+                  <span className="text-[10px] font-bold text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 uppercase">
                     Teacher Grading Rubric &amp; Criteria:
                   </span>
-                  <p className="text-xs text-[#1F2937] leading-relaxed whitespace-pre-wrap">
+                  <p className="text-xs text-[#1F2937] dark:text-white dark:text-white dark:text-white leading-relaxed whitespace-pre-wrap">
                     {previewQuestion.expectedRubric}
                   </p>
                 </div>
@@ -1004,14 +1004,14 @@ export const QuestionBankPage: React.FC<QuestionBankPageProps> = ({
                   <span className="text-[10px] font-bold text-[#175CD3] uppercase">
                     Pedagogical Explanation:
                   </span>
-                  <p className="text-xs text-[#1F2937] mt-0.5 leading-relaxed">
+                  <p className="text-xs text-[#1F2937] dark:text-white dark:text-white dark:text-white mt-0.5 leading-relaxed">
                     {previewQuestion.explanation}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="pt-3 border-t border-[#D9DEE7] flex justify-between items-center">
+            <div className="pt-3 border-t border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] flex justify-between items-center">
               <Button
                 variant="outline"
                 size="sm"

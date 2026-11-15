@@ -252,7 +252,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({
 
           <div className="pt-6 border-t border-white/10 space-y-3">
             {!effectiveStudent ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {

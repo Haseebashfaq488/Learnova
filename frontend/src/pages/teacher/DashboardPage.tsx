@@ -106,7 +106,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{totalCourses}</span>
+                <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{totalCourses}</span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">assigned</span>
               </div>
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -120,7 +120,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 <FileEdit className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{draftCourses}</span>
+                <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{draftCourses}</span>
                 <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">courses in progress</span>
               </div>
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Requires curriculum completion</div>
@@ -132,7 +132,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 <ClipboardCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{draftAssessments}</span>
+                <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{draftAssessments}</span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">awaiting publish</span>
               </div>
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -163,7 +163,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-5 shadow-xs">
                 <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
                   <div>
-                    <h2 className="text-base font-semibold text-gray-900 dark:text-white">Your courses</h2>
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">Your courses</h2>
                     <p className="text-xs text-gray-500 dark:text-gray-400">All curriculum under your instructor scope</p>
                   </div>
                   <Button
@@ -185,7 +185,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3
-                            className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors cursor-pointer truncate"
+                            className="font-semibold text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors cursor-pointer truncate"
                             onClick={() => onNavigate('course_overview', { courseId: c.id })}
                           >
                             {c.title}
@@ -218,7 +218,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
               {/* Continue where you left off */}
               <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-5 shadow-xs">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white mb-1">
                   Continue where you left off
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
@@ -234,7 +234,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                       <Layers className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white truncate">
                         Curriculum Editor
                       </p>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{courses[0]?.title || 'Active Course'}</p>
@@ -252,7 +252,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                       <ClipboardCheck className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white truncate">
                         Question Bank
                       </p>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Author &amp; manage questions</p>
@@ -271,7 +271,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-5 shadow-xs">
                 <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <h2 className="text-base font-semibold text-gray-900 dark:text-white">Needs attention</h2>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">Needs attention</h2>
                 </div>
 
                 <div className="space-y-3">
@@ -329,7 +329,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
                   {/* Weak topic advisory from analytics */}
                   <div className="p-3.5 rounded-xl bg-gray-50/80 dark:bg-[#14171E] border border-gray-200/80 dark:border-gray-800 flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-gray-900 dark:text-white">Curriculum Diagnostics</span>
+                    <span className="text-xs font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">Curriculum Diagnostics</span>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
                       Topic &ldquo;Conditional Logic &amp; Control Flow&rdquo; has a 65% cohort mastery average (below
                       75% threshold).

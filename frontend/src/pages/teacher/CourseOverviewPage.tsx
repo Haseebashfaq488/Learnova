@@ -124,25 +124,25 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
 
       {/* Top Summary Metadata Panel */}
       <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-6 shadow-xs">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center divide-x divide-gray-100 dark:divide-gray-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center sm:divide-x divide-gray-100 dark:divide-gray-800">
           <div className="px-2">
             <span className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 block mb-1">Topics</span>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{topics.length}</span>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{topics.length}</span>
             <span className="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">curriculum units</span>
           </div>
           <div className="px-2">
             <span className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 block mb-1">Lessons</span>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{lessons.length}</span>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{lessons.length}</span>
             <span className="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">structured lessons</span>
           </div>
           <div className="px-2">
             <span className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 block mb-1">Resources</span>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{resources.length}</span>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{resources.length}</span>
             <span className="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">attached materials</span>
           </div>
           <div className="px-2">
             <span className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 block mb-1">Assessments</span>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{assessments.length}</span>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">{assessments.length}</span>
             <span className="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">evaluation tests</span>
           </div>
         </div>
@@ -160,7 +160,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
 
       {/* 4 Main Navigation Cards */}
       <div>
-        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3">Course Management Workspaces</h2>
+        <h2 className="text-base font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white mb-3">Course Management Workspaces</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card 1: Curriculum */}
           <div
@@ -176,7 +176,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   {topics.length} Topics
                 </span>
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Curriculum &amp; Hierarchy
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
@@ -204,7 +204,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   {resources.length} Files/Links
                 </span>
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Learning Resources
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
@@ -232,7 +232,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   {assessments.length} Tests
                 </span>
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Assessments &amp; Quizzes
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
@@ -260,7 +260,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   Academic Mastery
                 </span>
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Course Progress &amp; Analytics
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
@@ -278,7 +278,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
 
       {/* Suggested Course Preparation Checklist */}
       <div className="bg-white/90 dark:bg-[#181C24]/90 backdrop-blur-xs rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-5 shadow-xs">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Suggested Preparation Checklist</h3>
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white mb-1">Suggested Preparation Checklist</h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
           Recommended authoring milestones before publishing this course to students.
         </p>
@@ -353,9 +353,9 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
-            <h2 className="text-lg font-bold text-[#1F2937] dark:text-white mb-1">Edit Course Details</h2>
-            <p className="text-xs text-[#5B6472] dark:text-gray-400 mb-5">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
+            <h2 className="text-lg font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white dark:text-white mb-1">Edit Course Details</h2>
+            <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mb-5">
               Update academic title, summary, or publication status.
             </p>
 
@@ -366,7 +366,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   type="text"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 />
               </FormField>
 
@@ -376,7 +376,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   rows={3}
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 />
               </FormField>
 
@@ -393,7 +393,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                   id="edit-status"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as CourseStatus)}
-                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-gray-700 text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
                 >
                   <option value="draft">Draft (Private)</option>
                   <option value="published">Published (Active)</option>
@@ -401,7 +401,7 @@ export const CourseOverviewPage: React.FC<CourseOverviewPageProps> = ({
                 </select>
               </FormField>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#D9DEE7]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
                 <Button variant="secondary" type="button" onClick={() => setEditModalOpen(false)}>
                   Cancel
                 </Button>

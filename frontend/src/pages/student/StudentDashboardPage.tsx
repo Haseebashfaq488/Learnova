@@ -263,7 +263,7 @@ export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Streak */}
               <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/60">
                 <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 mb-1">

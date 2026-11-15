@@ -313,34 +313,34 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
       />
 
       {/* Persistent Summary Bar */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-4 shadow-2xs flex flex-wrap items-center justify-between gap-4 text-xs">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-4 shadow-2xs flex flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex items-center gap-4 flex-wrap">
           <div>
-            <span className="text-[#737D8C] block uppercase font-semibold text-[10px]">Title</span>
-            <span className="font-bold text-[#1F2937] text-sm">{title || 'Untitled Assessment'}</span>
+            <span className="text-[#737D8C] dark:text-gray-400 block uppercase font-semibold text-[10px]">Title</span>
+            <span className="font-bold text-[#1F2937] dark:text-white text-sm">{title || 'Untitled Assessment'}</span>
           </div>
-          <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 hidden sm:block" />
           <div>
-            <span className="text-[#737D8C] block uppercase font-semibold text-[10px]">Type</span>
-            <span className="capitalize font-semibold text-[#3156D3] bg-[#E8EEFF] px-2 py-0.5 rounded">
+            <span className="text-[#737D8C] dark:text-gray-400 block uppercase font-semibold text-[10px]">Type</span>
+            <span className="capitalize font-semibold text-[#3156D3] dark:text-indigo-300 bg-[#E8EEFF] dark:bg-indigo-950/40 px-2 py-0.5 rounded">
               {type}
             </span>
           </div>
-          <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 hidden sm:block" />
           <div>
-            <span className="text-[#737D8C] block uppercase font-semibold text-[10px]">Questions</span>
-            <span className="font-semibold text-[#1F2937]">{selectedQuestionIds.length} chosen</span>
+            <span className="text-[#737D8C] dark:text-gray-400 block uppercase font-semibold text-[10px]">Questions</span>
+            <span className="font-semibold text-[#1F2937] dark:text-gray-200 dark:text-gray-200 dark:text-gray-200 dark:text-gray-200">{selectedQuestionIds.length} chosen</span>
           </div>
-          <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 hidden sm:block" />
           <div>
-            <span className="text-[#737D8C] block uppercase font-semibold text-[10px]">Total Points</span>
+            <span className="text-[#737D8C] dark:text-gray-400 block uppercase font-semibold text-[10px]">Total Points</span>
             <span className="font-bold text-[#18794E]">{totalPoints} pts</span>
           </div>
         </div>
 
         <button
           onClick={() => onNavigate('assessments')}
-          className="text-xs text-[#5B6472] hover:text-[#1F2937] flex items-center gap-1 cursor-pointer"
+          className="text-xs text-[#5B6472] dark:text-gray-400 hover:text-[#1F2937] dark:hover:text-white flex items-center gap-1 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Exit to list</span>
@@ -348,8 +348,8 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
       </div>
 
       {/* 4-Step Progress Header */}
-      <div className="bg-white rounded-xl border border-[#D9DEE7] p-4 shadow-2xs">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-4 shadow-2xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
           {steps.map((st) => {
             const isCompleted = currentStep > st.num;
             const isCurrent = currentStep === st.num;
@@ -367,8 +367,8 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                   isCurrent
                     ? 'bg-[#E8EEFF] border border-[#3156D3]/40'
                     : isCompleted
-                    ? 'bg-gray-50 border border-gray-200 text-[#1F2937]'
-                    : 'text-[#737D8C] border border-transparent opacity-60'
+                    ? 'bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 text-[#1F2937] dark:text-gray-200'
+                    : 'text-[#737D8C] dark:text-gray-500 border border-transparent opacity-60'
                 }`}
               >
                 <div
@@ -383,10 +383,10 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                   {isCompleted ? <Check className="w-3.5 h-3.5" /> : st.num}
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-semibold block text-[#737D8C]">
+                  <span className="text-[10px] uppercase font-semibold block text-[#737D8C] dark:text-gray-400">
                     Step {st.num}
                   </span>
-                  <span className={`text-xs font-bold ${isCurrent ? 'text-[#2646B8]' : 'text-[#1F2937]'}`}>
+                  <span className={`text-xs font-bold ${isCurrent ? 'text-[#2646B8] dark:text-indigo-400' : 'text-[#1F2937] dark:text-gray-200'}`}>
                     {st.label}
                   </span>
                 </div>
@@ -398,8 +398,8 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
       {/* Step 1: Details */}
       {currentStep === 1 && (
-        <div className="bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs space-y-5 max-w-3xl">
-          <h2 className="text-base font-bold text-[#1F2937] pb-2 border-b border-[#D9DEE7]">
+        <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-6 shadow-2xs space-y-5 max-w-3xl">
+          <h2 className="text-base font-bold text-[#1F2937] dark:text-white pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545]">
             Step 1: Assessment Details &amp; Objectives
           </h2>
 
@@ -410,7 +410,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Midterm Evaluation: Core Programming Constructs"
-              className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+              className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
             />
           </FormField>
 
@@ -424,7 +424,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                   const tList = topics.filter((t) => t.courseId === e.target.value);
                   if (tList.length > 0) setTopicId(tList[0].id);
                 }}
-                className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
               >
                 {courses.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -439,7 +439,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 id="asm-topic"
                 value={topicId}
                 onChange={(e) => setTopicId(e.target.value)}
-                className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
               >
                 {courseTopics.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -455,7 +455,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
             label="Assessment Type"
             helperText="Diagnostic identifies gaps before starting; Formative supports learning; Summative awards academic mastery score."
           >
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {(['diagnostic', 'formative', 'summative'] as AssessmentType[]).map((t) => (
                 <button
                   key={t}
@@ -464,7 +464,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                   className={`p-3 rounded-xl border text-xs font-semibold capitalize text-center transition-all cursor-pointer ${
                     type === t
                       ? 'bg-[#E8EEFF] border-[#3156D3] text-[#2646B8] shadow-xs'
-                      : 'bg-white border-[#D9DEE7] text-[#5B6472] hover:bg-gray-50'
+                      : 'bg-white dark:bg-[#1E232E] border-[#D9DEE7] dark:border-gray-700 text-[#5B6472] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   {t}
@@ -486,11 +486,11 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="Read each question carefully. Select the best answer. You will have 30 minutes to complete."
-              className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+              className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
             />
           </FormField>
 
-          <div className="pt-4 border-t border-[#D9DEE7] flex justify-end">
+          <div className="pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] flex justify-end">
             <Button variant="primary" rightIcon={<ChevronRight className="w-4 h-4" />} onClick={handleNextStep}>
               Next: Select questions
             </Button>
@@ -500,11 +500,11 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
       {/* Step 2: Questions */}
       {currentStep === 2 && (
-        <div className="bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs space-y-5">
-          <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[#D9DEE7] gap-3">
+        <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-6 shadow-2xs space-y-5">
+          <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[#D9DEE7] dark:border-[#2D3545] gap-3">
             <div>
-              <h2 className="text-base font-bold text-[#1F2937]">Step 2: Select Questions</h2>
-              <p className="text-xs text-[#5B6472] mt-0.5">
+              <h2 className="text-base font-bold text-[#1F2937] dark:text-white">Step 2: Select Questions</h2>
+              <p className="text-xs text-[#5B6472] dark:text-gray-400 mt-0.5">
                 Inspect question prompts, answer choices, and pedagogical explanations to assemble your assessment.
               </p>
             </div>
@@ -523,7 +523,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
           )}
 
           {/* Filtering and Search Controls */}
-          <div className="space-y-3 bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+          <div className="space-y-3 bg-gray-50/80 dark:bg-[#1C212B]/80 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
             {/* Search and Only Selected toggle */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative flex-1">
@@ -533,10 +533,10 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                   value={qSearch}
                   onChange={(e) => setQSearch(e.target.value)}
                   placeholder="Search questions by prompt, answer choices, or explanation..."
-                  className="w-full bg-white border border-[#D9DEE7] text-xs rounded-lg pl-9 pr-3.5 py-2 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-xs text-gray-900 dark:text-white rounded-lg pl-9 pr-3.5 py-2 focus:border-[#3156D3] focus:outline-none"
                 />
               </div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-lg border border-gray-200">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer select-none shrink-0 bg-white dark:bg-[#1E232E] px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
                 <input
                   type="checkbox"
                   checked={onlySelected}
@@ -554,7 +554,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 <select
                   value={selectedTopicFilter}
                   onChange={(e) => setSelectedTopicFilter(e.target.value)}
-                  className="w-full bg-white border border-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-gray-200 dark:border-gray-700 text-xs text-gray-900 dark:text-white rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none"
                 >
                   <option value="all">All Course Topics</option>
                   {courseTopics.map((t) => (
@@ -570,7 +570,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 <select
                   value={selectedTypeFilter}
                   onChange={(e) => setSelectedTypeFilter(e.target.value)}
-                  className="w-full bg-white border border-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none capitalize"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-gray-200 dark:border-gray-700 text-xs text-gray-900 dark:text-white rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none capitalize"
                 >
                   <option value="all">All Types</option>
                   <option value="multiple_choice">Multiple Choice</option>
@@ -586,7 +586,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 <select
                   value={selectedDifficultyFilter}
                   onChange={(e) => setSelectedDifficultyFilter(e.target.value)}
-                  className="w-full bg-white border border-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none capitalize"
+                  className="w-full bg-white dark:bg-[#1E232E] border border-gray-200 dark:border-gray-700 text-xs text-gray-900 dark:text-white rounded-lg px-2.5 py-1.5 focus:border-[#3156D3] focus:outline-none capitalize"
                 >
                   <option value="all">All Difficulties</option>
                   <option value="easy">Easy</option>
@@ -597,7 +597,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
             </div>
 
             {/* Bulk Action Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 dark:border-gray-800 text-xs">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -620,7 +620,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 <button
                   type="button"
                   onClick={expandAllFiltered}
-                  className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium cursor-pointer"
                 >
                   Expand All Details
                 </button>
@@ -628,7 +628,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 <button
                   type="button"
                   onClick={collapseAll}
-                  className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium cursor-pointer"
                 >
                   Collapse All
                 </button>
@@ -638,8 +638,8 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
           {/* Question List */}
           {availableQuestions.length === 0 ? (
-            <div className="text-center py-12 text-[#5B6472] text-xs">
-              <p className="font-semibold text-[#1F2937]">No questions match current filters</p>
+            <div className="text-center py-12 text-[#5B6472] dark:text-gray-400 text-xs">
+              <p className="font-semibold text-[#1F2937] dark:text-gray-200 dark:text-gray-200 dark:text-gray-200 dark:text-gray-200">No questions match current filters</p>
               <p className="mt-1">
                 Try resetting search, topic, type, or difficulty filters.
               </p>
@@ -678,8 +678,8 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                     key={q.id}
                     className={`rounded-xl border p-4 transition-all ${
                       isSelected
-                        ? 'bg-indigo-50/30 border-indigo-300 ring-1 ring-indigo-200'
-                        : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-xs'
+                        ? 'bg-indigo-50/30 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-700 ring-1 ring-indigo-200 dark:ring-indigo-800'
+                        : 'bg-white dark:bg-[#181C24] border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xs'
                     }`}
                   >
                     {/* Top Row: Checkbox, Badges, Expand Toggle */}
@@ -707,11 +707,11 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                             >
                               {q.difficulty}
                             </span>
-                            <span className="text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                            <span className="text-[11px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
                               {q.points || 1} pts
                             </span>
                             {topicName && (
-                              <span className="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded truncate max-w-xs">
+                              <span className="text-[11px] text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 py-0.5 rounded truncate max-w-xs">
                                 {topicName}
                               </span>
                             )}
@@ -720,7 +720,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                           {/* Full Question Prompt */}
                           <div
                             onClick={() => handleToggleQuestion(q.id)}
-                            className="mt-2 text-sm font-medium text-gray-900 cursor-pointer select-none leading-relaxed"
+                            className="mt-2 text-sm font-medium text-gray-900 dark:text-white cursor-pointer select-none leading-relaxed"
                           >
                             {q.prompt}
                           </div>
@@ -744,11 +744,11 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
                     {/* Expandable Question Inspector Panel */}
                     {isExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 pl-7 space-y-3 bg-gray-50/60 p-3.5 rounded-lg border border-gray-200">
+                      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 pl-7 space-y-3 bg-gray-50/60 dark:bg-[#1C212B]/60 p-3.5 rounded-lg border border-gray-200 dark:border-gray-800">
                         {/* Multiple Choice Options */}
                         {q.type === 'multiple_choice' && q.options && q.options.length > 0 && (
                           <div className="space-y-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-600 block">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 block">
                               Answer Options {q.isMultipleCorrectAllowed && '(Multiple correct allowed)'}:
                             </span>
                             <div className="space-y-1.5">
@@ -760,7 +760,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                                     className={`p-2 rounded-lg text-xs flex items-center justify-between border ${
                                       opt.isCorrect
                                         ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-medium'
-                                        : 'bg-white border-gray-200 text-gray-700'
+                                        : 'bg-white dark:bg-[#181C24] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300'
                                     }`}
                                   >
                                     <div className="flex items-center gap-2">
@@ -776,7 +776,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                                       <span>{opt.text}</span>
                                     </div>
                                     {opt.isCorrect && (
-                                      <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-[#181C24] px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
                                         <Check className="w-3 h-3 stroke-[3]" /> Correct Answer
                                       </span>
                                     )}
@@ -835,9 +835,9 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                               {q.matchingPairs.map((pair) => (
                                 <div
                                   key={pair.id}
-                                  className="p-2 rounded bg-white border border-gray-200 flex items-center justify-between gap-2"
+                                  className="p-2 rounded bg-white dark:bg-[#1E232E] border border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2"
                                 >
-                                  <span className="font-medium text-gray-800 truncate">{pair.left}</span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{pair.left}</span>
                                   <span className="text-gray-400 shrink-0">➔</span>
                                   <span className="font-semibold text-indigo-700 truncate">{pair.right}</span>
                                 </div>
@@ -876,12 +876,12 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
           )}
 
           {/* Sticky Summary & Step Actions */}
-          <div className="pt-4 border-t border-[#D9DEE7] flex flex-wrap items-center justify-between gap-3">
+          <div className="pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] flex flex-wrap items-center justify-between gap-3">
             <Button variant="secondary" onClick={handlePrevStep}>
               Back
             </Button>
             <div className="text-xs text-gray-600 font-medium">
-              Selected: <span className="font-bold text-gray-900">{selectedQuestionIds.length} questions</span> ({totalPoints} total points)
+              Selected: <span className="font-bold text-gray-900 dark:text-white">{selectedQuestionIds.length} questions</span> ({totalPoints} total points)
             </div>
             <Button variant="primary" rightIcon={<ChevronRight className="w-4 h-4" />} onClick={handleNextStep}>
               Next: Assessment settings
@@ -892,8 +892,8 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
       {/* Step 3: Settings */}
       {currentStep === 3 && (
-        <div className="bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs space-y-5 max-w-2xl">
-          <h2 className="text-base font-bold text-[#1F2937] pb-2 border-b border-[#D9DEE7]">
+        <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-6 shadow-2xs space-y-5 max-w-2xl">
+          <h2 className="text-base font-bold text-[#1F2937] dark:text-white pb-2 border-b border-[#D9DEE7] dark:border-[#2D3545]">
             Step 3: Timing &amp; Policy Settings
           </h2>
 
@@ -910,7 +910,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 max="180"
                 value={timeLimit}
                 onChange={(e) => setTimeLimit(parseInt(e.target.value, 10) || 0)}
-                className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
               />
             </FormField>
 
@@ -926,7 +926,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 max="10"
                 value={maxAttempts}
                 onChange={(e) => setMaxAttempts(parseInt(e.target.value, 10) || 1)}
-                className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
               />
             </FormField>
           </div>
@@ -944,7 +944,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 max="100"
                 value={passingScore}
                 onChange={(e) => setPassingScore(parseInt(e.target.value, 10) || 70)}
-                className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
               />
             </FormField>
 
@@ -958,12 +958,12 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 type="date"
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
-                className="w-full bg-white border border-[#D9DEE7] text-sm rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
+                className="w-full bg-white dark:bg-[#1E232E] border border-[#D9DEE7] dark:border-gray-700 text-sm text-gray-900 dark:text-white rounded-lg px-3.5 py-2.5 focus:border-[#3156D3] focus:outline-none"
               />
             </FormField>
           </div>
 
-          <div className="pt-4 border-t border-[#D9DEE7] flex justify-between">
+          <div className="pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] flex justify-between">
             <Button variant="secondary" onClick={handlePrevStep}>
               Back
             </Button>
@@ -976,13 +976,13 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
 
       {/* Step 4: Preview & Publish */}
       {currentStep === 4 && (
-        <div className="bg-white rounded-xl border border-[#D9DEE7] p-6 shadow-2xs space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7]">
+        <div className="bg-white dark:bg-[#181C24] rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] p-6 shadow-2xs space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
             <div>
-              <h2 className="text-base font-bold text-[#1F2937]">
+              <h2 className="text-base font-bold text-[#1F2937] dark:text-white">
                 Step 4: Student-Facing Preview &amp; Publication
               </h2>
-              <p className="text-xs text-[#5B6472]">
+              <p className="text-xs text-[#5B6472] dark:text-gray-400">
                 Inspect the assessment exactly as enrolled learners will experience it.
               </p>
             </div>
@@ -1001,17 +1001,17 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
           </div>
 
           {/* Test Header / Banner */}
-          <div className="p-5 rounded-xl bg-gray-50 border border-gray-200 space-y-2">
+          <div className="p-5 rounded-xl bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs uppercase font-bold text-[#3156D3] tracking-wider">
                 {type} Assessment
               </span>
-              <span className="text-xs text-[#5B6472]">
+              <span className="text-xs text-[#5B6472] dark:text-gray-400">
                 Time: {timeLimit ? `${timeLimit} mins` : 'Untimed'} • Attempts: {maxAttempts} • Pass: {passingScore}%
               </span>
             </div>
-            <h3 className="text-lg font-bold text-[#1F2937]">{title}</h3>
-            <p className="text-xs text-[#5B6472]">{instructions}</p>
+            <h3 className="text-lg font-bold text-[#1F2937] dark:text-white">{title}</h3>
+            <p className="text-xs text-[#5B6472] dark:text-gray-400">{instructions}</p>
           </div>
 
           {/* Render Questions as student sees them */}
@@ -1023,14 +1023,14 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
             {selectedQuestions.map((q, idx) => (
               <div
                 key={q.id}
-                className="p-5 rounded-xl border border-[#D9DEE7] bg-white space-y-3"
+                className="p-5 rounded-xl border border-[#D9DEE7] dark:border-[#2D3545] bg-white dark:bg-[#181C24] space-y-3"
               >
                 <div className="flex items-center justify-between text-xs text-[#737D8C]">
-                  <span className="font-bold text-[#1F2937]">Question #{idx + 1}</span>
+                  <span className="font-bold text-[#1F2937] dark:text-white">Question #{idx + 1}</span>
                   <span>{q.points || 1} points</span>
                 </div>
 
-                <p className="text-sm font-semibold text-[#1F2937] leading-relaxed">
+                <p className="text-sm font-semibold text-[#1F2937] dark:text-gray-200 dark:text-gray-200 dark:text-gray-200 dark:text-gray-200 leading-relaxed">
                   {q.prompt}
                 </p>
 
@@ -1039,9 +1039,9 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                     {(q.options || []).map((opt, i) => (
                       <div
                         key={opt.id}
-                        className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs flex items-center gap-3 text-[#1F2937]"
+                        className="p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1C212B] text-xs flex items-center gap-3 text-[#1F2937] dark:text-gray-200"
                       >
-                        <span className="w-5 h-5 rounded-full border border-gray-300 bg-white flex items-center justify-center font-bold text-[10px]">
+                        <span className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-[10px]">
                           {String.fromCharCode(65 + i)}
                         </span>
                         <span>{opt.text}</span>
@@ -1051,11 +1051,11 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                 )}
 
                 {q.type === 'true_false' && (
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs font-semibold text-center">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1C212B] text-xs font-semibold text-center text-gray-800 dark:text-gray-200">
                       True
                     </div>
-                    <div className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs font-semibold text-center">
+                    <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1C212B] text-xs font-semibold text-center text-gray-800 dark:text-gray-200">
                       False
                     </div>
                   </div>
@@ -1067,16 +1067,16 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                       type="text"
                       disabled
                       placeholder="Type your answer here..."
-                      className="w-full bg-gray-50 border border-gray-200 text-xs rounded-lg p-2.5 cursor-not-allowed"
+                      className="w-full bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 text-xs text-gray-800 dark:text-gray-200 rounded-lg p-2.5 cursor-not-allowed"
                     />
                   </div>
                 )}
 
                 {q.type === 'matching' && (
-                  <div className="pt-1 text-xs divide-y border rounded-lg bg-gray-50">
+                  <div className="pt-1 text-xs divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-50 dark:bg-[#1C212B]">
                     {(q.matchingPairs || []).map((pair) => (
                       <div key={pair.id} className="p-2.5 flex items-center justify-between gap-4">
-                        <span className="font-medium text-[#1F2937]">{pair.left}</span>
+                        <span className="font-medium text-[#1F2937] dark:text-gray-200">{pair.left}</span>
                         <div className="flex items-center gap-2 text-[#5B6472]">
                           <ArrowRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span>{pair.right}</span>
@@ -1092,7 +1092,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
                       disabled
                       rows={3}
                       placeholder="Student enters extended response here..."
-                      className="w-full bg-gray-50 border border-gray-200 text-xs rounded-lg p-2.5 cursor-not-allowed"
+                      className="w-full bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 text-xs text-gray-800 dark:text-gray-200 rounded-lg p-2.5 cursor-not-allowed"
                     />
                   </div>
                 )}
@@ -1100,7 +1100,7 @@ export const AssessmentEditorPage: React.FC<AssessmentEditorPageProps> = ({
             ))}
           </div>
 
-          <div className="pt-4 border-t border-[#D9DEE7] flex justify-between">
+          <div className="pt-4 border-t border-[#D9DEE7] dark:border-[#2D3545] flex justify-between">
             <Button variant="secondary" onClick={handlePrevStep}>
               Back to Settings
             </Button>
