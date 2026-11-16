@@ -162,10 +162,11 @@ export function mapBackendCourseDetailToCurriculum(detail: BackendCourseDetailRe
 
 class CoursesApiClient {
   /**
-   * List courses from public catalog.
+   * List courses from public catalog or teacher workspace.
    */
-  public async listCourses(skip = 0, limit = 50): Promise<BackendCourseResponse[]> {
-    return authApi.request<BackendCourseResponse[]>(`/courses?skip=${skip}&limit=${limit}`, {
+  public async listCourses(skip = 0, limit = 50, scope?: string): Promise<BackendCourseResponse[]> {
+    const scopeParam = scope ? `&scope=${encodeURIComponent(scope)}` : '';
+    return authApi.request<BackendCourseResponse[]>(`/courses?skip=${skip}&limit=${limit}${scopeParam}`, {
       method: 'GET',
     });
   }

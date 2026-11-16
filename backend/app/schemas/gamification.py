@@ -85,6 +85,7 @@ class LeaderboardEntryResponse(BaseModel):
 class LeaderboardResponse(BaseModel):
     entries: List[LeaderboardEntryResponse]
     current_user_entry: Optional[LeaderboardEntryResponse] = None
+    current_user_opted_in: Optional[bool] = None
     total_ranked: int
 
 

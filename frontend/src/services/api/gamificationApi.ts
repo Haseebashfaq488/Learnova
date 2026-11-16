@@ -81,6 +81,7 @@ export function mapBackendProfileToProfile(p: BackendGamificationProfileResponse
     level: p.level,
     streakDays: p.streak_days,
     lastActiveDate: p.last_active_date || new Date().toISOString(),
+    isOptedInLeaderboard: p.is_opted_in_leaderboard ?? true,
   };
 }
 

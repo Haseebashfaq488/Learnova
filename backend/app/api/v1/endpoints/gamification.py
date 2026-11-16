@@ -285,6 +285,7 @@ def get_leaderboard(
         current_user_entry=LeaderboardEntryResponse(**result["current_user_entry"])
         if result["current_user_entry"]
         else None,
+        current_user_opted_in=result.get("current_user_opted_in", True),
         total_ranked=result["total_ranked"],
     )
 

@@ -214,6 +214,7 @@ export interface GamificationProfile {
   level: number;
   streakDays: number;
   lastActiveDate: string;
+  isOptedInLeaderboard?: boolean;
 }
 
 export type XPEventType =

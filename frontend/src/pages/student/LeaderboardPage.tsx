@@ -20,8 +20,17 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
   currentStudentId,
   onNavigate,
 }) => {
+  const cachedOptedInKey = `learnova_leaderboard_opted_in_${currentStudentId}`;
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(initialLeaderboard);
-  const [optedIn, setOptedIn] = useState<boolean>(true);
+  const [optedIn, setOptedIn] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = localStorage.getItem(cachedOptedInKey);
+      if (stored !== null) {
+        return stored === 'true';
+      }
+    }
+    return true;
+  });
   const [isTogglingOptIn, setIsTogglingOptIn] = useState(false);
 
   useEffect(() => {
@@ -36,6 +45,9 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
         }
         if (res.current_user_opted_in !== undefined) {
           setOptedIn(res.current_user_opted_in);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem(cachedOptedInKey, String(res.current_user_opted_in));
+          }
         }
       })
       .catch(() => {
@@ -45,18 +57,27 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [cachedOptedInKey]);
 
   const handleToggleOptIn = async () => {
     setIsTogglingOptIn(true);
     try {
       const nextVal = !optedIn;
-      await gamificationApi.updateProfile({ is_opted_in_leaderboard: nextVal });
       setOptedIn(nextVal);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(cachedOptedInKey, String(nextVal));
+      }
+      await gamificationApi.updateProfile({ is_opted_in_leaderboard: nextVal });
       const res = await gamificationApi.getLeaderboard();
       const items = res.entries || res.leaderboard;
       if (items && items.length > 0) {
         setLeaderboardData(items.map(mapBackendLeaderboardToLeaderboard));
+      }
+      if (res.current_user_opted_in !== undefined) {
+        setOptedIn(res.current_user_opted_in);
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem(cachedOptedInKey, String(res.current_user_opted_in));
+        }
       }
     } catch (e) {
       console.warn('Failed to update leaderboard privacy:', e);

@@ -43,7 +43,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({
     name: currentUser.full_name || currentUser.email,
     email: currentUser.email,
     avatar: currentUser.profile?.avatar_url || undefined,
-    role: 'student' as const,
+    role: (currentUser.role || 'student') as any,
     joinDate: currentUser.created_at || new Date().toISOString(),
     preferences: {
       theme: 'dark' as const,
@@ -51,6 +51,28 @@ export const ContactPage: React.FC<ContactPageProps> = ({
       emailNotifications: true,
     },
   } : null);
+
+  const rawRole = currentUser?.role || (currentStudent ? 'student' : null);
+  const portalLabel =
+    rawRole === 'teacher'
+      ? 'Teacher Portal'
+      : rawRole === 'administrator'
+      ? 'Admin Portal'
+      : rawRole === 'student'
+      ? 'Student Portal'
+      : null;
+
+  const handlePortalButtonClick = () => {
+    if (rawRole === 'teacher') {
+      if (onSwitchToTeacher) onSwitchToTeacher();
+      else onNavigate('teacher_portal');
+    } else if (rawRole === 'administrator') {
+      if (onSwitchToAdmin) onSwitchToAdmin();
+      else onNavigate('admin_portal');
+    } else {
+      onNavigate('dashboard');
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: effectiveStudent?.name || '',
@@ -161,13 +183,13 @@ export const ContactPage: React.FC<ContactPageProps> = ({
 
         {/* Right CTA */}
         <div className="flex items-center gap-3 shrink-0">
-          {effectiveStudent ? (
+          {portalLabel ? (
             <button
               type="button"
-              onClick={() => onNavigate('dashboard')}
+              onClick={handlePortalButtonClick}
               className="px-5 py-2.5 rounded-full text-xs font-bold btn-primary-pill flex items-center gap-2 cursor-pointer"
             >
-              <span>Student Portal</span>
+              <span>{portalLabel}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
@@ -251,7 +273,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({
           </div>
 
           <div className="pt-6 border-t border-white/10 space-y-3">
-            {!effectiveStudent ? (
+            {!portalLabel ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -278,12 +300,12 @@ export const ContactPage: React.FC<ContactPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  onNavigate('dashboard');
+                  handlePortalButtonClick();
                   setMobileMenuOpen(false);
                 }}
                 className="w-full py-3 text-center rounded-xl bg-[#2563EB] text-xs font-semibold uppercase tracking-wider text-white shadow-md shadow-blue-600/40"
               >
-                Enter Student Portal →
+                Enter {portalLabel} →
               </button>
             )}
           </div>

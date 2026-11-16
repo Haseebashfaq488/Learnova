@@ -217,11 +217,11 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                   const courseLessons = lessons.filter((l) => l.courseId === c.id);
 
                   return (
-                    <tr key={c.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-colors group">
+                    <tr key={c.id} className="hover:bg-gray-50/60 dark:hover:bg-gray-800/25 transition-colors group">
                       <td className="py-4 px-5 max-w-md">
                         <button
                           onClick={() => onNavigate('course_overview', { courseId: c.id })}
-                          className="font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-left transition-colors cursor-pointer text-sm"
+                          className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-left transition-colors cursor-pointer text-sm"
                         >
                           {c.title}
                         </button>
@@ -299,7 +299,7 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <button
                       onClick={() => onNavigate('course_overview', { courseId: c.id })}
-                      className="font-bold text-sm text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white text-left hover:text-indigo-600 dark:hover:text-indigo-400"
+                      className="font-bold text-sm text-gray-900 dark:text-white text-left hover:text-indigo-600 dark:hover:text-indigo-400"
                     >
                       {c.title}
                     </button>
@@ -338,15 +338,15 @@ export const CoursesPage: React.FC<CoursesPageProps> = ({
       {/* Create / Edit Course Modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/15 dark:bg-black/25 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/10 dark:bg-slate-900/20 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545] dark:border-[#2D3545]">
-            <h2 className="text-lg font-bold text-[#1F2937] dark:text-white dark:text-white dark:text-white mb-1">
+          <div className="bg-white dark:bg-[#181C24] rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#D9DEE7] dark:border-[#2D3545]">
+            <h2 className="text-lg font-bold text-[#1F2937] dark:text-white mb-1">
               {editingCourse ? 'Edit course details' : 'Create new course'}
             </h2>
-            <p className="text-xs text-[#5B6472] dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 mb-5">
+            <p className="text-xs text-[#5B6472] dark:text-gray-400 mb-5">
               Enter academic course title and descriptive overview.
             </p>
 

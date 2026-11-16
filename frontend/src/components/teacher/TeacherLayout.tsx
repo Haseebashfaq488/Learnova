@@ -13,12 +13,12 @@ import {
   CheckCircle2,
   AlertCircle,
   HelpCircle,
-  Palette,
   Sun,
   Moon,
   ChevronRight,
+  ChevronLeft,
+  ArrowRightLeft,
 } from 'lucide-react';
-import { ThemeToggle } from '../ui/ThemeToggle';
 import { DesignStudioWidget } from '../ui/DesignStudioWidget';
 import { AppFooter } from '../ui/AppFooter';
 import { useTheme } from '../../context/ThemeContext';
@@ -67,17 +67,17 @@ interface TeacherLayoutProps {
 export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   currentPage,
   onNavigate,
-  selectedCourseId,
-  selectedCourseTitle,
   teacherUser,
   onSignOut,
+  onSwitchPortal,
+  onSwitchToPublic,
   breadcrumbs = [],
   toasts,
   onDismissToast,
   children,
 }) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [designStudioOpen, setDesignStudioOpen] = useState(false);
   const { actualTheme, setTheme } = useTheme();
@@ -91,38 +91,38 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
     {
       id: 'overview' as NavigationPage,
       label: 'Overview',
-      icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
+      icon: LayoutDashboard,
       activeMatches: ['overview'],
     },
     {
       id: 'courses' as NavigationPage,
       label: 'Courses',
-      icon: <BookOpen className="w-4 h-4 shrink-0" />,
+      icon: BookOpen,
       activeMatches: ['courses', 'course_overview', 'curriculum', 'prerequisites', 'resources'],
     },
     {
       id: 'questions' as NavigationPage,
       label: 'Question Bank',
-      icon: <ListChecks className="w-4 h-4 shrink-0" />,
+      icon: ListChecks,
       activeMatches: ['questions', 'question_editor'],
     },
     {
       id: 'ai_review' as NavigationPage,
       label: 'AI Review',
-      icon: <Sparkles className="w-4 h-4 shrink-0" />,
+      icon: Sparkles,
       activeMatches: ['ai_review'],
       badge: 'Review',
     },
     {
       id: 'assessments' as NavigationPage,
       label: 'Assessments',
-      icon: <ClipboardCheck className="w-4 h-4 shrink-0" />,
+      icon: ClipboardCheck,
       activeMatches: ['assessments', 'assessment_editor'],
     },
     {
       id: 'analytics' as NavigationPage,
       label: 'Analytics',
-      icon: <BarChart3 className="w-4 h-4 shrink-0" />,
+      icon: BarChart3,
       activeMatches: ['analytics'],
     },
   ];
@@ -132,8 +132,12 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
     setMobileMenuOpen(false);
   };
 
+  const userInitials = teacherUser?.name
+    ? teacherUser.name.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()
+    : 'ER';
+
   return (
-    <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] text-[#1F2937] dark:text-[#F3F4F6] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F5F7FA] dark:bg-[#0F1218] text-[#1F2937] dark:text-[#F3F4F6] flex font-sans">
       {/* Toast Notification Stack */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
         {toasts.map((t) => (
@@ -167,59 +171,93 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
         ))}
       </div>
 
-      {/* Global Sticky Top Navigation Bar (Header-Only Routing) */}
-      <header className="h-[72px] frosted-header px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 border-b border-[#D9DEE7] dark:border-[#2D3545]">
-        <div className="flex items-center gap-4 lg:gap-8 min-w-0">
-          {/* Mobile hamburger */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 rounded-lg text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer shrink-0"
-            aria-label="Open mobile navigation"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          {/* Brand Header with Official Logo */}
+      {/* ========================================================================= */}
+      {/* DESKTOP COLLAPSIBLE LEFT SIDEBAR (Unified with Student & Admin layouts)     */}
+      {/* ========================================================================= */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-40 bg-white dark:bg-[#12161F] border-r border-[#D9DEE7] dark:border-[#2D3545] hidden lg:flex flex-col justify-between transition-all duration-300 ease-in-out ${
+          sidebarCollapsed ? 'w-[72px]' : 'w-64'
+        }`}
+      >
+        <div className="flex flex-col flex-1 overflow-y-auto">
+          {/* Brand Header */}
           <div
-            onClick={() => onNavigate('overview')}
-            className="flex items-center gap-3 shrink-0 cursor-pointer group"
+            className={`h-16 flex items-center justify-between border-b border-[#D9DEE7] dark:border-[#2D3545] ${
+              sidebarCollapsed ? 'px-2 justify-center' : 'px-4'
+            }`}
           >
-            <img
-              src="/learnova-logo.png"
-              alt="Learnova"
-              className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
-            />
-            <div className="hidden sm:flex flex-col">
-              <span className="font-bold text-base tracking-tight text-[#1F2937] dark:text-white leading-none">
-                Learnova
-              </span>
-              <span className="text-[10px] font-bold text-[#3156D3] dark:text-indigo-400 uppercase tracking-wider mt-0.5">
-                Teacher Portal
-              </span>
+            <div
+              onClick={() => onNavigate('overview')}
+              className="flex items-center gap-2.5 overflow-hidden cursor-pointer group"
+            >
+              <img
+                src="/learnova-logo.png"
+                alt="Learnova"
+                className={`object-contain shrink-0 transition-transform group-hover:scale-105 ${
+                  sidebarCollapsed ? 'w-7 h-7' : 'h-8 w-auto'
+                }`}
+                title="Learnova Faculty"
+              />
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <span className="font-bold text-base text-gray-900 dark:text-white tracking-tight block truncate">
+                    Learnova
+                  </span>
+                  <span className="block text-[10px] font-bold text-[#3156D3] dark:text-indigo-400 uppercase tracking-wider">
+                    Teacher Portal
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Collapse Toggle */}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer ${
+                sidebarCollapsed ? 'p-1 mt-2' : 'p-1.5'
+              }`}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
           </div>
 
-          {/* Desktop Top Header Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1.5" aria-label="Faculty Navigation">
+          {/* Navigation Links */}
+          <nav className="p-3 space-y-1" aria-label="Faculty Navigation">
             {navItems.map((item) => {
+              const Icon = item.icon;
               const isActive = item.activeMatches.includes(currentPage);
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  title={sidebarCollapsed ? item.label : undefined}
+                  className={`w-full group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
                     isActive
                       ? 'bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 font-bold shadow-2xs'
-                      : 'text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#1F2937] dark:hover:text-white'
-                  }`}
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:translate-x-0.5'
+                  } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
                 >
-                  <span className={isActive ? 'text-[#2646B8] dark:text-indigo-300' : 'text-[#5B6472] dark:text-gray-400'}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="text-[9px] font-bold bg-[#FFF5D6] text-[#946200] px-1.5 py-0.2 rounded border border-[#946200]/20 ml-0.5">
+                  {isActive && <span className="nav-indicator-pill" aria-hidden="true" />}
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      className={`w-4 h-4 shrink-0 transition-colors ${
+                        isActive
+                          ? 'text-[#2646B8] dark:text-indigo-400'
+                          : 'text-gray-400 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                      }`}
+                    />
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </div>
+                  {!sidebarCollapsed && item.badge && (
+                    <span className="text-[9px] font-bold bg-[#FFF5D6] text-[#946200] px-1.5 py-0.5 rounded border border-[#946200]/20 ml-0.5">
                       {item.badge}
                     </span>
                   )}
@@ -229,136 +267,54 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
           </nav>
         </div>
 
-        {/* Right Header Controls Dock */}
-        <div className="flex items-center gap-3">
-          {/* Breadcrumb Path Tree (Faculty Workspace Context) */}
-          {breadcrumbs.length > 0 && (
-            <nav className="hidden xl:flex items-center text-xs text-gray-500 dark:text-gray-400 mr-2 max-w-xs truncate" aria-label="Breadcrumb">
-              {breadcrumbs.map((crumb, idx) => (
-                <React.Fragment key={idx}>
-                  {idx > 0 && <ChevronRight className="w-3 h-3 mx-1 text-gray-400 shrink-0" />}
-                  {crumb.page ? (
-                    <button
-                      type="button"
-                      onClick={() => onNavigate(crumb.page!, crumb.params)}
-                      className="hover:text-[#3156D3] dark:hover:text-indigo-400 truncate transition cursor-pointer font-medium"
-                    >
-                      {crumb.label}
-                    </button>
-                  ) : (
-                    <span className="font-semibold text-gray-900 dark:text-white truncate">
-                      {crumb.label}
-                    </span>
-                  )}
-                </React.Fragment>
-              ))}
-            </nav>
-          )}
-
-          {/* Consolidated Header Command Dock */}
-          <div className="command-dock">
-            {/* 1-Click Appearance Mode Toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-1.5 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              title="Toggle appearance mode"
-            >
-              {isDark ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              data-design-studio-trigger="true"
-              onClick={() => setDesignStudioOpen((prev) => !prev)}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                designStudioOpen
-                  ? 'bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 shadow-xs'
-                  : 'text-[#5B6472] dark:text-gray-300 hover:text-[#3156D3] dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-gray-800'
+        {/* Sidebar Footer: Profile Card & Sign Out */}
+        <div className="p-3 border-t border-[#D9DEE7] dark:border-[#2D3545]">
+          <div
+            className={`p-2 rounded-xl bg-gray-50/70 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800 flex items-center justify-between ${
+              sidebarCollapsed ? 'justify-center p-1.5' : ''
+            }`}
+          >
+            <div
+              className={`flex items-center gap-2.5 min-w-0 ${
+                sidebarCollapsed ? 'justify-center' : ''
               }`}
-              title="Design Studio (Palettes & Fonts)"
-              aria-label="Toggle Design Studio"
-              aria-expanded={designStudioOpen}
-              aria-controls="design-studio-dialog"
             >
-              <Palette className="w-4 h-4 text-[#3156D3] dark:text-indigo-400 pointer-events-none" />
-            </button>
-
-            <button
-              onClick={() => setHelpModalOpen(true)}
-              className="p-1.5 text-[#5B6472] dark:text-gray-300 hover:text-[#3156D3] dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer hidden sm:flex items-center gap-1 text-xs font-medium"
-              title="Teacher Guide"
-              aria-label="Teacher Guide"
-            >
-              <HelpCircle className="w-4 h-4" />
-              <span className="text-[11px] pr-1">Guide</span>
-            </button>
-          </div>
-
-          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 hidden sm:block mx-0.5" />
-
-          {/* User Profile Quick Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
-              aria-haspopup="true"
-              aria-expanded={userMenuOpen}
-            >
-              <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs border border-[#2646B8]/20 dark:border-indigo-700/40 shadow-xs">
-                {teacherUser?.name ? teacherUser.name.slice(0, 2).toUpperCase() : 'T'}
+              <div className="w-8 h-8 rounded-full bg-[#E8EEFF] dark:bg-indigo-950/60 text-[#2646B8] dark:text-indigo-300 flex items-center justify-center font-bold text-xs border border-[#2646B8]/20 dark:border-indigo-700/40 shrink-0">
+                {userInitials}
               </div>
-              <span className="text-xs font-semibold text-[#1F2937] dark:text-white hidden sm:inline max-w-[120px] truncate">
-                {teacherUser?.name || 'Faculty Instructor'}
-              </span>
-            </button>
-
-            {userMenuOpen && (
-              <div className="absolute top-11 right-0 w-64 bg-white dark:bg-[#181C24] border border-[#D9DEE7] dark:border-[#2D3545] rounded-xl shadow-xl p-2 z-40 flex flex-col gap-1 text-xs animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
-                  <p className="font-bold text-sm text-[#1F2937] dark:text-white">{teacherUser?.name || 'Faculty Instructor'}</p>
-                  <p className="text-[#5B6472] dark:text-gray-400 text-xs mt-0.5">{teacherUser?.email || ''}</p>
-                  {teacherUser?.department && (
-                    <p className="text-[11px] text-[#3156D3] dark:text-indigo-400 font-medium mt-1">
-                      {teacherUser.department}
-                    </p>
-                  )}
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                    {teacherUser?.name || 'Elena Rostova'}
+                  </p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                    {teacherUser?.department || teacherUser?.email || 'Computer Science'}
+                  </p>
                 </div>
-                <button
-                  onClick={() => {
-                    setHelpModalOpen(true);
-                    setUserMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#5B6472] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#1F2937] dark:hover:text-white transition cursor-pointer w-full text-left"
-                >
-                  <HelpCircle className="w-4 h-4 text-[#3156D3] dark:text-indigo-400" />
-                  <span>Documentation & Guide</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    onSignOut?.();
-                  }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#B42318] dark:text-rose-400 hover:bg-[#FEF0EF] dark:hover:bg-rose-950/40 transition cursor-pointer w-full text-left font-semibold"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
+              )}
+            </div>
+
+            {!sidebarCollapsed && onSignOut && (
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="p-1 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition cursor-pointer"
+                title="Sign out"
+                aria-label="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
-      </header>
+      </aside>
 
-      {/* Mobile Navigation Drawer */}
+      {/* ========================================================================= */}
+      {/* MOBILE NAVIGATION DRAWER                                                  */}
+      {/* ========================================================================= */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/15 dark:bg-black/25 backdrop-blur-md lg:hidden flex"
+          className="fixed inset-0 z-50 bg-slate-900/10 dark:bg-black/25 backdrop-blur-xs lg:hidden flex"
           role="dialog"
           aria-modal="true"
         >
@@ -382,6 +338,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
             <nav className="flex-1 py-4 flex flex-col gap-1 overflow-y-auto">
               {navItems.map((item) => {
+                const Icon = item.icon;
                 const isActive = item.activeMatches.includes(currentPage);
                 return (
                   <button
@@ -394,7 +351,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      {item.icon}
+                      <Icon className="w-4 h-4 shrink-0" />
                       <span>{item.label}</span>
                     </div>
                     {item.badge && (
@@ -409,47 +366,145 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
 
             <div className="pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
               <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1C212B] border border-gray-200 dark:border-gray-800">
-                <p className="font-bold text-xs text-gray-900 dark:text-white">{teacherUser?.name || 'Faculty Instructor'}</p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">{teacherUser?.email || ''}</p>
+                <p className="font-bold text-xs text-gray-900 dark:text-white">{teacherUser?.name || 'Elena Rostova'}</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">{teacherUser?.department || teacherUser?.email || 'Computer Science'}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onSignOut?.();
-                }}
-                className="w-full flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
-              </button>
+              {onSignOut && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onSignOut();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              )}
             </div>
           </div>
           <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
         </div>
       )}
 
-      {/* Main content viewport - Full Width Without Sidebar Constraints */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1440px] w-full mx-auto overflow-x-hidden">
-        <div className="view-enter-animation">
-          {children}
-        </div>
-      </main>
+      {/* ========================================================================= */}
+      {/* MAIN CONTENT VIEWPORT & TOP DEDICATED BREADCRUMB HEADER                   */}
+      {/* ========================================================================= */}
+      <div
+        className={`flex-1 transition-all duration-300 ease-in-out flex flex-col min-h-screen ${
+          sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+        }`}
+      >
+        {/* Top Header Bar */}
+        <header className="sticky top-0 z-30 h-16 frosted-header px-4 sm:px-6 flex items-center justify-between gap-4 border-b border-[#D9DEE7] dark:border-[#2D3545]">
+          {/* Left: Mobile hamburger & clean spacious Breadcrumb trail */}
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label="Open sidebar navigation"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
 
-      {/* Quiet Studio-Grade Utility Footer */}
-      <AppFooter onOpenDesignStudio={() => setDesignStudioOpen(true)} />
+            {/* Breadcrumb Path Tree */}
+            <nav className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate" aria-label="Breadcrumb">
+              <button
+                type="button"
+                onClick={() => onNavigate('overview')}
+                className="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+              >
+                Faculty
+              </button>
+              {breadcrumbs.map((crumb, idx) => (
+                <React.Fragment key={idx}>
+                  <ChevronRight className="w-3.5 h-3.5 mx-1 text-gray-400 shrink-0" />
+                  {crumb.page ? (
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(crumb.page!, crumb.params)}
+                      className="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium truncate"
+                    >
+                      {crumb.label}
+                    </button>
+                  ) : (
+                    <span className="font-semibold text-gray-800 dark:text-gray-200 truncate">
+                      {crumb.label}
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
+            </nav>
+          </div>
 
-      {/* Design Studio Customizer Widget */}
+          {/* Right Header Command Dock */}
+          <div className="flex items-center gap-2 shrink-0">
+            {onSwitchPortal && (
+              <button
+                type="button"
+                onClick={() => onSwitchPortal('student')}
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
+                title="Switch to Student Portal"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5" />
+                <span>Student View</span>
+              </button>
+            )}
+
+            <div className="command-dock">
+              {/* Appearance Mode Toggle */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-1.5 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
+                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                title="Toggle appearance mode"
+              >
+                {isDark ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-gray-600" />
+                )}
+              </button>
+
+              {/* Documentation Guide Modal Button */}
+              <button
+                type="button"
+                onClick={() => setHelpModalOpen(true)}
+                className="p-1.5 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 transition cursor-pointer"
+                aria-label="Faculty guide & help"
+                title="Faculty System Guide"
+              >
+                <HelpCircle className="w-4 h-4 text-[#3156D3] dark:text-indigo-400" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto overflow-x-hidden">
+          <div className="view-enter-animation">
+            {children}
+          </div>
+        </main>
+
+        {/* App Footer */}
+        <AppFooter onOpenDesignStudio={() => setDesignStudioOpen(true)} />
+      </div>
+
+      {/* Design Studio Widget */}
       <DesignStudioWidget
         isOpen={designStudioOpen}
         onClose={() => setDesignStudioOpen(false)}
         onToggle={() => setDesignStudioOpen((prev) => !prev)}
       />
 
-      {/* Teacher Portal Documentation Modal */}
+      {/* Help Modal */}
       {helpModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/15 dark:bg-black/25 flex items-center justify-center p-4 backdrop-blur-md"
+          className="fixed inset-0 z-50 bg-slate-900/10 dark:bg-black/25 flex items-center justify-center p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >

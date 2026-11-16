@@ -238,8 +238,36 @@ export default function App() {
     } else if (targetPage === 'sign_in' || targetPage === 'register') {
       setPortalMode('student');
       setStudentPage(targetPage as StudentNavigationPage);
+    } else if (targetPage === 'teacher_portal') {
+      if (currentUserAccount && (currentUserAccount.role === 'teacher' || currentUserAccount.role === 'administrator')) {
+        setPortalMode('teacher');
+        setTeacherPage('overview');
+      } else {
+        setPortalMode('student');
+        setStudentPage('sign_in');
+        notify('info', 'Please sign in with your teacher credentials to access the Teacher Portal.');
+      }
+    } else if (targetPage === 'admin_portal') {
+      if (currentUserAccount && currentUserAccount.role === 'administrator') {
+        setPortalMode('admin');
+        setAdminPage('dashboard');
+      } else {
+        setPortalMode('student');
+        setStudentPage('sign_in');
+        notify('info', 'Please sign in with your administrator credentials to access the Administrator Portal.');
+      }
+    } else if (targetPage === 'dashboard') {
+      if (currentUserAccount?.role === 'teacher') {
+        setPortalMode('teacher');
+        setTeacherPage('overview');
+      } else if (currentUserAccount?.role === 'administrator') {
+        setPortalMode('admin');
+        setAdminPage('dashboard');
+      } else {
+        setPortalMode('student');
+        setStudentPage('dashboard');
+      }
     } else if (
-      targetPage === 'dashboard' ||
       targetPage === 'my_learning' ||
       targetPage === 'course_map' ||
       targetPage === 'progress' ||
@@ -990,7 +1018,7 @@ export default function App() {
   const refreshStudentCourseData = async () => {
     try {
       const [backendCourses, backendEnrollments, backendCompletions] = await Promise.all([
-        coursesApi.listCourses().catch(() => null),
+        coursesApi.listCourses(0, 50, 'catalog').catch(() => null),
         coursesApi.getMyEnrollments().catch(() => null),
         curriculumApi.getLessonCompletions().catch(() => null),
       ]);
@@ -1086,9 +1114,18 @@ export default function App() {
   const refreshTeacherCourseData = async () => {
     try {
       const backendCourses = await coursesApi.listCourses().catch(() => null);
-      if (backendCourses && backendCourses.length > 0) {
+      if (backendCourses) {
         const mappedCourses = backendCourses.map(mapBackendCourseToCourse);
         setCourses(mappedCourses);
+
+        if (backendCourses.length === 0) {
+          setTopics([]);
+          setLessons([]);
+          setResources([]);
+          setQuestions([]);
+          setAssessments([]);
+          return;
+        }
 
         const detailPromises = backendCourses.map((c) =>
           coursesApi.getCourseDetail(c.id).catch(() => null)

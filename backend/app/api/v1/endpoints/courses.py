@@ -29,16 +29,17 @@ router = APIRouter()
 def list_courses(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
+    scope: Optional[str] = Query(default=None, description="Set to 'catalog' to list public published courses"),
     current_user: Optional[User] = Depends(get_optional_current_user),
     db: Session = Depends(get_db),
 ):
     """Retrieve course catalog.
 
-    - Public/Students: returns only 'published' courses.
-    - Teachers: returns created/assigned courses + 'published' courses.
+    - Public/Students (or scope='catalog'): returns only 'published' courses.
+    - Teachers (default): returns strictly created or assigned courses for faculty management.
     - Administrators: returns all courses.
     """
-    return CourseService.list_courses(db=db, current_user=current_user, skip=skip, limit=limit)
+    return CourseService.list_courses(db=db, current_user=current_user, skip=skip, limit=limit, scope=scope)
 
 
 @router.post("", response_model=CourseResponse, status_code=status.HTTP_201_CREATED)

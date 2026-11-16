@@ -38,21 +38,21 @@ class CourseService:
         current_user: Optional[User] = None,
         skip: int = 0,
         limit: int = 50,
+        scope: Optional[str] = None,
     ) -> List[CourseResponse]:
-        """List courses according to the caller's role and authorization boundaries."""
+        """List courses according to the caller's role, authorization boundaries, and optional scope."""
         stmt = select(Course)
 
-        if current_user is None or current_user.role.name == "student":
-            # Public / student: only published courses
+        if scope == "catalog" or current_user is None or current_user.role.name == "student":
+            # Public / student catalog exploration: only published courses
             stmt = stmt.where(Course.status == "published")
         elif current_user.role.name == "teacher":
-            # Teacher: assigned/created courses + published courses
+            # Teacher workspace: strictly assigned/created courses (no foreign published courses)
             assigned_subquery = (
                 select(CourseTeacher.course_id).where(CourseTeacher.teacher_id == current_user.id)
             )
             stmt = stmt.where(
                 or_(
-                    Course.status == "published",
                     Course.creator_id == current_user.id,
                     Course.id.in_(assigned_subquery),
                 )

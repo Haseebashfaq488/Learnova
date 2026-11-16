@@ -107,8 +107,15 @@ def test_teacher_views_own_draft_courses(client_with_db: TestClient, db_session:
     assert res.status_code == 200
     titles = [c["title"] for c in res.json()]
     assert "Teacher1 Draft" in titles
-    assert "Shared Published" in titles
+    assert "Shared Published" not in titles
     assert "Teacher2 Draft" not in titles
+
+    # Teacher1 catalog exploration view: scope=catalog returns published
+    res_cat = client_with_db.get("/api/v1/courses?scope=catalog", headers=auth_header(teacher1))
+    assert res_cat.status_code == 200
+    cat_titles = [c["title"] for c in res_cat.json()]
+    assert "Shared Published" in cat_titles
+    assert "Teacher1 Draft" not in cat_titles
 
 
 def test_admin_views_all_courses(client_with_db: TestClient, db_session: Session, seed_test_users):
